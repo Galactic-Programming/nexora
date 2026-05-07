@@ -1,0 +1,77 @@
+name: ci
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: lint · typecheck · prisma · test
+    runs-on: ubuntu-latest
+
+    env:
+      # Placeholders so Joi validation passes during build/test.
+      # Real secrets are only needed for jobs that hit external services
+      # (none in this CI yet — that comes in Sprint B5).
+      NODE_ENV: test
+      PORT: 3000
+      API_PREFIX: api/v1
+      LOG_LEVEL: error
+      CORS_ORIGINS: http://localhost:3001
+      DATABASE_URL: postgresql://postgres:placeholder@localhost:5432/postgres
+      DIRECT_URL: postgresql://postgres:placeholder@localhost:5432/postgres
+      SUPABASE_URL: https://placeholder.supabase.co
+      SUPABASE_ANON_KEY: placeholder
+      SUPABASE_SERVICE_ROLE_KEY: placeholder
+      SUPABASE_JWKS_URL: https://placeholder.supabase.co/auth/v1/.well-known/jwks.json
+      SUPABASE_JWT_SECRET: ''
+      ADMIN_EMAILS: admin@example.com
+      STRIPE_SECRET_KEY: sk_test_placeholder
+      STRIPE_WEBHOOK_SECRET: whsec_placeholder
+      STRIPE_DEFAULT_CURRENCY: usd
+      FRONTEND_URL: http://localhost:3001
+      RESEND_API_KEY: re_placeholder
+      RESEND_FROM_EMAIL: 'Tourism <noreply@example.com>'
+      THROTTLE_TTL_SECONDS: 60
+      THROTTLE_LIMIT: 100
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm exec prisma generate
+
+      - name: Validate Prisma schema
+        run: pnpm exec prisma validate
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type-check & build
+        run: pnpm build
+
+      - name: Unit tests
+        run: pnpm exec jest --passWithNoTests
+
+      - name: Validate Postman collection JSON
+        run: |
+          node -e "JSON.parse(require('fs').readFileSync('docs/postman/tourism-api.json','utf8')); console.log('postman collection: ok');"
+          node -e "JSON.parse(require('fs').readFileSync('docs/postman/environments/local.postman_environment.json','utf8')); console.log('local env: ok');"

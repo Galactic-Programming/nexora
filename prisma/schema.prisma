@@ -1,0 +1,268 @@
+// Tourism API — Prisma schema
+// See docs/erd.md for the conceptual ERD.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+enum Locale {
+  en
+  vi
+}
+
+enum TourCategory {
+  DAY
+  PACKAGE
+  CUSTOM
+}
+
+enum DepartureStatus {
+  OPEN
+  CLOSED
+  CANCELLED
+}
+
+enum BookingStatus {
+  PENDING
+  PAID
+  CANCELLED
+  REFUNDED
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// User — local mirror of Supabase auth.users
+// ─────────────────────────────────────────────────────────────────────────────
+
+model User {
+  id          String   @id @default(uuid()) @db.Uuid
+  supabaseId  String   @unique @map("supabase_id") @db.Uuid
+  email       String   @unique
+  fullName    String?  @map("full_name")
+  phone       String?
+  locale      Locale   @default(en)
+  role        UserRole @default(CUSTOMER)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  bookings    Booking[]
+  reviews     Review[]
+  wishlist    Wishlist[]
+
+  @@index([role])
+  @@map("users")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Destination
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Destination {
+  id             String   @id @default(uuid()) @db.Uuid
+  slug           String   @unique
+  nameEn         String   @map("name_en")
+  nameVi         String   @map("name_vi")
+  country        String   @default("Vietnam")
+  region         String?
+  heroImage      String?  @map("hero_image")
+  descriptionEn  String?  @map("description_en")
+  descriptionVi  String?  @map("description_vi")
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  tours          Tour[]
+
+  @@index([isActive])
+  @@map("destinations")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tour
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Tour {
+  id              String        @id @default(uuid()) @db.Uuid
+  slug            String        @unique
+  titleEn         String        @map("title_en")
+  titleVi         String        @map("title_vi")
+  summaryEn       String?       @map("summary_en")
+  summaryVi       String?       @map("summary_vi")
+  destinationId   String        @map("destination_id") @db.Uuid
+  durationDays    Int           @map("duration_days")
+  maxGroupSize    Int           @default(20) @map("max_group_size")
+  basePrice       Decimal       @map("base_price") @db.Decimal(12, 2)
+  currency        String        @default("USD") @db.VarChar(3)
+  category        TourCategory  @default(DAY)
+  difficulty      String?
+  isPublished     Boolean       @default(false) @map("is_published")
+  isFeatured      Boolean       @default(false) @map("is_featured")
+  heroImage       String?       @map("hero_image")
+  gallery         String[]      @default([])
+  included        Json          @default("[]")
+  excluded        Json          @default("[]")
+  meetingPoint    String?       @map("meeting_point")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  destination     Destination   @relation(fields: [destinationId], references: [id], onDelete: Restrict)
+  itinerary       TourItineraryDay[]
+  departures      TourDeparture[]
+  bookings        Booking[]
+  reviews         Review[]
+  wishlist        Wishlist[]
+
+  @@index([isPublished, category])
+  @@index([destinationId])
+  @@index([isFeatured])
+  @@map("tours")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tour itinerary (one row per day of the tour)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model TourItineraryDay {
+  id             String   @id @default(uuid()) @db.Uuid
+  tourId         String   @map("tour_id") @db.Uuid
+  dayNumber      Int      @map("day_number")
+  titleEn        String   @map("title_en")
+  titleVi        String   @map("title_vi")
+  descriptionEn  String?  @map("description_en")
+  descriptionVi  String?  @map("description_vi")
+
+  tour           Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  @@unique([tourId, dayNumber])
+  @@map("tour_itinerary_days")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tour departure — concrete dates
+// ─────────────────────────────────────────────────────────────────────────────
+
+model TourDeparture {
+  id             String          @id @default(uuid()) @db.Uuid
+  tourId         String          @map("tour_id") @db.Uuid
+  startDate      DateTime        @map("start_date") @db.Date
+  endDate        DateTime        @map("end_date") @db.Date
+  priceOverride  Decimal?        @map("price_override") @db.Decimal(12, 2)
+  seatsTotal     Int             @map("seats_total")
+  seatsBooked    Int             @default(0) @map("seats_booked")
+  status         DepartureStatus @default(OPEN)
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  tour           Tour            @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  bookings       Booking[]
+
+  @@index([tourId, startDate])
+  @@index([status])
+  @@map("tour_departures")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Booking
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Booking {
+  id                     String        @id @default(uuid()) @db.Uuid
+  code                   String        @unique
+  userId                 String        @map("user_id") @db.Uuid
+  tourId                 String        @map("tour_id") @db.Uuid
+  departureId            String        @map("departure_id") @db.Uuid
+  numAdults              Int           @map("num_adults")
+  numChildren            Int           @default(0) @map("num_children")
+  totalAmount            Decimal       @map("total_amount") @db.Decimal(12, 2)
+  currency               String        @default("USD") @db.VarChar(3)
+  status                 BookingStatus @default(PENDING)
+  contactName            String        @map("contact_name")
+  contactEmail           String        @map("contact_email")
+  contactPhone           String?       @map("contact_phone")
+  specialRequests        String?       @map("special_requests")
+  stripeSessionId        String?       @unique @map("stripe_session_id")
+  stripePaymentIntentId  String?       @map("stripe_payment_intent_id")
+  paidAt                 DateTime?     @map("paid_at")
+  cancelledAt            DateTime?     @map("cancelled_at")
+  createdAt              DateTime      @default(now()) @map("created_at")
+  updatedAt              DateTime      @updatedAt @map("updated_at")
+
+  user                   User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  tour                   Tour           @relation(fields: [tourId], references: [id], onDelete: Restrict)
+  departure              TourDeparture  @relation(fields: [departureId], references: [id], onDelete: Restrict)
+  reviews                Review[]
+
+  @@index([userId, status])
+  @@index([departureId])
+  @@index([status, createdAt])
+  @@map("bookings")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Review — one user can review a tour once per booking
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Review {
+  id          String   @id @default(uuid()) @db.Uuid
+  tourId      String   @map("tour_id") @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  bookingId   String   @unique @map("booking_id") @db.Uuid
+  rating      Int
+  title       String?
+  body        String
+  isApproved  Boolean  @default(false) @map("is_approved")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  tour        Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([tourId, isApproved])
+  @@index([userId])
+  @@map("reviews")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Wishlist — composite PK (user, tour)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Wishlist {
+  userId    String   @map("user_id") @db.Uuid
+  tourId    String   @map("tour_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tour      Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  @@id([userId, tourId])
+  @@index([tourId])
+  @@map("wishlist")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PaymentEvent — Stripe webhook idempotency log
+// ─────────────────────────────────────────────────────────────────────────────
+
+model PaymentEvent {
+  id              String   @id @default(uuid()) @db.Uuid
+  stripeEventId   String   @unique @map("stripe_event_id")
+  type            String
+  payload         Json
+  processedAt     DateTime @default(now()) @map("processed_at")
+
+  @@index([type])
+  @@map("payment_events")
+}

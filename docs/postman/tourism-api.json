@@ -1,0 +1,159 @@
+{
+  "info": {
+    "_postman_id": "b1f5a000-0000-4000-a000-000000000001",
+    "name": "Tourism API",
+    "description": "REST API for the tourism booking platform.\n\nWorkflow rule: this collection MUST be updated together with every new endpoint. See `docs/roadmap.md` for the per-feature checklist.\n\nFolders are added as sprints progress (Sprint B0 ships `Health`).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-refresh Supabase access token if expired or missing.",
+          "// Skipped for the Health folder (no auth required).",
+          "const folder = pm.info.requestName;",
+          "const path = pm.request.url.getPath();",
+          "if (path.indexOf('/health') !== -1) { return; }",
+          "",
+          "const now = Math.floor(Date.now() / 1000);",
+          "const expiresAt = parseInt(pm.environment.get('accessTokenExpiresAt') || '0', 10);",
+          "const accessToken = pm.environment.get('accessToken');",
+          "",
+          "if (accessToken && expiresAt > now + 30) { return; }",
+          "",
+          "const supabaseUrl = pm.environment.get('supabaseUrl');",
+          "const anonKey = pm.environment.get('supabaseAnonKey');",
+          "const email = pm.environment.get('userEmail');",
+          "const password = pm.environment.get('userPassword');",
+          "",
+          "if (!supabaseUrl || !anonKey || !email || !password) {",
+          "  console.warn('[pre-request] Supabase credentials missing — protected requests will fail.');",
+          "  return;",
+          "}",
+          "",
+          "pm.sendRequest({",
+          "  url: supabaseUrl + '/auth/v1/token?grant_type=password',",
+          "  method: 'POST',",
+          "  header: {",
+          "    'apikey': anonKey,",
+          "    'Content-Type': 'application/json'",
+          "  },",
+          "  body: { mode: 'raw', raw: JSON.stringify({ email: email, password: password }) }",
+          "}, (err, res) => {",
+          "  if (err) { console.error('[pre-request] Supabase auth failed', err); return; }",
+          "  const body = res.json();",
+          "  if (body.access_token) {",
+          "    pm.environment.set('accessToken', body.access_token);",
+          "    pm.environment.set('accessTokenExpiresAt', String(now + (body.expires_in || 3600)));",
+          "  } else {",
+          "    console.error('[pre-request] No access_token in response', body);",
+          "  }",
+          "});"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "description": "Liveness + readiness probes. Public — no auth.",
+      "item": [
+        {
+          "name": "GET /health (liveness)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Returns 200 if the process is alive. Does NOT touch the database."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"data\": {\n    \"status\": \"ok\",\n    \"uptime\": 12.345,\n    \"timestamp\": \"2026-05-07T01:00:00.000Z\"\n  },\n  \"error\": null\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('envelope shape', () => {",
+                  "  pm.expect(body).to.have.property('data');",
+                  "  pm.expect(body).to.have.property('error');",
+                  "  pm.expect(body.error).to.be.null;",
+                  "});",
+                  "pm.test('status field is ok', () => pm.expect(body.data.status).to.eql('ok'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /health/ready (readiness)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health/ready",
+              "host": ["{{baseUrl}}"],
+              "path": ["health", "ready"]
+            },
+            "description": "Returns the database connectivity check. `data.checks.database` is `up` or `down`. The endpoint itself returns 200 in both cases — clients should inspect the body."
+          },
+          "response": [
+            {
+              "name": "200 OK — DB up",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": { "raw": "{{baseUrl}}/health/ready", "host": ["{{baseUrl}}"], "path": ["health", "ready"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"data\": {\n    \"status\": \"ok\",\n    \"checks\": { \"database\": \"up\" },\n    \"timestamp\": \"2026-05-07T01:00:00.000Z\"\n  },\n  \"error\": null\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('has database check', () => {",
+                  "  pm.expect(body.data.checks).to.have.property('database');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
