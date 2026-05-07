@@ -1,8 +1,18 @@
-import { ForbiddenException } from '@nestjs/common';
+import { ForbiddenException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Locale, User, UserRole } from '@prisma/client';
 import { AuthService } from './auth.service';
 import type { SupabaseAuthIdentity } from '../../common/types/authenticated-request';
+
+// Silence the AuthService logger during tests. The mocked Prisma upsert
+// returns partial fixtures (no email/supabaseId), so the real log line would
+// print "Synced customer undefined (supabaseId=undefined)" — pure noise.
+beforeAll(() => {
+  jest.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
+});
+afterAll(() => {
+  jest.restoreAllMocks();
+});
 
 type UpsertArgs = Parameters<AuthService['syncCustomer']>;
 type UpsertCallArg = {

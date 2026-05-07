@@ -115,6 +115,8 @@ pnpm exec prisma validate # validate schema.prisma
 | --- | --- |
 | `Config validation error: "X" is required` | Thiếu env var. Copy từ `.env.example`, điền, restart. |
 | `PrismaClientInitializationError ... requires either "adapter" or "accelerateUrl"` | Prisma 7 bắt buộc driver adapter. Repo đã wire sẵn `PrismaPg`; chạy `pnpm install` nếu vừa xóa `node_modules`. |
-| Cảnh báo `Unsupported route path: "/api/v1/*"` | Vô hại — NestJS tự convert. Sẽ tự biến mất ở các bản release sau. |
+| Cảnh báo `Unsupported route path: "/api/v1/*"` lúc boot | **Vô hại.** NestJS 11 set global prefix, nội bộ đăng ký catch-all `/api/v1/*`. path-to-regexp v8 đã bỏ syntax `*`; `LegacyRouteConverter` của Nest tự rewrite thành `/api/v1/{*path}` lúc startup. App vẫn serve đúng mọi route. Chờ Nest dọn upstream. |
+| `Warning: --localstorage-file was provided without a valid path` (jest) | **Vô hại.** Known issue Node.js 25 + jest — flag rỗng bị forward sang worker process. Không ảnh hưởng kết quả test. Bỏ qua hoặc downgrade về Node 22 LTS. |
+| `Synced customer undefined (supabaseId=undefined)` trong output `jest` | Không nên xuất hiện nữa — `auth.service.spec.ts` đã silence `Logger.prototype.log` ở `beforeAll`. Nếu vẫn thấy, có thể bạn đã revert mock đó. |
 | `prisma migrate dev` báo "Can't reach database" | Đảm bảo `DIRECT_URL` (port 5432) được set, không chỉ pooler. Pooler không hỗ trợ session-mode statements mà migration cần. |
 | Stripe webhook trả 400 "Invalid signature" | Middleware raw body phải đăng ký **trước** JSON parser global. Code đã wire sẵn trong `main.ts`. Kiểm tra path khớp với `STRIPE_WEBHOOK_SECRET`. |

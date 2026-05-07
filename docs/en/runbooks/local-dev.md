@@ -115,6 +115,8 @@ pnpm exec prisma validate # validate schema.prisma
 | --- | --- |
 | `Config validation error: "X" is required` | Missing env var. Copy from `.env.example`, fill, restart. |
 | `PrismaClientInitializationError ... requires either "adapter" or "accelerateUrl"` | Prisma 7 requires a driver adapter. We already wire `PrismaPg`; reinstall with `pnpm install` if `node_modules` was wiped. |
-| `Unsupported route path: "/api/v1/*"` warning | Benign — NestJS auto-converts. Will be removed in a future release. |
+| `Unsupported route path: "/api/v1/*"` warning at boot | **Benign.** NestJS 11 sets a global prefix and internally registers a catch-all `/api/v1/*`. path-to-regexp v8 dropped the bare `*` syntax; Nest's `LegacyRouteConverter` auto-rewrites it to `/api/v1/{*path}` at startup. App still serves all routes correctly. Wait for an upstream Nest cleanup. |
+| `Warning: --localstorage-file was provided without a valid path` (jest) | **Benign.** Known Node.js 25 + jest issue — an empty flag is forwarded to the worker process. No effect on test results. Either ignore or downgrade to Node 22 LTS. |
+| `Synced customer undefined (supabaseId=undefined)` in `jest` output | Should NOT appear anymore — `auth.service.spec.ts` silences `Logger.prototype.log` in `beforeAll`. If you see it, you reverted that mock. |
 | `prisma migrate dev` fails with "Can't reach database" | Ensure `DIRECT_URL` (port 5432) is set, not just the pooler. The pooler doesn't accept session-mode statements migrations need. |
 | Stripe webhook returns 400 "Invalid signature" | The raw body middleware must register **before** the global JSON parser. We already wire this in `main.ts`. Double-check the path matches your `STRIPE_WEBHOOK_SECRET`. |
