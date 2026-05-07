@@ -11,13 +11,37 @@ import { ROLES_KEY } from '../decorators/roles.decorator';
 import type { AuthenticatedRequest } from '../types/authenticated-request';
 
 /**
- * Enforces @Roles() metadata. Must run AFTER SupabaseJwtGuard so that
- * `req.currentUser` is populated with the local DB User row.
+ * Global guard that enforces `@Roles(...)` metadata against the local DB
+ * `User.role`.
+ *
+ * Pipeline ordering matters: this guard MUST run AFTER `SupabaseJwtGuard`
+ * (which is responsible for attaching `req.currentUser`). Both are
+ * registered in `AppModule` via `APP_GUARD` providers; NestJS executes them
+ * in array-declaration order.
+ *
+ * Routes without `@Roles()` are passed through — i.e. role-less means
+ * "any authenticated user is fine", not "anyone".
  */
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
+  /**
+   * NestJS hook called once per request after the auth guard.
+   *
+   * Logic:
+   *  1. Read the `@Roles(...)` metadata. No metadata → allow.
+   *  2. No local user row attached → 401 `UNAUTHORIZED`. This typically
+   *     means the FE forgot to call `/auth/sync` after sign-in.
+   *  3. User's role not in the required list → 403 `FORBIDDEN` (e.g. a
+   *     CUSTOMER hitting an admin-only endpoint).
+   *  4. Otherwise allow.
+   *
+   * @param context  Nest execution context, narrowed to HTTP.
+   * @returns        `true` to allow the request through.
+   * @throws UnauthorizedException  When no synced user is on the request.
+   * @throws ForbiddenException     When the user's role is insufficient.
+   */
   canActivate(context: ExecutionContext): boolean {
     const required = this.reflector.getAllAndOverride<UserRole[]>(ROLES_KEY, [
       context.getHandler(),
