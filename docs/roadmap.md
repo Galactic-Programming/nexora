@@ -30,9 +30,9 @@ Languages: 🇬🇧 docs in [en/](./en/), 🇻🇳 docs in [vi/](./vi/).
 | B0.7 | SupabaseJwtGuard (JWKS + HS256 fallback) + RolesGuard | ✅ | n/a | architecture.md |
 | B0.8 | `GET /health`, `GET /health/ready` | ✅ | Health folder | architecture.md |
 | B0.9 | `main.ts`: helmet, CORS, ValidationPipe, Swagger, raw body for `/payments/webhook` | ✅ | n/a | runbooks/local-dev |
-| B0.10 | Postman collection `tourism-api.json` + `local` environment | 🚧 | — | runbooks/postman |
-| B0.11 | GitHub Actions CI (lint + typecheck + prisma validate + jest) | ⬜ | n/a | runbooks/ci |
-| B0.12 | Docs scaffold (en + vi architecture, local-dev runbook, erd.md, this roadmap) | 🚧 | n/a | — |
+| B0.10 | Postman collection `tourism-api.json` + `local` environment | ✅ | Health folder | runbooks/postman-auth |
+| B0.11 | GitHub Actions CI (lint + typecheck + prisma validate + jest) | ✅ | n/a | `.github/workflows/ci.yml` |
+| B0.12 | Docs scaffold (en + vi architecture, local-dev runbook, erd.md, this roadmap) | ✅ | n/a | — |
 
 **Sprint B0 verification (already passing locally):**
 
@@ -52,11 +52,20 @@ curl http://localhost:3000/api/v1/health
 
 | # | Sub-feature | Status | Postman | Docs |
 | --- | --- | --- | --- | --- |
-| B1.1 | `POST /auth/sync` — first-time sync user from Supabase JWT | ⬜ | Auth | runbooks/postman-auth |
-| B1.2 | `POST /auth/admin/sync` — gated by `ADMIN_EMAILS` whitelist | ⬜ | Auth | runbooks/postman-auth |
-| B1.3 | `GET /users/me` — current profile | ⬜ | Users | api-overview |
-| B1.4 | `PATCH /users/me` — update full_name, phone, locale | ⬜ | Users | api-overview |
-| B1.5 | Unit test: SupabaseJwtGuard, AuthService.syncUser | ⬜ | n/a | n/a |
+| B1.1 | `POST /auth/sync` — first-time sync user from Supabase JWT | ✅ | Auth | api-overview, runbooks/postman-auth |
+| B1.2 | `POST /auth/admin/sync` — gated by `ADMIN_EMAILS` allowlist | ✅ | Auth | api-overview, runbooks/postman-auth |
+| B1.3 | `GET /users/me` — current profile | ✅ | Users | api-overview |
+| B1.4 | `PATCH /users/me` — update full_name, phone, locale | ✅ | Users | api-overview |
+| B1.5 | Unit test: AuthService.syncCustomer + syncAdmin (5/5 pass) | ✅ | n/a | n/a |
+
+**Sprint B1 verification (passed end-to-end against real Supabase):**
+
+```bash
+# Real Supabase ES256 JWT → /auth/sync → /users/me → PATCH /users/me
+pnpm exec newman run docs/postman/tourism-api.json \
+  -e docs/postman/environments/local.postman_environment.json
+# → 14 assertions executed, 0 failed
+```
 
 ---
 

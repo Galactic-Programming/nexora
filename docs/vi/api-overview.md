@@ -1,0 +1,67 @@
+# Tổng quan API
+
+> 🇬🇧 English version: [`../en/api-overview.md`](../en/api-overview.md).
+
+Base URL: `${API_PREFIX}` (mặc định `/api/v1`). Swagger UI: `/api/docs` (chỉ ở dev).
+
+## Định dạng response
+
+Tất cả response đều dùng:
+
+```jsonc
+{
+  "data": <payload> | null,
+  "error": null | { "code": "STRING", "message": "...", "details": ... },
+  "meta": { /* phân trang, tùy chọn */ }
+}
+```
+
+## Error codes
+
+| Code | HTTP | Ý nghĩa |
+| --- | --- | --- |
+| `BAD_REQUEST` | 400 | Validate fail (class-validator) |
+| `UNAUTHORIZED` | 401 | Thiếu / sai / hết hạn JWT, hoặc user chưa sync |
+| `FORBIDDEN` | 403 | Đã auth nhưng role không đủ |
+| `NOT_ADMIN` | 403 | Email không nằm trong `ADMIN_EMAILS` allowlist (chỉ admin sync) |
+| `USER_NOT_SYNCED` | 401 | JWT hợp lệ nhưng chưa có record DB — gọi `POST /auth/sync` |
+| `USER_NOT_FOUND` | 404 | Record user bị xóa giữa lúc guard chạy và handler chạy |
+| `NOT_FOUND` | 404 | Resource không tồn tại |
+| `CONFLICT` | 409 | Vi phạm unique constraint |
+| `TOO_MANY_REQUESTS` | 429 | Throttler chặn |
+| `INTERNAL_SERVER_ERROR` | 500 | Lỗi không xử lý |
+
+## Bảng endpoint
+
+Chú thích: 🌍 public · 🔒 customer (user đã auth) · 🛡 admin only.
+
+### Sprint B0 — Health
+
+| Method | Path | Access | Mô tả |
+| --- | --- | --- | --- |
+| GET | `/health` | 🌍 | Liveness — không truy cập DB |
+| GET | `/health/ready` | 🌍 | Readiness — `data.checks.database` là `up` / `down` |
+
+### Sprint B1 — Auth & Users
+
+| Method | Path | Access | Mô tả |
+| --- | --- | --- | --- |
+| POST | `/auth/sync` | 🔒 | Upsert user (đã có JWT) thành `CUSTOMER`. Idempotent. Mọi field trong body đều optional. |
+| POST | `/auth/admin/sync` | 🛡 | Upsert tương tự nhưng nâng quyền lên `ADMIN`. Email caller phải nằm trong `ADMIN_EMAILS` allowlist; không thì 403. |
+| GET | `/users/me` | 🔒 | Trả về profile của user hiện tại. |
+| PATCH | `/users/me` | 🔒 | Cập nhật `fullName`, `phone`, `locale`. Email + role không sửa được ở đây. |
+
+### Cách FE sử dụng auth endpoints
+
+1. User đăng nhập/đăng ký qua Supabase ở frontend → nhận `access_token`.
+2. Frontend gọi **một lần** `POST /auth/sync` (FE customer) hoặc `POST /auth/admin/sync` (FE admin) để đồng bộ user vào DB cục bộ.
+3. Tất cả request bảo mật sau đó gắn header `Authorization: Bearer <access_token>`.
+4. Nếu `GET /users/me` trả `USER_NOT_SYNCED`, FE phải gọi lại bước 2.
+
+### Sprint kế tiếp (kế hoạch)
+
+- B2: `/destinations`, `/tours`, `/tours/:slug`, `/tours/:slug/departures`, `/admin/uploads/signed-url`
+- B3: `/bookings`, `/payments/webhook`, `/admin/bookings/:id/refund`
+- B4: `/reviews`, `/wishlist`, `/admin/stats`
+
+Xem [`roadmap.md`](../roadmap.md) để biết tracker chi tiết theo từng sub-feature.

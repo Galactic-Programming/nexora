@@ -16,7 +16,9 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 import { SupabaseJwtGuard } from './common/guards/supabase-jwt.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { PrismaModule } from './prisma/prisma.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -63,6 +65,8 @@ import { HealthModule } from './modules/health/health.module';
     }),
     PrismaModule,
     HealthModule,
+    AuthModule,
+    UsersModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },

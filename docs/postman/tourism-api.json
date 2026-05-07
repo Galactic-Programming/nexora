@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "b1f5a000-0000-4000-a000-000000000001",
     "name": "Tourism API",
-    "description": "REST API for the tourism booking platform.\n\nWorkflow rule: this collection MUST be updated together with every new endpoint. See `docs/roadmap.md` for the per-feature checklist.\n\nFolders are added as sprints progress (Sprint B0 ships `Health`).",
+    "description": "REST API for the tourism booking platform.\n\nWorkflow rule: this collection MUST be updated together with every new endpoint. See `docs/roadmap.md` for the per-feature checklist.\n\nFolders:\n- Health (Sprint B0)\n- Auth (Sprint B1)\n- Users (Sprint B1)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -17,23 +17,35 @@
         "exec": [
           "// Auto-refresh Supabase access token if expired or missing.",
           "// Skipped for the Health folder (no auth required).",
-          "const folder = pm.info.requestName;",
           "const path = pm.request.url.getPath();",
           "if (path.indexOf('/health') !== -1) { return; }",
           "",
-          "const now = Math.floor(Date.now() / 1000);",
-          "const expiresAt = parseInt(pm.environment.get('accessTokenExpiresAt') || '0', 10);",
-          "const accessToken = pm.environment.get('accessToken');",
+          "// Check whether this request is in the Admin/auth/admin path; if yes",
+          "// use the admin credentials, otherwise use the customer credentials.",
+          "const isAdmin = path.indexOf('/auth/admin') !== -1 ||",
+          "  pm.environment.get('useAdminToken') === 'true';",
           "",
-          "if (accessToken && expiresAt > now + 30) { return; }",
+          "const tokenKey = isAdmin ? 'adminAccessToken' : 'accessToken';",
+          "const expiryKey = isAdmin ? 'adminAccessTokenExpiresAt' : 'accessTokenExpiresAt';",
+          "const emailKey = isAdmin ? 'adminEmail' : 'userEmail';",
+          "const passwordKey = isAdmin ? 'adminPassword' : 'userPassword';",
+          "",
+          "const now = Math.floor(Date.now() / 1000);",
+          "const expiresAt = parseInt(pm.environment.get(expiryKey) || '0', 10);",
+          "const accessToken = pm.environment.get(tokenKey);",
+          "",
+          "if (accessToken && expiresAt > now + 30) {",
+          "  pm.environment.set('accessToken', accessToken);",
+          "  return;",
+          "}",
           "",
           "const supabaseUrl = pm.environment.get('supabaseUrl');",
           "const anonKey = pm.environment.get('supabaseAnonKey');",
-          "const email = pm.environment.get('userEmail');",
-          "const password = pm.environment.get('userPassword');",
+          "const email = pm.environment.get(emailKey);",
+          "const password = pm.environment.get(passwordKey);",
           "",
           "if (!supabaseUrl || !anonKey || !email || !password) {",
-          "  console.warn('[pre-request] Supabase credentials missing — protected requests will fail.');",
+          "  console.warn('[pre-request] Supabase credentials missing for ' + (isAdmin ? 'admin' : 'customer') + ' — protected requests will fail.');",
           "  return;",
           "}",
           "",
@@ -49,8 +61,9 @@
           "  if (err) { console.error('[pre-request] Supabase auth failed', err); return; }",
           "  const body = res.json();",
           "  if (body.access_token) {",
+          "    pm.environment.set(tokenKey, body.access_token);",
+          "    pm.environment.set(expiryKey, String(now + (body.expires_in || 3600)));",
           "    pm.environment.set('accessToken', body.access_token);",
-          "    pm.environment.set('accessTokenExpiresAt', String(now + (body.expires_in || 3600)));",
           "  } else {",
           "    console.error('[pre-request] No access_token in response', body);",
           "  }",
@@ -69,11 +82,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/health",
-              "host": ["{{baseUrl}}"],
-              "path": ["health"]
-            },
+            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] },
             "description": "Returns 200 if the process is alive. Does NOT touch the database."
           },
           "response": [
@@ -88,7 +97,7 @@
               "code": 200,
               "_postman_previewlanguage": "json",
               "header": [{ "key": "Content-Type", "value": "application/json" }],
-              "body": "{\n  \"data\": {\n    \"status\": \"ok\",\n    \"uptime\": 12.345,\n    \"timestamp\": \"2026-05-07T01:00:00.000Z\"\n  },\n  \"error\": null\n}"
+              "body": "{\n  \"data\": { \"status\": \"ok\", \"uptime\": 12.345, \"timestamp\": \"2026-05-07T01:00:00.000Z\" },\n  \"error\": null\n}"
             }
           ],
           "event": [
@@ -115,12 +124,8 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/health/ready",
-              "host": ["{{baseUrl}}"],
-              "path": ["health", "ready"]
-            },
-            "description": "Returns the database connectivity check. `data.checks.database` is `up` or `down`. The endpoint itself returns 200 in both cases — clients should inspect the body."
+            "url": { "raw": "{{baseUrl}}/health/ready", "host": ["{{baseUrl}}"], "path": ["health", "ready"] },
+            "description": "DB connectivity check. `data.checks.database` is `up` or `down`."
           },
           "response": [
             {
@@ -134,7 +139,7 @@
               "code": 200,
               "_postman_previewlanguage": "json",
               "header": [{ "key": "Content-Type", "value": "application/json" }],
-              "body": "{\n  \"data\": {\n    \"status\": \"ok\",\n    \"checks\": { \"database\": \"up\" },\n    \"timestamp\": \"2026-05-07T01:00:00.000Z\"\n  },\n  \"error\": null\n}"
+              "body": "{\n  \"data\": { \"status\": \"ok\", \"checks\": { \"database\": \"up\" }, \"timestamp\": \"2026-05-07T01:00:00.000Z\" },\n  \"error\": null\n}"
             }
           ],
           "event": [
@@ -145,9 +150,250 @@
                 "exec": [
                   "pm.test('status is 200', () => pm.response.to.have.status(200));",
                   "const body = pm.response.json();",
-                  "pm.test('has database check', () => {",
-                  "  pm.expect(body.data.checks).to.have.property('database');",
+                  "pm.test('has database check', () => pm.expect(body.data.checks).to.have.property('database'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "description": "First-time user sync from Supabase JWT. Both endpoints are idempotent — safe to call on every login.",
+      "item": [
+        {
+          "name": "POST /auth/sync (customer)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Customer Test\",\n  \"phone\": \"+84901234567\",\n  \"locale\": \"en\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/sync", "host": ["{{baseUrl}}"], "path": ["auth", "sync"] },
+            "description": "Upsert the JWT-bearing user as CUSTOMER. Body is optional — sub & email always come from the verified JWT.\n\n**Auth:** Bearer Supabase JWT (auto-refreshed by collection pre-request)."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\"locale\":\"en\"}" },
+                "url": { "raw": "{{baseUrl}}/auth/sync", "host": ["{{baseUrl}}"], "path": ["auth", "sync"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"data\": {\n    \"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n    \"supabaseId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n    \"email\": \"customer@example.com\",\n    \"fullName\": \"Customer Test\",\n    \"phone\": \"+84901234567\",\n    \"locale\": \"en\",\n    \"role\": \"CUSTOMER\",\n    \"createdAt\": \"2026-05-07T03:10:00.000Z\",\n    \"updatedAt\": \"2026-05-07T03:10:00.000Z\"\n  },\n  \"error\": null\n}"
+            },
+            {
+              "name": "401 Unauthorized",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "url": { "raw": "{{baseUrl}}/auth/sync", "host": ["{{baseUrl}}"], "path": ["auth", "sync"] }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"UNAUTHORIZED\", \"message\": \"Missing or malformed Authorization header\" }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('returns user with CUSTOMER role', () => {",
+                  "  pm.expect(body.data).to.have.property('id');",
+                  "  pm.expect(body.data.role).to.eql('CUSTOMER');",
+                  "  pm.expect(body.data.supabaseId).to.be.a('string');",
+                  "});",
+                  "// Persist for cross-request use",
+                  "if (body.data) {",
+                  "  pm.environment.set('userId', body.data.id);",
+                  "  pm.environment.set('userSupabaseId', body.data.supabaseId);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /auth/admin/sync",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"fullName\": \"Admin Test\",\n  \"locale\": \"en\"\n}" },
+            "url": { "raw": "{{baseUrl}}/auth/admin/sync", "host": ["{{baseUrl}}"], "path": ["auth", "admin", "sync"] },
+            "description": "Upsert the JWT-bearing user as ADMIN. Caller email MUST be on the `ADMIN_EMAILS` allowlist or the request returns 403.\n\n**Auth:** Bearer Supabase JWT (uses adminEmail/adminPassword from environment)."
+          },
+          "response": [
+            {
+              "name": "200 OK — promoted",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "url": { "raw": "{{baseUrl}}/auth/admin/sync", "host": ["{{baseUrl}}"], "path": ["auth", "admin", "sync"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"data\": {\n    \"id\": \"d290f1ee-6c54-4b01-90e6-d701748f0851\",\n    \"email\": \"admin@example.com\",\n    \"role\": \"ADMIN\",\n    \"locale\": \"en\"\n  },\n  \"error\": null\n}"
+            },
+            {
+              "name": "403 Forbidden — not on allowlist",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "url": { "raw": "{{baseUrl}}/auth/admin/sync", "host": ["{{baseUrl}}"], "path": ["auth", "admin", "sync"] }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"NOT_ADMIN\", \"message\": \"This email is not on the admin allowlist\" }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Allow either 200 (promoted) or 403 (not on allowlist) — both are valid",
+                  "// outcomes that the caller wants verified.",
+                  "pm.test('status is 200 or 403', () => {",
+                  "  pm.expect([200, 403]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (pm.response.code === 200) {",
+                  "  pm.test('role is ADMIN', () => pm.expect(body.data.role).to.eql('ADMIN'));",
+                  "  if (body.data) pm.environment.set('adminUserId', body.data.id);",
+                  "} else {",
+                  "  pm.test('error code is NOT_ADMIN', () => pm.expect(body.error.code).to.eql('NOT_ADMIN'));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "description": "Profile of the JWT-bearing user. Both routes require `/auth/sync` to have been called at least once.",
+      "item": [
+        {
+          "name": "GET /users/me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] },
+            "description": "Return the local DB profile for the JWT-bearing user.\n\n**Auth:** Bearer Supabase JWT."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"data\": {\n    \"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n    \"email\": \"customer@example.com\",\n    \"fullName\": \"Customer Test\",\n    \"phone\": \"+84901234567\",\n    \"locale\": \"en\",\n    \"role\": \"CUSTOMER\"\n  },\n  \"error\": null\n}"
+            },
+            {
+              "name": "401 — not synced",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"USER_NOT_SYNCED\", \"message\": \"Authenticated but local user record missing — call POST /auth/sync\" }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('returns profile fields', () => {",
+                  "  pm.expect(body.data).to.have.all.keys('id','supabaseId','email','fullName','phone','locale','role','createdAt','updatedAt');",
                   "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /users/me",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Updated Name\",\n  \"phone\": \"+84909999999\",\n  \"locale\": \"vi\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] },
+            "description": "Partial update of the current user's profile. Only `fullName`, `phone`, and `locale` are mutable here. Email/role can only be changed by Supabase or admin tooling."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [],
+                "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"data\": {\n    \"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n    \"email\": \"customer@example.com\",\n    \"fullName\": \"Updated Name\",\n    \"phone\": \"+84909999999\",\n    \"locale\": \"vi\",\n    \"role\": \"CUSTOMER\"\n  },\n  \"error\": null\n}"
+            },
+            {
+              "name": "400 — invalid payload",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [],
+                "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"BAD_REQUEST\", \"message\": \"locale must be one of the following values: en, vi\" }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('locale updated to vi', () => pm.expect(body.data.locale).to.eql('vi'));",
+                  "pm.test('fullName updated', () => pm.expect(body.data.fullName).to.eql('Updated Name'));"
                 ]
               }
             }
