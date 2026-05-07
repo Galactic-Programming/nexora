@@ -11,12 +11,34 @@ import type { SupabaseAuthIdentity } from '../../common/types/authenticated-requ
 import { AuthService } from './auth.service';
 import { SyncUserDto } from './dto/sync-user.dto';
 
+/**
+ * HTTP surface for the user-mirroring workflow.
+ *
+ * Both endpoints require a valid Supabase JWT (no `@Public()`); the global
+ * `SupabaseJwtGuard` runs first. The `@SupabaseIdentity()` parameter
+ * decorator hands us the verified JWT subset — we never read identity from
+ * the body. See {@link AuthService} for the upsert semantics.
+ *
+ * `@HttpCode(200)` overrides Nest's default `201 Created` because these are
+ * "create or refresh" idempotent operations, not pure creates.
+ */
 @ApiTags('Auth')
 @ApiBearerAuth('supabase-jwt')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  /**
+   * `POST /auth/sync` — call once per session from the customer FE right
+   * after `supabase.auth.signInWithPassword()` / OAuth.
+   *
+   * Idempotent: subsequent calls refresh profile fields (email, fullName,
+   * phone, locale) but never downgrade an existing ADMIN user.
+   *
+   * @param identity  Verified Supabase identity (auto-injected).
+   * @param body      Optional profile metadata.
+   * @returns         The local DB user row.
+   */
   @Post('sync')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -34,6 +56,17 @@ export class AuthController {
     return this.authService.syncCustomer(identity, body);
   }
 
+  /**
+   * `POST /auth/admin/sync` — admin counterpart of `/auth/sync`.
+   *
+   * Adds an allowlist check before promoting the user to ADMIN. Returns
+   * 403 if the email is not on `ADMIN_EMAILS`. Idempotent.
+   *
+   * @param identity  Verified Supabase identity (auto-injected).
+   * @param body      Optional profile metadata.
+   * @returns         The local DB user row with `role: ADMIN`.
+   * @throws ForbiddenException — when the email is not allowlisted.
+   */
   @Post('admin/sync')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({

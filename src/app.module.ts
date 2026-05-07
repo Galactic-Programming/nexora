@@ -20,6 +20,38 @@ import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
 import { UsersModule } from './modules/users/users.module';
 
+/**
+ * Root composition module wiring every cross-cutting concern + feature
+ * module into one DI container.
+ *
+ * Layers, in registration order:
+ *
+ *  - **ConfigModule** — global, loads + caches the namespaced configs
+ *    (`appConfig`, `supabaseConfig`, ...) and validates `process.env`
+ *    against `envValidationSchema`. `abortEarly: false` so operators see
+ *    EVERY missing env var at once, not the first one only.
+ *  - **LoggerModule** (`nestjs-pino`) — structured JSON in prod, colorized
+ *    pretty-printed lines in dev. Auth + cookie headers are redacted.
+ *  - **ThrottlerModule** — global rate limit driven by `throttler.*` config.
+ *    `ttl` here is in milliseconds, but our config exposes seconds, hence
+ *    the `* 1000` conversion.
+ *  - **PrismaModule** — global database access (see prisma/prisma.module.ts).
+ *  - **Health/Auth/Users modules** — feature modules (will grow over sprints).
+ *
+ * Global providers (registered via `APP_*` tokens):
+ *
+ *  1. `HttpExceptionFilter` — uniform error envelope.
+ *  2. `TransformInterceptor` — uniform success envelope.
+ *  3. `ThrottlerGuard` — runs first to short-circuit floods.
+ *  4. `SupabaseJwtGuard` — verifies JWT, attaches `req.supabaseUser` /
+ *     `req.currentUser`.
+ *  5. `RolesGuard` — enforces `@Roles(...)` against `req.currentUser.role`.
+ *
+ * Guard order matters: ThrottlerGuard must precede the auth guards (don't
+ * waste CPU on JWT verification for clients we already plan to throttle),
+ * and SupabaseJwtGuard must precede RolesGuard (RolesGuard reads what
+ * SupabaseJwtGuard attaches).
+ */
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -40,6 +72,8 @@ import { UsersModule } from './modules/users/users.module';
       useFactory: (config: ConfigService) => ({
         pinoHttp: {
           level: config.get<string>('app.logLevel') ?? 'info',
+          // pino-pretty is a dev convenience — production stays as JSON
+          // so log aggregators (Datadog/Loki/...) can parse it.
           transport: config.get<boolean>('app.isProduction')
             ? undefined
             : {
