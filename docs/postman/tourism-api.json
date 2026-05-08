@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "b1f5a000-0000-4000-a000-000000000001",
     "name": "Tourism API",
-    "description": "REST API for the tourism booking platform.\n\nWorkflow rule: this collection MUST be updated together with every new endpoint. See `docs/roadmap.md` for the per-feature checklist.\n\nFolders:\n- Health (Sprint B0)\n- Auth (Sprint B1)\n- Users (Sprint B1)",
+    "description": "REST API for the tourism booking platform.\n\nWorkflow rule: this collection MUST be updated together with every new endpoint. See `docs/roadmap.md` for the per-feature checklist.\n\nFolders:\n- Health (Sprint B0)\n- Auth (Sprint B1)\n- Users (Sprint B1)\n- Destinations (Public + Admin) (Sprint B2.1)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -20,9 +20,12 @@
           "const path = pm.request.url.getPath();",
           "if (path.indexOf('/health') !== -1) { return; }",
           "",
-          "// Check whether this request is in the Admin/auth/admin path; if yes",
-          "// use the admin credentials, otherwise use the customer credentials.",
+          "// Detect admin paths: /auth/admin/* OR /admin/* (mounted at",
+          "// e.g. /api/v1/admin/destinations). Use admin credentials there;",
+          "// fall back to customer credentials otherwise. Manual override via",
+          "// `useAdminToken=true` env var still works.",
           "const isAdmin = path.indexOf('/auth/admin') !== -1 ||",
+          "  /\\/admin\\//.test(path) ||",
           "  pm.environment.get('useAdminToken') === 'true';",
           "",
           "const tokenKey = isAdmin ? 'adminAccessToken' : 'accessToken';",
@@ -394,6 +397,286 @@
                   "const body = pm.response.json();",
                   "pm.test('locale updated to vi', () => pm.expect(body.data.locale).to.eql('vi'));",
                   "pm.test('fullName updated', () => pm.expect(body.data.fullName).to.eql('Updated Name'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Destinations (Public)",
+      "description": "Read-only catalog browsing. Public — no auth required.",
+      "item": [
+        {
+          "name": "GET /destinations (list)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/destinations?page=1&pageSize=20&sortBy=createdAt&sortOrder=desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["destinations"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "20" },
+                { "key": "sortBy", "value": "createdAt" },
+                { "key": "sortOrder", "value": "desc" },
+                { "key": "search", "value": "", "disabled": true }
+              ]
+            },
+            "description": "Paginated list of ACTIVE destinations. Filters: `search` (name_en/name_vi, case-insensitive), `sortBy` (createdAt|updatedAt|nameEn|nameVi), `sortOrder` (asc|desc)."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": { "raw": "{{baseUrl}}/destinations", "host": ["{{baseUrl}}"], "path": ["destinations"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"...\",\n      \"slug\": \"hoi-an\",\n      \"nameEn\": \"Hoi An\",\n      \"nameVi\": \"Hội An\",\n      \"country\": \"Vietnam\",\n      \"isActive\": true\n    }\n  ],\n  \"error\": null,\n  \"meta\": { \"page\": 1, \"pageSize\": 20, \"total\": 1, \"totalPages\": 1 }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('envelope shape with data array', () => {",
+                  "  pm.expect(body.data).to.be.an('array');",
+                  "  pm.expect(body.error).to.be.null;",
+                  "});",
+                  "pm.test('meta has pagination fields', () => {",
+                  "  pm.expect(body.meta).to.have.all.keys('page','pageSize','total','totalPages');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /destinations/:slug (detail)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/destinations/{{destinationSlug}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["destinations", "{{destinationSlug}}"]
+            },
+            "description": "Public detail by slug. Returns 404 when slug is missing OR inactive."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": { "raw": "{{baseUrl}}/destinations/hoi-an", "host": ["{{baseUrl}}"], "path": ["destinations", "hoi-an"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"data\": { \"slug\": \"hoi-an\", \"nameEn\": \"Hoi An\", \"isActive\": true },\n  \"error\": null\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": { "raw": "{{baseUrl}}/destinations/missing", "host": ["{{baseUrl}}"], "path": ["destinations", "missing"] }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"DESTINATION_NOT_FOUND\", \"message\": \"Destination \\\"missing\\\" not found\" }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200 or 404', () => pm.expect([200, 404]).to.include(pm.response.code));",
+                  "const body = pm.response.json();",
+                  "if (pm.response.code === 200) {",
+                  "  pm.test('returns destination row', () => pm.expect(body.data).to.have.property('slug'));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Destinations (Admin)",
+      "description": "Admin-only CRUD. Requires Bearer JWT of an ADMIN user (allowlisted email).",
+      "item": [
+        {
+          "name": "POST /admin/destinations (create)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slug\": \"{{destinationSlug}}\",\n  \"nameEn\": \"Hoi An\",\n  \"nameVi\": \"Hội An\",\n  \"country\": \"Vietnam\",\n  \"region\": \"Central Vietnam\",\n  \"descriptionEn\": \"Ancient port town in Central Vietnam.\",\n  \"descriptionVi\": \"Phố cổ ven sông ở miền Trung Việt Nam.\",\n  \"isActive\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/admin/destinations", "host": ["{{baseUrl}}"], "path": ["admin", "destinations"] },
+            "description": "Creates a destination. 409 on duplicate slug."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "url": { "raw": "{{baseUrl}}/admin/destinations", "host": ["{{baseUrl}}"], "path": ["admin", "destinations"] }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"data\": { \"id\": \"...\", \"slug\": \"hoi-an\", \"nameEn\": \"Hoi An\", \"nameVi\": \"Hội An\", \"isActive\": true },\n  \"error\": null\n}"
+            },
+            {
+              "name": "409 Slug exists",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "url": { "raw": "{{baseUrl}}/admin/destinations", "host": ["{{baseUrl}}"], "path": ["admin", "destinations"] }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"DESTINATION_SLUG_EXISTS\", \"message\": \"Slug \\\"hoi-an\\\" is already in use\" }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201 or 409', () => pm.expect([201, 409]).to.include(pm.response.code));",
+                  "const body = pm.response.json();",
+                  "if (pm.response.code === 201) {",
+                  "  pm.test('created with CUSTOMER-side defaults applied', () => {",
+                  "    pm.expect(body.data.isActive).to.eql(true);",
+                  "    pm.expect(body.data.slug).to.be.a('string');",
+                  "  });",
+                  "} else {",
+                  "  pm.test('conflict code is DESTINATION_SLUG_EXISTS', () => pm.expect(body.error.code).to.eql('DESTINATION_SLUG_EXISTS'));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /admin/destinations (list, incl. drafts)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/destinations?page=1&pageSize=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "destinations"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "50" },
+                { "key": "isActive", "value": "false", "disabled": true }
+              ]
+            },
+            "description": "Admin list — sees inactive drafts. `isActive` filter is honoured here (it is force-overridden to true in the public endpoint)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('returns array + meta', () => {",
+                  "  pm.expect(body.data).to.be.an('array');",
+                  "  pm.expect(body.meta).to.have.property('total');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /admin/destinations/:slug (update)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"region\": \"Quang Nam\",\n  \"descriptionEn\": \"Updated description.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/destinations/{{destinationSlug}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "destinations", "{{destinationSlug}}"]
+            },
+            "description": "Partial update. Renaming via `slug` works but breaks external bookmarks — use with care."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('region updated', () => pm.expect(body.data.region).to.eql('Quang Nam'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE /admin/destinations/:slug",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/destinations/{{destinationSlug}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "destinations", "{{destinationSlug}}"]
+            },
+            "description": "Hard delete. Returns 409 if any tour still references this destination."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200 or 409', () => pm.expect([200, 409]).to.include(pm.response.code));",
+                  "const body = pm.response.json();",
+                  "if (pm.response.code === 200) {",
+                  "  pm.test('echoes deleted slug', () => pm.expect(body.data.slug).to.be.a('string'));",
+                  "} else {",
+                  "  pm.test('conflict code is DESTINATION_HAS_TOURS', () => pm.expect(body.error.code).to.eql('DESTINATION_HAS_TOURS'));",
+                  "}"
                 ]
               }
             }

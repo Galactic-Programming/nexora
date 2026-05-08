@@ -27,7 +27,10 @@ Tất cả response đều dùng:
 | `USER_NOT_SYNCED` | 401 | JWT hợp lệ nhưng chưa có record DB — gọi `POST /auth/sync` |
 | `USER_NOT_FOUND` | 404 | Record user bị xóa giữa lúc guard chạy và handler chạy |
 | `NOT_FOUND` | 404 | Resource không tồn tại |
+| `DESTINATION_NOT_FOUND` | 404 | Destination slug không tồn tại hoặc đang inactive |
 | `CONFLICT` | 409 | Vi phạm unique constraint |
+| `DESTINATION_SLUG_EXISTS` | 409 | Slug đã được dùng |
+| `DESTINATION_HAS_TOURS` | 409 | Không thể xoá destination khi vẫn còn tour tham chiếu |
 | `TOO_MANY_REQUESTS` | 429 | Throttler chặn |
 | `INTERNAL_SERVER_ERROR` | 500 | Lỗi không xử lý |
 
@@ -57,6 +60,20 @@ Chú thích: 🌍 public · 🔒 customer (user đã auth) · 🛡 admin only.
 2. Frontend gọi **một lần** `POST /auth/sync` (FE customer) hoặc `POST /auth/admin/sync` (FE admin) để đồng bộ user vào DB cục bộ.
 3. Tất cả request bảo mật sau đó gắn header `Authorization: Bearer <access_token>`.
 4. Nếu `GET /users/me` trả `USER_NOT_SYNCED`, FE phải gọi lại bước 2.
+
+### Sprint B2.1 — Destinations
+
+| Method | Path | Access | Mô tả |
+| --- | --- | --- | --- |
+| GET | `/destinations` | 🌍 | Danh sách destinations active (có phân trang). Hỗ trợ `page`, `pageSize` (max 100), `search` (tên en+vi, không phân biệt hoa thường), `sortBy`, `sortOrder`. |
+| GET | `/destinations/:slug` | 🌍 | Chi tiết 1 destination active theo slug. 404 khi thiếu hoặc inactive. |
+| GET | `/admin/destinations` | 🛡 | Admin list — thấy cả draft inactive; `isActive` filter có hiệu lực. |
+| GET | `/admin/destinations/:slug` | 🛡 | Admin chi tiết — không filter `isActive`. |
+| POST | `/admin/destinations` | 🛡 | Tạo destination. 409 `DESTINATION_SLUG_EXISTS` khi slug trùng. |
+| PATCH | `/admin/destinations/:slug` | 🛡 | Update từng phần. Đổi slug được nhưng có thể làm hỏng bookmark cũ. |
+| DELETE | `/admin/destinations/:slug` | 🛡 | Xoá cứng. 409 `DESTINATION_HAS_TOURS` khi vẫn còn tour tham chiếu. |
+
+Quy tắc slug: `^[a-z0-9]+(?:-[a-z0-9]+)*$` (kebab-case, 2–80 ký tự).
 
 ### Sprint kế tiếp (kế hoạch)
 
