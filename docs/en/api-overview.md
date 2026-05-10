@@ -28,9 +28,13 @@ All responses use:
 | `USER_NOT_FOUND` | 404 | User row was deleted between guard and handler |
 | `NOT_FOUND` | 404 | Resource not found |
 | `DESTINATION_NOT_FOUND` | 404 | Destination slug missing or inactive |
+| `TOUR_NOT_FOUND` | 404 | Tour slug missing |
+| `INVALID_DESTINATION` | 400 | Tour create/update referenced a non-existent `destinationId` |
 | `CONFLICT` | 409 | Unique constraint violation |
 | `DESTINATION_SLUG_EXISTS` | 409 | Slug is already in use |
 | `DESTINATION_HAS_TOURS` | 409 | Cannot delete a destination that has tours |
+| `TOUR_SLUG_EXISTS` | 409 | Tour slug is already in use |
+| `TOUR_HAS_BOOKINGS` | 409 | Cannot delete a tour that has bookings |
 | `TOO_MANY_REQUESTS` | 429 | Throttler kicked in |
 | `INTERNAL_SERVER_ERROR` | 500 | Unhandled |
 
@@ -75,9 +79,24 @@ Legend: 🌍 public · 🔒 customer (any authenticated user) · 🛡 admin only
 
 Slug rule: `^[a-z0-9]+(?:-[a-z0-9]+)*$` (kebab-case, 2–80 chars).
 
+### Sprint B2.2 — Tours (Admin CRUD)
+
+| Method | Path | Access | Description |
+| --- | --- | --- | --- |
+| GET | `/admin/tours/:slug` | 🛡 | Detail with parent `destination` joined. 404 when slug missing. |
+| POST | `/admin/tours` | 🛡 | Create. 400 `INVALID_DESTINATION` if `destinationId` is unknown; 409 `TOUR_SLUG_EXISTS` on duplicate slug. |
+| PATCH | `/admin/tours/:slug` | 🛡 | Partial update. Sending `destinationId` re-validates the FK. |
+| DELETE | `/admin/tours/:slug` | 🛡 | Hard delete. 409 `TOUR_HAS_BOOKINGS` when bookings reference the tour. |
+
+Tour slug rule: same kebab-case as destinations but max 120 chars.
+
+Public list/detail (`GET /tours`, `GET /tours/:slug`) ship in Sprint B2.3; itinerary nested CRUD in B2.4; departures + uploads in B2.5–B2.6.
+
 ### Future sprints (planned)
 
-- B2.2–B2.6: `/tours`, `/tours/:slug`, `/tours/:slug/departures`, `/admin/uploads/signed-url`
+- B2.3: public `/tours` list + detail (filter, sort, pagination)
+- B2.4: `/admin/tours/:slug/itinerary` (TourItineraryDay nested CRUD)
+- B2.5–B2.6: `/admin/tours/:slug/departures`, `/admin/uploads/signed-url`
 - B3: `/bookings`, `/payments/webhook`, `/admin/bookings/:id/refund`
 - B4: `/reviews`, `/wishlist`, `/admin/stats`
 

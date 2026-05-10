@@ -28,9 +28,13 @@ Tất cả response đều dùng:
 | `USER_NOT_FOUND` | 404 | Record user bị xóa giữa lúc guard chạy và handler chạy |
 | `NOT_FOUND` | 404 | Resource không tồn tại |
 | `DESTINATION_NOT_FOUND` | 404 | Destination slug không tồn tại hoặc đang inactive |
+| `TOUR_NOT_FOUND` | 404 | Tour slug không tồn tại |
+| `INVALID_DESTINATION` | 400 | Tour create/update tham chiếu `destinationId` không tồn tại |
 | `CONFLICT` | 409 | Vi phạm unique constraint |
-| `DESTINATION_SLUG_EXISTS` | 409 | Slug đã được dùng |
+| `DESTINATION_SLUG_EXISTS` | 409 | Slug destination đã được dùng |
 | `DESTINATION_HAS_TOURS` | 409 | Không thể xoá destination khi vẫn còn tour tham chiếu |
+| `TOUR_SLUG_EXISTS` | 409 | Slug tour đã được dùng |
+| `TOUR_HAS_BOOKINGS` | 409 | Không thể xoá tour khi vẫn còn booking tham chiếu |
 | `TOO_MANY_REQUESTS` | 429 | Throttler chặn |
 | `INTERNAL_SERVER_ERROR` | 500 | Lỗi không xử lý |
 
@@ -75,9 +79,24 @@ Chú thích: 🌍 public · 🔒 customer (user đã auth) · 🛡 admin only.
 
 Quy tắc slug: `^[a-z0-9]+(?:-[a-z0-9]+)*$` (kebab-case, 2–80 ký tự).
 
+### Sprint B2.2 — Tours (Admin CRUD)
+
+| Method | Path | Access | Mô tả |
+| --- | --- | --- | --- |
+| GET | `/admin/tours/:slug` | 🛡 | Chi tiết kèm `destination` đã join. 404 khi slug không tồn tại. |
+| POST | `/admin/tours` | 🛡 | Tạo tour. 400 `INVALID_DESTINATION` khi `destinationId` không tồn tại; 409 `TOUR_SLUG_EXISTS` khi slug trùng. |
+| PATCH | `/admin/tours/:slug` | 🛡 | Update từng phần. Gửi `destinationId` sẽ re-validate FK. |
+| DELETE | `/admin/tours/:slug` | 🛡 | Xoá cứng. 409 `TOUR_HAS_BOOKINGS` khi còn booking tham chiếu. |
+
+Tour slug rule: cùng kebab-case như destinations nhưng max 120 ký tự.
+
+Public list/detail (`GET /tours`, `GET /tours/:slug`) sẽ có ở Sprint B2.3; itinerary nested CRUD ở B2.4; departures + uploads ở B2.5–B2.6.
+
 ### Sprint kế tiếp (kế hoạch)
 
-- B2: `/destinations`, `/tours`, `/tours/:slug`, `/tours/:slug/departures`, `/admin/uploads/signed-url`
+- B2.3: public `/tours` list + detail (filter, sort, phân trang)
+- B2.4: `/admin/tours/:slug/itinerary` (TourItineraryDay nested CRUD)
+- B2.5–B2.6: `/admin/tours/:slug/departures`, `/admin/uploads/signed-url`
 - B3: `/bookings`, `/payments/webhook`, `/admin/bookings/:id/refund`
 - B4: `/reviews`, `/wishlist`, `/admin/stats`
 

@@ -19,6 +19,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { DestinationsModule } from './modules/destinations/destinations.module';
 import { HealthModule } from './modules/health/health.module';
+import { ToursModule } from './modules/tours/tours.module';
 import { UsersModule } from './modules/users/users.module';
 
 /**
@@ -103,6 +104,7 @@ import { UsersModule } from './modules/users/users.module';
     AuthModule,
     UsersModule,
     DestinationsModule,
+    ToursModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },
