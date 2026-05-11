@@ -1,6 +1,6 @@
 {
   "name": "Auth",
-  "description": "First-time user sync from Supabase JWT. Both endpoints are idempotent — safe to call on every login.",
+  "description": "First-time user sync from Supabase JWT. Both endpoints are idempotent — safe to call on every login.\n\nThe `Reset tokens` helper at the bottom is a test-only utility that clears all cached Supabase tokens from the environment, simulating a fresh logout. Use it before re-running the customer/admin sync flow to verify behaviour from a clean state.",
   "item": [
     {
       "name": "POST /auth/sync (customer)",
@@ -120,6 +120,49 @@
               "  if (body.data) pm.environment.set('adminUserId', body.data.id);",
               "} else {",
               "  pm.test('error code is NOT_ADMIN', () => pm.expect(body.error.code).to.eql('NOT_ADMIN'));",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reset tokens (test helper)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] },
+        "description": "Clears every cached Supabase token slot from the environment, then short-circuits before any HTTP call is made. Use this to simulate a logout between role switches (e.g. customer → admin → customer) so the next sync request fetches a fresh JWT instead of reusing a cached one.\n\nNo backend route is hit. The collection's pre-request script is bypassed via `pm.execution.skipRequest()`."
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.environment.unset('accessToken');",
+              "pm.environment.unset('customerAccessToken');",
+              "pm.environment.unset('customerAccessTokenExpiresAt');",
+              "pm.environment.unset('adminAccessToken');",
+              "pm.environment.unset('adminAccessTokenExpiresAt');",
+              "console.log('[reset] All Supabase token slots cleared.');",
+              "if (typeof pm.execution !== 'undefined' && pm.execution.skipRequest) {",
+              "  pm.execution.skipRequest();",
+              "}"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// When `pm.execution.skipRequest()` runs there is no response to",
+              "// assert against. On older Postman runtimes that lack the API the",
+              "// request falls through to /health, which returns 200 — still a",
+              "// safe outcome.",
+              "if (pm.response && pm.response.code) {",
+              "  pm.test('fallback /health returns 200', () => pm.response.to.have.status(200));",
               "}"
             ]
           }

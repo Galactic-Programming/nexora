@@ -40,12 +40,15 @@ CI runs `pnpm postman:check` which fails if the generated file drifts from the s
 
 The collection has a **collection-level pre-request script** that calls Supabase `signInWithPassword` and stores the resulting `access_token` in the active environment. Every protected request inherits collection-level Bearer auth that reads `{{accessToken}}`.
 
-Two token slots are maintained:
+Two per-role token slots are maintained, plus one generic Bearer slot:
 
-- `accessToken` / `accessTokenExpiresAt` — refreshed from `userEmail` + `userPassword`
+- `customerAccessToken` / `customerAccessTokenExpiresAt` — refreshed from `userEmail` + `userPassword`
 - `adminAccessToken` / `adminAccessTokenExpiresAt` — refreshed from `adminEmail` + `adminPassword`
+- `accessToken` — the generic slot `{{accessToken}}` resolves to in collection-level Bearer auth. The pre-request script rewrites this every run from whichever per-role slot matches the request path, and clears it up-front so a missing token surfaces as a clear 401 instead of leaking a stale value.
 
-The pre-request script picks the admin slot when the request path contains `/auth/admin/`, otherwise the customer slot. You don't have to do anything — just keep the credentials populated.
+The pre-request script picks the admin slot when the request path contains `/auth/admin/` or any `/admin/` segment; otherwise the customer slot. You don't have to do anything — just keep the credentials populated.
+
+> **Need to logout?** Run `Auth → Reset tokens (test helper)` to clear every cached slot. Useful when switching roles back-to-back (customer → admin → customer) to make sure each step really refetches.
 
 ## One-time setup
 

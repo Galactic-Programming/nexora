@@ -40,12 +40,15 @@ CI chạy `pnpm postman:check` — sẽ fail khi file generated khác với sour
 
 Collection có **pre-request script ở cấp collection** tự gọi Supabase `signInWithPassword` và lưu `access_token` vào environment đang active. Mỗi request bảo mật kế thừa Bearer auth ở cấp collection, đọc biến `{{accessToken}}`.
 
-Có 2 slot token được duy trì:
+Có 2 slot token theo vai trò + 1 slot generic Bearer dùng:
 
-- `accessToken` / `accessTokenExpiresAt` — refresh từ `userEmail` + `userPassword`
+- `customerAccessToken` / `customerAccessTokenExpiresAt` — refresh từ `userEmail` + `userPassword`
 - `adminAccessToken` / `adminAccessTokenExpiresAt` — refresh từ `adminEmail` + `adminPassword`
+- `accessToken` — slot generic mà `{{accessToken}}` ở collection-level Bearer auth resolve về. Mỗi lần chạy, script ghi đè bằng token thuộc slot vai trò khớp với path, đồng thời clear ngay đầu script để nếu fetch thất bại thì request gửi Bearer rỗng → backend trả 401 rõ ràng, không silently dùng token cũ.
 
-Script chọn slot admin khi path chứa `/auth/admin/`, ngược lại chọn slot customer. Bạn không cần làm gì thêm — chỉ cần điền credentials.
+Script chọn slot admin khi path chứa `/auth/admin/` hoặc bất kỳ segment `/admin/`; ngược lại chọn slot customer. Bạn không cần làm gì thêm — chỉ cần điền credentials.
+
+> **Cần "logout"?** Chạy `Auth → Reset tokens (test helper)` để xóa toàn bộ slot cache. Hữu ích khi cần test xoay vai trò liên tiếp (customer → admin → customer) để đảm bảo mỗi bước thực sự fetch lại token mới.
 
 ## Cài đặt một lần
 
