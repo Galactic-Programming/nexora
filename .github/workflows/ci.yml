@@ -75,3 +75,9 @@ jobs:
         run: |
           node -e "JSON.parse(require('fs').readFileSync('docs/postman/tourism-api.json','utf8')); console.log('postman collection: ok');"
           node -e "JSON.parse(require('fs').readFileSync('docs/postman/environments/local.postman_environment.json','utf8')); console.log('local env: ok');"
+
+      - name: Postman collection is up to date
+        # Fails when someone hand-edits `tourism-api.json` instead of editing
+        # the split sources in `docs/postman/src/folders/` and running
+        # `pnpm postman:build`. Keeps the generated file in lockstep with src.
+        run: pnpm postman:check

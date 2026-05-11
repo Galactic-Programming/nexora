@@ -1,0 +1,113 @@
+{
+  "name": "Users",
+  "description": "Profile of the JWT-bearing user. Both routes require `/auth/sync` to have been called at least once.",
+  "item": [
+    {
+      "name": "GET /users/me",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] },
+        "description": "Return the local DB profile for the JWT-bearing user.\n\n**Auth:** Bearer Supabase JWT."
+      },
+      "response": [
+        {
+          "name": "200 OK",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"data\": {\n    \"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n    \"email\": \"customer@example.com\",\n    \"fullName\": \"Customer Test\",\n    \"phone\": \"+84901234567\",\n    \"locale\": \"en\",\n    \"role\": \"CUSTOMER\"\n  },\n  \"error\": null\n}"
+        },
+        {
+          "name": "401 — not synced",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] }
+          },
+          "status": "Unauthorized",
+          "code": 401,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"USER_NOT_SYNCED\", \"message\": \"Authenticated but local user record missing — call POST /auth/sync\" }\n}"
+        }
+      ],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('returns profile fields', () => {",
+              "  pm.expect(body.data).to.have.all.keys('id','supabaseId','email','fullName','phone','locale','role','createdAt','updatedAt');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "PATCH /users/me",
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Updated Name\",\n  \"phone\": \"+84909999999\",\n  \"locale\": \"vi\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] },
+        "description": "Partial update of the current user's profile. Only `fullName`, `phone`, and `locale` are mutable here. Email/role can only be changed by Supabase or admin tooling."
+      },
+      "response": [
+        {
+          "name": "200 OK",
+          "originalRequest": {
+            "method": "PATCH",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"data\": {\n    \"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n    \"email\": \"customer@example.com\",\n    \"fullName\": \"Updated Name\",\n    \"phone\": \"+84909999999\",\n    \"locale\": \"vi\",\n    \"role\": \"CUSTOMER\"\n  },\n  \"error\": null\n}"
+        },
+        {
+          "name": "400 — invalid payload",
+          "originalRequest": {
+            "method": "PATCH",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] }
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"BAD_REQUEST\", \"message\": \"locale must be one of the following values: en, vi\" }\n}"
+        }
+      ],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('locale updated to vi', () => pm.expect(body.data.locale).to.eql('vi'));",
+              "pm.test('fullName updated', () => pm.expect(body.data.fullName).to.eql('Updated Name'));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

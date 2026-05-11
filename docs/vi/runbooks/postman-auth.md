@@ -4,6 +4,38 @@
 
 Cách Postman collection xác thực với API.
 
+## Cấu trúc collection (chỗ cần edit)
+
+`docs/postman/tourism-api.json` là file **GENERATED**. Không edit trực tiếp.
+
+```text
+docs/postman/
+├── src/
+│   ├── collection.base.json        ← info + auth + pre-request collection-level
+│   ├── build.mjs                   ← merger (Node script không cần dep)
+│   └── folders/
+│       ├── 01-health.json
+│       ├── 02-auth.json
+│       ├── 03-users.json
+│       ├── 04-destinations-public.json
+│       ├── 05-destinations-admin.json
+│       └── 06-tours-admin.json
+├── tourism-api.json                ← file được generate; Postman/Newman import file này
+└── environments/
+    └── local.postman_environment.json
+```
+
+Workflow khi thêm/sửa endpoint:
+
+1. Edit (hoặc thêm) file trong `src/folders/`.
+2. Nếu thêm folder mới, khai báo trong `collection.base.json` → `folders`.
+3. Chạy `pnpm postman:build` → regenerate `tourism-api.json`.
+4. Commit cả source change LẪN file generated.
+
+CI chạy `pnpm postman:check` — sẽ fail khi file generated khác với source. Nhờ vậy không thể vô tình hand-edit `tourism-api.json` mà quên cập nhật source.
+
+> **Mẹo — edit trong Postman GUI:** Postman GUI không hiểu cấu trúc split. Nếu thích edit trong GUI thì edit trên `tourism-api.json`, export overwrite file đó, rồi sync ngược diff về `src/folders/*.json`. Đa số case, edit trực tiếp source JSON nhanh hơn.
+
 ## Tóm tắt nhanh
 
 Collection có **pre-request script ở cấp collection** tự gọi Supabase `signInWithPassword` và lưu `access_token` vào environment đang active. Mỗi request bảo mật kế thừa Bearer auth ở cấp collection, đọc biến `{{accessToken}}`.

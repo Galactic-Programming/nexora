@@ -1,0 +1,116 @@
+{
+  "name": "Destinations (Public)",
+  "description": "Read-only catalog browsing. Public — no auth required.",
+  "item": [
+    {
+      "name": "GET /destinations (list)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/destinations?page=1&pageSize=20&sortBy=createdAt&sortOrder=desc",
+          "host": ["{{baseUrl}}"],
+          "path": ["destinations"],
+          "query": [
+            { "key": "page", "value": "1" },
+            { "key": "pageSize", "value": "20" },
+            { "key": "sortBy", "value": "createdAt" },
+            { "key": "sortOrder", "value": "desc" },
+            { "key": "search", "value": "", "disabled": true }
+          ]
+        },
+        "description": "Paginated list of ACTIVE destinations. Filters: `search` (name_en/name_vi, case-insensitive), `sortBy` (createdAt|updatedAt|nameEn|nameVi), `sortOrder` (asc|desc)."
+      },
+      "response": [
+        {
+          "name": "200 OK",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/destinations", "host": ["{{baseUrl}}"], "path": ["destinations"] }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"data\": [\n    {\n      \"id\": \"...\",\n      \"slug\": \"hoi-an\",\n      \"nameEn\": \"Hoi An\",\n      \"nameVi\": \"Hội An\",\n      \"country\": \"Vietnam\",\n      \"isActive\": true\n    }\n  ],\n  \"error\": null,\n  \"meta\": { \"page\": 1, \"pageSize\": 20, \"total\": 1, \"totalPages\": 1 }\n}"
+        }
+      ],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('envelope shape with data array', () => {",
+              "  pm.expect(body.data).to.be.an('array');",
+              "  pm.expect(body.error).to.be.null;",
+              "});",
+              "pm.test('meta has pagination fields', () => {",
+              "  pm.expect(body.meta).to.have.all.keys('page','pageSize','total','totalPages');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET /destinations/:slug (detail)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/destinations/{{destinationSlug}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["destinations", "{{destinationSlug}}"]
+        },
+        "description": "Public detail by slug. Returns 404 when slug is missing OR inactive."
+      },
+      "response": [
+        {
+          "name": "200 OK",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/destinations/hoi-an", "host": ["{{baseUrl}}"], "path": ["destinations", "hoi-an"] }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"data\": { \"slug\": \"hoi-an\", \"nameEn\": \"Hoi An\", \"isActive\": true },\n  \"error\": null\n}"
+        },
+        {
+          "name": "404 Not Found",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/destinations/missing", "host": ["{{baseUrl}}"], "path": ["destinations", "missing"] }
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"DESTINATION_NOT_FOUND\", \"message\": \"Destination \\\"missing\\\" not found\" }\n}"
+        }
+      ],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200 or 404', () => pm.expect([200, 404]).to.include(pm.response.code));",
+              "const body = pm.response.json();",
+              "if (pm.response.code === 200) {",
+              "  pm.test('returns destination row', () => pm.expect(body.data).to.have.property('slug'));",
+              "}"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

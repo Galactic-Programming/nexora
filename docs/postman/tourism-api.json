@@ -2,12 +2,18 @@
   "info": {
     "_postman_id": "b1f5a000-0000-4000-a000-000000000001",
     "name": "Tourism API",
-    "description": "REST API for the tourism booking platform.\n\nWorkflow rule: this collection MUST be updated together with every new endpoint. See `docs/roadmap.md` for the per-feature checklist.\n\nFolders:\n- Health (Sprint B0)\n- Auth (Sprint B1)\n- Users (Sprint B1)\n- Destinations (Public + Admin) (Sprint B2.1)",
+    "description": "REST API for the tourism booking platform.\n\nThis collection is GENERATED. Do NOT edit `docs/postman/tourism-api.json` directly — edit the source files in `docs/postman/src/` and run `pnpm postman:build` instead. See `docs/en/runbooks/postman-auth.md` for the build workflow.\n\nFolder source files live in `docs/postman/src/folders/` (one file per top-level folder). The build script merges them in the order listed by `folders` below.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
     "type": "bearer",
-    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
   },
   "event": [
     {
@@ -85,7 +91,15 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] },
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
             "description": "Returns 200 if the process is alive. Does NOT touch the database."
           },
           "response": [
@@ -94,12 +108,25 @@
               "originalRequest": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "health"
+                  ]
+                }
               },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"data\": { \"status\": \"ok\", \"uptime\": 12.345, \"timestamp\": \"2026-05-07T01:00:00.000Z\" },\n  \"error\": null\n}"
             }
           ],
@@ -127,7 +154,16 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/health/ready", "host": ["{{baseUrl}}"], "path": ["health", "ready"] },
+            "url": {
+              "raw": "{{baseUrl}}/health/ready",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health",
+                "ready"
+              ]
+            },
             "description": "DB connectivity check. `data.checks.database` is `up` or `down`."
           },
           "response": [
@@ -136,12 +172,26 @@
               "originalRequest": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/health/ready", "host": ["{{baseUrl}}"], "path": ["health", "ready"] }
+                "url": {
+                  "raw": "{{baseUrl}}/health/ready",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "health",
+                    "ready"
+                  ]
+                }
               },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"data\": { \"status\": \"ok\", \"checks\": { \"database\": \"up\" }, \"timestamp\": \"2026-05-07T01:00:00.000Z\" },\n  \"error\": null\n}"
             }
           ],
@@ -169,12 +219,26 @@
           "name": "POST /auth/sync (customer)",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"fullName\": \"Customer Test\",\n  \"phone\": \"+84901234567\",\n  \"locale\": \"en\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/auth/sync", "host": ["{{baseUrl}}"], "path": ["auth", "sync"] },
+            "url": {
+              "raw": "{{baseUrl}}/auth/sync",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "sync"
+              ]
+            },
             "description": "Upsert the JWT-bearing user as CUSTOMER. Body is optional — sub & email always come from the verified JWT.\n\n**Auth:** Bearer Supabase JWT (auto-refreshed by collection pre-request)."
           },
           "response": [
@@ -182,14 +246,36 @@
               "name": "200 OK",
               "originalRequest": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
-                "body": { "mode": "raw", "raw": "{\"locale\":\"en\"}" },
-                "url": { "raw": "{{baseUrl}}/auth/sync", "host": ["{{baseUrl}}"], "path": ["auth", "sync"] }
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"locale\":\"en\"}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/sync",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "sync"
+                  ]
+                }
               },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"data\": {\n    \"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n    \"supabaseId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n    \"email\": \"customer@example.com\",\n    \"fullName\": \"Customer Test\",\n    \"phone\": \"+84901234567\",\n    \"locale\": \"en\",\n    \"role\": \"CUSTOMER\",\n    \"createdAt\": \"2026-05-07T03:10:00.000Z\",\n    \"updatedAt\": \"2026-05-07T03:10:00.000Z\"\n  },\n  \"error\": null\n}"
             },
             {
@@ -197,12 +283,26 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/auth/sync", "host": ["{{baseUrl}}"], "path": ["auth", "sync"] }
+                "url": {
+                  "raw": "{{baseUrl}}/auth/sync",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "sync"
+                  ]
+                }
               },
               "status": "Unauthorized",
               "code": 401,
               "_postman_previewlanguage": "json",
-              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"UNAUTHORIZED\", \"message\": \"Missing or malformed Authorization header\" }\n}"
             }
           ],
@@ -233,9 +333,27 @@
           "name": "POST /auth/admin/sync",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"fullName\": \"Admin Test\",\n  \"locale\": \"en\"\n}" },
-            "url": { "raw": "{{baseUrl}}/auth/admin/sync", "host": ["{{baseUrl}}"], "path": ["auth", "admin", "sync"] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Admin Test\",\n  \"locale\": \"en\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/admin/sync",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "admin",
+                "sync"
+              ]
+            },
             "description": "Upsert the JWT-bearing user as ADMIN. Caller email MUST be on the `ADMIN_EMAILS` allowlist or the request returns 403.\n\n**Auth:** Bearer Supabase JWT (uses adminEmail/adminPassword from environment)."
           },
           "response": [
@@ -244,12 +362,27 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/auth/admin/sync", "host": ["{{baseUrl}}"], "path": ["auth", "admin", "sync"] }
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/sync",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "sync"
+                  ]
+                }
               },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"data\": {\n    \"id\": \"d290f1ee-6c54-4b01-90e6-d701748f0851\",\n    \"email\": \"admin@example.com\",\n    \"role\": \"ADMIN\",\n    \"locale\": \"en\"\n  },\n  \"error\": null\n}"
             },
             {
@@ -257,12 +390,27 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/auth/admin/sync", "host": ["{{baseUrl}}"], "path": ["auth", "admin", "sync"] }
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/sync",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "admin",
+                    "sync"
+                  ]
+                }
               },
               "status": "Forbidden",
               "code": 403,
               "_postman_previewlanguage": "json",
-              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"NOT_ADMIN\", \"message\": \"This email is not on the admin allowlist\" }\n}"
             }
           ],
@@ -300,7 +448,16 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] },
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            },
             "description": "Return the local DB profile for the JWT-bearing user.\n\n**Auth:** Bearer Supabase JWT."
           },
           "response": [
@@ -309,12 +466,26 @@
               "originalRequest": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] }
+                "url": {
+                  "raw": "{{baseUrl}}/users/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me"
+                  ]
+                }
               },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"data\": {\n    \"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n    \"email\": \"customer@example.com\",\n    \"fullName\": \"Customer Test\",\n    \"phone\": \"+84901234567\",\n    \"locale\": \"en\",\n    \"role\": \"CUSTOMER\"\n  },\n  \"error\": null\n}"
             },
             {
@@ -322,12 +493,26 @@
               "originalRequest": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] }
+                "url": {
+                  "raw": "{{baseUrl}}/users/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me"
+                  ]
+                }
               },
               "status": "Unauthorized",
               "code": 401,
               "_postman_previewlanguage": "json",
-              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"USER_NOT_SYNCED\", \"message\": \"Authenticated but local user record missing — call POST /auth/sync\" }\n}"
             }
           ],
@@ -351,12 +536,26 @@
           "name": "PATCH /users/me",
           "request": {
             "method": "PATCH",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"fullName\": \"Updated Name\",\n  \"phone\": \"+84909999999\",\n  \"locale\": \"vi\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] },
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            },
             "description": "Partial update of the current user's profile. Only `fullName`, `phone`, and `locale` are mutable here. Email/role can only be changed by Supabase or admin tooling."
           },
           "response": [
@@ -365,12 +564,26 @@
               "originalRequest": {
                 "method": "PATCH",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] }
+                "url": {
+                  "raw": "{{baseUrl}}/users/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me"
+                  ]
+                }
               },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"data\": {\n    \"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n    \"email\": \"customer@example.com\",\n    \"fullName\": \"Updated Name\",\n    \"phone\": \"+84909999999\",\n    \"locale\": \"vi\",\n    \"role\": \"CUSTOMER\"\n  },\n  \"error\": null\n}"
             },
             {
@@ -378,12 +591,26 @@
               "originalRequest": {
                 "method": "PATCH",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"] }
+                "url": {
+                  "raw": "{{baseUrl}}/users/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me"
+                  ]
+                }
               },
               "status": "Bad Request",
               "code": 400,
               "_postman_previewlanguage": "json",
-              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"BAD_REQUEST\", \"message\": \"locale must be one of the following values: en, vi\" }\n}"
             }
           ],
@@ -415,14 +642,34 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/destinations?page=1&pageSize=20&sortBy=createdAt&sortOrder=desc",
-              "host": ["{{baseUrl}}"],
-              "path": ["destinations"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "destinations"
+              ],
               "query": [
-                { "key": "page", "value": "1" },
-                { "key": "pageSize", "value": "20" },
-                { "key": "sortBy", "value": "createdAt" },
-                { "key": "sortOrder", "value": "desc" },
-                { "key": "search", "value": "", "disabled": true }
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "20"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "createdAt"
+                },
+                {
+                  "key": "sortOrder",
+                  "value": "desc"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                }
               ]
             },
             "description": "Paginated list of ACTIVE destinations. Filters: `search` (name_en/name_vi, case-insensitive), `sortBy` (createdAt|updatedAt|nameEn|nameVi), `sortOrder` (asc|desc)."
@@ -433,12 +680,25 @@
               "originalRequest": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/destinations", "host": ["{{baseUrl}}"], "path": ["destinations"] }
+                "url": {
+                  "raw": "{{baseUrl}}/destinations",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "destinations"
+                  ]
+                }
               },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"data\": [\n    {\n      \"id\": \"...\",\n      \"slug\": \"hoi-an\",\n      \"nameEn\": \"Hoi An\",\n      \"nameVi\": \"Hội An\",\n      \"country\": \"Vietnam\",\n      \"isActive\": true\n    }\n  ],\n  \"error\": null,\n  \"meta\": { \"page\": 1, \"pageSize\": 20, \"total\": 1, \"totalPages\": 1 }\n}"
             }
           ],
@@ -469,8 +729,13 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/destinations/{{destinationSlug}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["destinations", "{{destinationSlug}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "destinations",
+                "{{destinationSlug}}"
+              ]
             },
             "description": "Public detail by slug. Returns 404 when slug is missing OR inactive."
           },
@@ -480,12 +745,26 @@
               "originalRequest": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/destinations/hoi-an", "host": ["{{baseUrl}}"], "path": ["destinations", "hoi-an"] }
+                "url": {
+                  "raw": "{{baseUrl}}/destinations/hoi-an",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "destinations",
+                    "hoi-an"
+                  ]
+                }
               },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"data\": { \"slug\": \"hoi-an\", \"nameEn\": \"Hoi An\", \"isActive\": true },\n  \"error\": null\n}"
             },
             {
@@ -493,12 +772,26 @@
               "originalRequest": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/destinations/missing", "host": ["{{baseUrl}}"], "path": ["destinations", "missing"] }
+                "url": {
+                  "raw": "{{baseUrl}}/destinations/missing",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "destinations",
+                    "missing"
+                  ]
+                }
               },
               "status": "Not Found",
               "code": 404,
               "_postman_previewlanguage": "json",
-              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"DESTINATION_NOT_FOUND\", \"message\": \"Destination \\\"missing\\\" not found\" }\n}"
             }
           ],
@@ -528,12 +821,26 @@
           "name": "POST /admin/destinations (create)",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"slug\": \"{{destinationSlug}}\",\n  \"nameEn\": \"Hoi An\",\n  \"nameVi\": \"Hội An\",\n  \"country\": \"Vietnam\",\n  \"region\": \"Central Vietnam\",\n  \"descriptionEn\": \"Ancient port town in Central Vietnam.\",\n  \"descriptionVi\": \"Phố cổ ven sông ở miền Trung Việt Nam.\",\n  \"isActive\": true\n}"
             },
-            "url": { "raw": "{{baseUrl}}/admin/destinations", "host": ["{{baseUrl}}"], "path": ["admin", "destinations"] },
+            "url": {
+              "raw": "{{baseUrl}}/admin/destinations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "destinations"
+              ]
+            },
             "description": "Creates a destination. 409 on duplicate slug."
           },
           "response": [
@@ -542,12 +849,26 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/admin/destinations", "host": ["{{baseUrl}}"], "path": ["admin", "destinations"] }
+                "url": {
+                  "raw": "{{baseUrl}}/admin/destinations",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "destinations"
+                  ]
+                }
               },
               "status": "Created",
               "code": 201,
               "_postman_previewlanguage": "json",
-              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"data\": { \"id\": \"...\", \"slug\": \"hoi-an\", \"nameEn\": \"Hoi An\", \"nameVi\": \"Hội An\", \"isActive\": true },\n  \"error\": null\n}"
             },
             {
@@ -555,12 +876,26 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/admin/destinations", "host": ["{{baseUrl}}"], "path": ["admin", "destinations"] }
+                "url": {
+                  "raw": "{{baseUrl}}/admin/destinations",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "destinations"
+                  ]
+                }
               },
               "status": "Conflict",
               "code": 409,
               "_postman_previewlanguage": "json",
-              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"DESTINATION_SLUG_EXISTS\", \"message\": \"Slug \\\"hoi-an\\\" is already in use\" }\n}"
             }
           ],
@@ -597,12 +932,27 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/admin/destinations?page=1&pageSize=50",
-              "host": ["{{baseUrl}}"],
-              "path": ["admin", "destinations"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "destinations"
+              ],
               "query": [
-                { "key": "page", "value": "1" },
-                { "key": "pageSize", "value": "50" },
-                { "key": "isActive", "value": "false", "disabled": true }
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "50"
+                },
+                {
+                  "key": "isActive",
+                  "value": "false",
+                  "disabled": true
+                }
               ]
             },
             "description": "Admin list — sees inactive drafts. `isActive` filter is honoured here (it is force-overridden to true in the public endpoint)."
@@ -629,15 +979,26 @@
           "name": "PATCH /admin/destinations/:slug (update)",
           "request": {
             "method": "PATCH",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"region\": \"Quang Nam\",\n  \"descriptionEn\": \"Updated description.\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/admin/destinations/{{destinationSlug}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["admin", "destinations", "{{destinationSlug}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "destinations",
+                "{{destinationSlug}}"
+              ]
             },
             "description": "Partial update. Renaming via `slug` works but breaks external bookmarks — use with care."
           },
@@ -663,8 +1024,14 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/admin/destinations/{{destinationSlug}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["admin", "destinations", "{{destinationSlug}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "destinations",
+                "{{destinationSlug}}"
+              ]
             },
             "description": "Hard delete. Returns 409 if any tour still references this destination."
           },
@@ -753,12 +1120,26 @@
           "name": "POST /admin/tours (create)",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"slug\": \"{{tourSlug}}\",\n  \"titleEn\": \"Hoi An Walking Tour\",\n  \"titleVi\": \"Tour bộ Hội An\",\n  \"summaryEn\": \"Half-day walking tour through the Ancient Town.\",\n  \"summaryVi\": \"Tour bộ nửa ngày qua phố cổ.\",\n  \"destinationId\": \"{{destinationId}}\",\n  \"durationDays\": 1,\n  \"maxGroupSize\": 15,\n  \"basePrice\": 49.5,\n  \"currency\": \"USD\",\n  \"category\": \"DAY\",\n  \"difficulty\": \"easy\",\n  \"isPublished\": false,\n  \"included\": [\"Local guide\", \"Bottled water\"],\n  \"excluded\": [\"Personal expenses\"]\n}"
             },
-            "url": { "raw": "{{baseUrl}}/admin/tours", "host": ["{{baseUrl}}"], "path": ["admin", "tours"] },
+            "url": {
+              "raw": "{{baseUrl}}/admin/tours",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "tours"
+              ]
+            },
             "description": "Creates a tour. Returns 400 INVALID_DESTINATION when `destinationId` doesn't exist; 409 TOUR_SLUG_EXISTS on duplicate slug."
           },
           "response": [
@@ -767,12 +1148,26 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/admin/tours", "host": ["{{baseUrl}}"], "path": ["admin", "tours"] }
+                "url": {
+                  "raw": "{{baseUrl}}/admin/tours",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "tours"
+                  ]
+                }
               },
               "status": "Created",
               "code": 201,
               "_postman_previewlanguage": "json",
-              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"data\": {\n    \"id\": \"...\",\n    \"slug\": \"hoi-an-walking-tour\",\n    \"titleEn\": \"Hoi An Walking Tour\",\n    \"basePrice\": \"49.50\",\n    \"currency\": \"USD\",\n    \"isPublished\": false,\n    \"destination\": { \"slug\": \"hoi-an\" }\n  },\n  \"error\": null\n}"
             },
             {
@@ -780,12 +1175,26 @@
               "originalRequest": {
                 "method": "POST",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/admin/tours", "host": ["{{baseUrl}}"], "path": ["admin", "tours"] }
+                "url": {
+                  "raw": "{{baseUrl}}/admin/tours",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "tours"
+                  ]
+                }
               },
               "status": "Bad Request",
               "code": 400,
               "_postman_previewlanguage": "json",
-              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
               "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"INVALID_DESTINATION\", \"message\": \"Destination ... does not exist\" }\n}"
             }
           ],
@@ -819,8 +1228,14 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/admin/tours/{{tourSlug}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["admin", "tours", "{{tourSlug}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "tours",
+                "{{tourSlug}}"
+              ]
             },
             "description": "Admin detail. Returns the tour with `destination` joined. 404 when slug missing."
           },
@@ -843,15 +1258,26 @@
           "name": "PATCH /admin/tours/:slug",
           "request": {
             "method": "PATCH",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"isPublished\": true,\n  \"isFeatured\": true,\n  \"basePrice\": 59.99\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/admin/tours/{{tourSlug}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["admin", "tours", "{{tourSlug}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "tours",
+                "{{tourSlug}}"
+              ]
             },
             "description": "Partial update. Sending `destinationId` re-validates the FK; sending `slug` may break external bookmarks."
           },
@@ -881,8 +1307,14 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/admin/tours/{{tourSlug}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["admin", "tours", "{{tourSlug}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "tours",
+                "{{tourSlug}}"
+              ]
             },
             "description": "Hard delete. Returns 409 TOUR_HAS_BOOKINGS when bookings still reference the tour."
           },

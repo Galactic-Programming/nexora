@@ -1,0 +1,218 @@
+{
+  "name": "Tours (Admin)",
+  "description": "Admin-only CRUD on the Tour entity. Public list/detail are added in Sprint B2.3, itinerary nested CRUD in B2.4. All requests require an ADMIN JWT (auto-selected by the collection pre-request script when path matches `/admin/*`).\n\nThe folder-level pre-request script ensures `{{destinationId}}` is populated by upserting a fresh destination — keeps the folder runnable on its own (e.g. via Newman) even if the Destinations folder cleanup ran first.",
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Always re-resolve destinationId via the seed-destination slug so",
+          "// stale ids (e.g. when the previous Destinations folder DELETE'd the",
+          "// row) get refreshed automatically.",
+          "const baseUrl = pm.environment.get('baseUrl');",
+          "const adminToken = pm.environment.get('adminAccessToken');",
+          "const slug = pm.environment.get('tourSeedDestinationSlug') || 'tour-seed-dest';",
+          "",
+          "if (!baseUrl || !adminToken) {",
+          "  console.warn('[tours] cannot seed destination — baseUrl/adminToken missing');",
+          "  return;",
+          "}",
+          "",
+          "function tryGet(cb) {",
+          "  pm.sendRequest({",
+          "    url: baseUrl + '/admin/destinations/' + slug,",
+          "    method: 'GET',",
+          "    header: { 'Authorization': 'Bearer ' + adminToken }",
+          "  }, (err, res) => {",
+          "    if (!err && res && res.code === 200) {",
+          "      const j = res.json();",
+          "      if (j && j.data && j.data.id) {",
+          "        pm.environment.set('destinationId', j.data.id);",
+          "        return cb(true);",
+          "      }",
+          "    }",
+          "    cb(false);",
+          "  });",
+          "}",
+          "function create(cb) {",
+          "  pm.sendRequest({",
+          "    url: baseUrl + '/admin/destinations',",
+          "    method: 'POST',",
+          "    header: {",
+          "      'Authorization': 'Bearer ' + adminToken,",
+          "      'Content-Type': 'application/json'",
+          "    },",
+          "    body: { mode: 'raw', raw: JSON.stringify({ slug: slug, nameEn: 'Tour Seed Dest', nameVi: 'Tour Seed Dest' }) }",
+          "  }, (err, res) => {",
+          "    if (!err && res && res.json) {",
+          "      const j = res.json();",
+          "      if (j && j.data && j.data.id) pm.environment.set('destinationId', j.data.id);",
+          "    }",
+          "    cb();",
+          "  });",
+          "}",
+          "tryGet((found) => { if (!found) create(() => {}); });"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "POST /admin/tours (create)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"slug\": \"{{tourSlug}}\",\n  \"titleEn\": \"Hoi An Walking Tour\",\n  \"titleVi\": \"Tour bộ Hội An\",\n  \"summaryEn\": \"Half-day walking tour through the Ancient Town.\",\n  \"summaryVi\": \"Tour bộ nửa ngày qua phố cổ.\",\n  \"destinationId\": \"{{destinationId}}\",\n  \"durationDays\": 1,\n  \"maxGroupSize\": 15,\n  \"basePrice\": 49.5,\n  \"currency\": \"USD\",\n  \"category\": \"DAY\",\n  \"difficulty\": \"easy\",\n  \"isPublished\": false,\n  \"included\": [\"Local guide\", \"Bottled water\"],\n  \"excluded\": [\"Personal expenses\"]\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/admin/tours", "host": ["{{baseUrl}}"], "path": ["admin", "tours"] },
+        "description": "Creates a tour. Returns 400 INVALID_DESTINATION when `destinationId` doesn't exist; 409 TOUR_SLUG_EXISTS on duplicate slug."
+      },
+      "response": [
+        {
+          "name": "201 Created",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/admin/tours", "host": ["{{baseUrl}}"], "path": ["admin", "tours"] }
+          },
+          "status": "Created",
+          "code": 201,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"data\": {\n    \"id\": \"...\",\n    \"slug\": \"hoi-an-walking-tour\",\n    \"titleEn\": \"Hoi An Walking Tour\",\n    \"basePrice\": \"49.50\",\n    \"currency\": \"USD\",\n    \"isPublished\": false,\n    \"destination\": { \"slug\": \"hoi-an\" }\n  },\n  \"error\": null\n}"
+        },
+        {
+          "name": "400 INVALID_DESTINATION",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/admin/tours", "host": ["{{baseUrl}}"], "path": ["admin", "tours"] }
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"INVALID_DESTINATION\", \"message\": \"Destination ... does not exist\" }\n}"
+        }
+      ],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 201 or 409', () => pm.expect([201, 409]).to.include(pm.response.code));",
+              "const body = pm.response.json();",
+              "if (pm.response.code === 201) {",
+              "  pm.test('returns tour with destination joined', () => {",
+              "    pm.expect(body.data.slug).to.be.a('string');",
+              "    pm.expect(body.data.destination).to.be.an('object');",
+              "    pm.expect(body.data.currency).to.eql('USD');",
+              "    pm.expect(body.data.isPublished).to.eql(false);",
+              "  });",
+              "} else {",
+              "  pm.test('conflict code is TOUR_SLUG_EXISTS', () => pm.expect(body.error.code).to.eql('TOUR_SLUG_EXISTS'));",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET /admin/tours/:slug",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/admin/tours/{{tourSlug}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "tours", "{{tourSlug}}"]
+        },
+        "description": "Admin detail. Returns the tour with `destination` joined. 404 when slug missing."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('has destination relation', () => pm.expect(body.data.destination).to.be.an('object'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "PATCH /admin/tours/:slug",
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"isPublished\": true,\n  \"isFeatured\": true,\n  \"basePrice\": 59.99\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/admin/tours/{{tourSlug}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "tours", "{{tourSlug}}"]
+        },
+        "description": "Partial update. Sending `destinationId` re-validates the FK; sending `slug` may break external bookmarks."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('flags toggled', () => {",
+              "  pm.expect(body.data.isPublished).to.eql(true);",
+              "  pm.expect(body.data.isFeatured).to.eql(true);",
+              "});",
+              "pm.test('basePrice updated', () => pm.expect(parseFloat(body.data.basePrice)).to.eql(59.99));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "DELETE /admin/tours/:slug",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/admin/tours/{{tourSlug}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "tours", "{{tourSlug}}"]
+        },
+        "description": "Hard delete. Returns 409 TOUR_HAS_BOOKINGS when bookings still reference the tour."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200 or 409', () => pm.expect([200, 409]).to.include(pm.response.code));",
+              "const body = pm.response.json();",
+              "if (pm.response.code === 200) {",
+              "  pm.test('echoes deleted slug', () => pm.expect(body.data.slug).to.be.a('string'));",
+              "} else {",
+              "  pm.test('conflict code is TOUR_HAS_BOOKINGS', () => pm.expect(body.error.code).to.eql('TOUR_HAS_BOOKINGS'));",
+              "}"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

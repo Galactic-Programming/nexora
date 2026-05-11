@@ -1,0 +1,85 @@
+{
+  "name": "Health",
+  "description": "Liveness + readiness probes. Public — no auth.",
+  "item": [
+    {
+      "name": "GET /health (liveness)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] },
+        "description": "Returns 200 if the process is alive. Does NOT touch the database."
+      },
+      "response": [
+        {
+          "name": "200 OK",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"data\": { \"status\": \"ok\", \"uptime\": 12.345, \"timestamp\": \"2026-05-07T01:00:00.000Z\" },\n  \"error\": null\n}"
+        }
+      ],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('envelope shape', () => {",
+              "  pm.expect(body).to.have.property('data');",
+              "  pm.expect(body).to.have.property('error');",
+              "  pm.expect(body.error).to.be.null;",
+              "});",
+              "pm.test('status field is ok', () => pm.expect(body.data.status).to.eql('ok'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET /health/ready (readiness)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/health/ready", "host": ["{{baseUrl}}"], "path": ["health", "ready"] },
+        "description": "DB connectivity check. `data.checks.database` is `up` or `down`."
+      },
+      "response": [
+        {
+          "name": "200 OK — DB up",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/health/ready", "host": ["{{baseUrl}}"], "path": ["health", "ready"] }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"data\": { \"status\": \"ok\", \"checks\": { \"database\": \"up\" }, \"timestamp\": \"2026-05-07T01:00:00.000Z\" },\n  \"error\": null\n}"
+        }
+      ],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('has database check', () => pm.expect(body.data.checks).to.have.property('database'));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

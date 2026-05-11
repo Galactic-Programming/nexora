@@ -4,6 +4,38 @@
 
 How the Postman collection authenticates against this API.
 
+## Collection structure (where to edit)
+
+`docs/postman/tourism-api.json` is **GENERATED**. Do not edit it directly.
+
+```text
+docs/postman/
+├── src/
+│   ├── collection.base.json        ← info + auth + collection-level pre-request
+│   ├── build.mjs                   ← merger (zero-deps Node script)
+│   └── folders/
+│       ├── 01-health.json
+│       ├── 02-auth.json
+│       ├── 03-users.json
+│       ├── 04-destinations-public.json
+│       ├── 05-destinations-admin.json
+│       └── 06-tours-admin.json
+├── tourism-api.json                ← generated; this is what Postman/Newman import
+└── environments/
+    └── local.postman_environment.json
+```
+
+Workflow when adding/changing endpoints:
+
+1. Edit (or add) a file under `src/folders/`.
+2. If you added a new folder file, list it in `collection.base.json` → `folders`.
+3. Run `pnpm postman:build` → regenerates `tourism-api.json`.
+4. Commit both the source change AND the regenerated JSON.
+
+CI runs `pnpm postman:check` which fails if the generated file drifts from the sources. So you can't accidentally hand-edit `tourism-api.json` and forget to update the sources.
+
+> **Tip — editing in the Postman GUI:** Postman's UI knows nothing about our split. If you prefer editing in the GUI, do it on `tourism-api.json`, then export from Postman to overwrite the file, then manually sync the diff back into the relevant `src/folders/*.json`. For most changes, editing the source JSON directly is faster.
+
 ## TL;DR
 
 The collection has a **collection-level pre-request script** that calls Supabase `signInWithPassword` and stores the resulting `access_token` in the active environment. Every protected request inherits collection-level Bearer auth that reads `{{accessToken}}`.

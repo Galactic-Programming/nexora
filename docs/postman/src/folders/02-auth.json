@@ -1,0 +1,130 @@
+{
+  "name": "Auth",
+  "description": "First-time user sync from Supabase JWT. Both endpoints are idempotent — safe to call on every login.",
+  "item": [
+    {
+      "name": "POST /auth/sync (customer)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Customer Test\",\n  \"phone\": \"+84901234567\",\n  \"locale\": \"en\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/auth/sync", "host": ["{{baseUrl}}"], "path": ["auth", "sync"] },
+        "description": "Upsert the JWT-bearing user as CUSTOMER. Body is optional — sub & email always come from the verified JWT.\n\n**Auth:** Bearer Supabase JWT (auto-refreshed by collection pre-request)."
+      },
+      "response": [
+        {
+          "name": "200 OK",
+          "originalRequest": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\"locale\":\"en\"}" },
+            "url": { "raw": "{{baseUrl}}/auth/sync", "host": ["{{baseUrl}}"], "path": ["auth", "sync"] }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"data\": {\n    \"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n    \"supabaseId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n    \"email\": \"customer@example.com\",\n    \"fullName\": \"Customer Test\",\n    \"phone\": \"+84901234567\",\n    \"locale\": \"en\",\n    \"role\": \"CUSTOMER\",\n    \"createdAt\": \"2026-05-07T03:10:00.000Z\",\n    \"updatedAt\": \"2026-05-07T03:10:00.000Z\"\n  },\n  \"error\": null\n}"
+        },
+        {
+          "name": "401 Unauthorized",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/auth/sync", "host": ["{{baseUrl}}"], "path": ["auth", "sync"] }
+          },
+          "status": "Unauthorized",
+          "code": 401,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"UNAUTHORIZED\", \"message\": \"Missing or malformed Authorization header\" }\n}"
+        }
+      ],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('returns user with CUSTOMER role', () => {",
+              "  pm.expect(body.data).to.have.property('id');",
+              "  pm.expect(body.data.role).to.eql('CUSTOMER');",
+              "  pm.expect(body.data.supabaseId).to.be.a('string');",
+              "});",
+              "// Persist for cross-request use",
+              "if (body.data) {",
+              "  pm.environment.set('userId', body.data.id);",
+              "  pm.environment.set('userSupabaseId', body.data.supabaseId);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST /auth/admin/sync",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"fullName\": \"Admin Test\",\n  \"locale\": \"en\"\n}" },
+        "url": { "raw": "{{baseUrl}}/auth/admin/sync", "host": ["{{baseUrl}}"], "path": ["auth", "admin", "sync"] },
+        "description": "Upsert the JWT-bearing user as ADMIN. Caller email MUST be on the `ADMIN_EMAILS` allowlist or the request returns 403.\n\n**Auth:** Bearer Supabase JWT (uses adminEmail/adminPassword from environment)."
+      },
+      "response": [
+        {
+          "name": "200 OK — promoted",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/auth/admin/sync", "host": ["{{baseUrl}}"], "path": ["auth", "admin", "sync"] }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"data\": {\n    \"id\": \"d290f1ee-6c54-4b01-90e6-d701748f0851\",\n    \"email\": \"admin@example.com\",\n    \"role\": \"ADMIN\",\n    \"locale\": \"en\"\n  },\n  \"error\": null\n}"
+        },
+        {
+          "name": "403 Forbidden — not on allowlist",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/auth/admin/sync", "host": ["{{baseUrl}}"], "path": ["auth", "admin", "sync"] }
+          },
+          "status": "Forbidden",
+          "code": 403,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"NOT_ADMIN\", \"message\": \"This email is not on the admin allowlist\" }\n}"
+        }
+      ],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Allow either 200 (promoted) or 403 (not on allowlist) — both are valid",
+              "// outcomes that the caller wants verified.",
+              "pm.test('status is 200 or 403', () => {",
+              "  pm.expect([200, 403]).to.include(pm.response.code);",
+              "});",
+              "const body = pm.response.json();",
+              "if (pm.response.code === 200) {",
+              "  pm.test('role is ADMIN', () => pm.expect(body.data.role).to.eql('ADMIN'));",
+              "  if (body.data) pm.environment.set('adminUserId', body.data.id);",
+              "} else {",
+              "  pm.test('error code is NOT_ADMIN', () => pm.expect(body.error.code).to.eql('NOT_ADMIN'));",
+              "}"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

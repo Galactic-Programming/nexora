@@ -1,0 +1,86 @@
+{
+  "info": {
+    "_postman_id": "b1f5a000-0000-4000-a000-000000000001",
+    "name": "Tourism API",
+    "description": "REST API for the tourism booking platform.\n\nThis collection is GENERATED. Do NOT edit `docs/postman/tourism-api.json` directly — edit the source files in `docs/postman/src/` and run `pnpm postman:build` instead. See `docs/en/runbooks/postman-auth.md` for the build workflow.\n\nFolder source files live in `docs/postman/src/folders/` (one file per top-level folder). The build script merges them in the order listed by `folders` below.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-refresh Supabase access token if expired or missing.",
+          "// Skipped for the Health folder (no auth required).",
+          "const path = pm.request.url.getPath();",
+          "if (path.indexOf('/health') !== -1) { return; }",
+          "",
+          "// Detect admin paths: /auth/admin/* OR /admin/* (mounted at",
+          "// e.g. /api/v1/admin/destinations). Use admin credentials there;",
+          "// fall back to customer credentials otherwise. Manual override via",
+          "// `useAdminToken=true` env var still works.",
+          "const isAdmin = path.indexOf('/auth/admin') !== -1 ||",
+          "  /\\/admin\\//.test(path) ||",
+          "  pm.environment.get('useAdminToken') === 'true';",
+          "",
+          "const tokenKey = isAdmin ? 'adminAccessToken' : 'accessToken';",
+          "const expiryKey = isAdmin ? 'adminAccessTokenExpiresAt' : 'accessTokenExpiresAt';",
+          "const emailKey = isAdmin ? 'adminEmail' : 'userEmail';",
+          "const passwordKey = isAdmin ? 'adminPassword' : 'userPassword';",
+          "",
+          "const now = Math.floor(Date.now() / 1000);",
+          "const expiresAt = parseInt(pm.environment.get(expiryKey) || '0', 10);",
+          "const accessToken = pm.environment.get(tokenKey);",
+          "",
+          "if (accessToken && expiresAt > now + 30) {",
+          "  pm.environment.set('accessToken', accessToken);",
+          "  return;",
+          "}",
+          "",
+          "const supabaseUrl = pm.environment.get('supabaseUrl');",
+          "const anonKey = pm.environment.get('supabaseAnonKey');",
+          "const email = pm.environment.get(emailKey);",
+          "const password = pm.environment.get(passwordKey);",
+          "",
+          "if (!supabaseUrl || !anonKey || !email || !password) {",
+          "  console.warn('[pre-request] Supabase credentials missing for ' + (isAdmin ? 'admin' : 'customer') + ' — protected requests will fail.');",
+          "  return;",
+          "}",
+          "",
+          "pm.sendRequest({",
+          "  url: supabaseUrl + '/auth/v1/token?grant_type=password',",
+          "  method: 'POST',",
+          "  header: {",
+          "    'apikey': anonKey,",
+          "    'Content-Type': 'application/json'",
+          "  },",
+          "  body: { mode: 'raw', raw: JSON.stringify({ email: email, password: password }) }",
+          "}, (err, res) => {",
+          "  if (err) { console.error('[pre-request] Supabase auth failed', err); return; }",
+          "  const body = res.json();",
+          "  if (body.access_token) {",
+          "    pm.environment.set(tokenKey, body.access_token);",
+          "    pm.environment.set(expiryKey, String(now + (body.expires_in || 3600)));",
+          "    pm.environment.set('accessToken', body.access_token);",
+          "  } else {",
+          "    console.error('[pre-request] No access_token in response', body);",
+          "  }",
+          "});"
+        ]
+      }
+    }
+  ],
+  "folders": [
+    "01-health.json",
+    "02-auth.json",
+    "03-users.json",
+    "04-destinations-public.json",
+    "05-destinations-admin.json",
+    "06-tours-admin.json"
+  ]
+}
