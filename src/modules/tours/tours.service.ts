@@ -8,7 +8,25 @@ import {
 import { Prisma, Tour } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateTourDto } from './dto/create-tour.dto';
+import { ListToursQueryDto } from './dto/list-tours-query.dto';
 import { UpdateTourDto } from './dto/update-tour.dto';
+
+/**
+ * Pagination envelope returned by `findPublishedList`.
+ *
+ * The `TransformInterceptor` recognises the `{ items, meta }` shape and
+ * hoists `meta` to the response envelope top level, so consumers see
+ * `{ data: items, error: null, meta }`.
+ */
+export interface PaginatedTours {
+  items: Tour[];
+  meta: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
+}
 
 /**
  * Owns CRUD for the `Tour` table. Public list/detail and itinerary CRUD
@@ -29,7 +47,98 @@ export class ToursService {
   constructor(private readonly prisma: PrismaService) {}
 
   // ────────────────────────────────────────────────────────────────────────
-  // Reads
+  // Public reads
+  // ────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Public list — paginated, only `is_published = true`. Used by the
+   * marketing FE catalog and the home-page featured shelf.
+   *
+   * Filter semantics (all optional, AND-combined):
+   *  - `destination` is a SLUG; we resolve to id eagerly. Missing slug →
+   *    empty result set (not a 404 — empty is the honest answer for a
+   *    catalog browse).
+   *  - `minPrice` / `maxPrice` are inclusive bounds on `basePrice`.
+   *  - `duration` is an exact day-count match.
+   *  - `featured` opts into `is_featured = true`.
+   *  - `q` is case-insensitive substring search across both languages of
+   *    title and summary.
+   *
+   * Sort whitelist is enforced in the DTO; default is newest first.
+   *
+   * Uses `$transaction` so `count` + `findMany` agree exactly even under
+   * concurrent writes — without this you get off-by-one totals when a
+   * row lands between the two queries.
+   */
+  async findPublishedList(query: ListToursQueryDto): Promise<PaginatedTours> {
+    const page = query.page ?? 1;
+    const pageSize = query.pageSize ?? 20;
+    const sortBy = query.sortBy ?? 'createdAt';
+    const sortOrder = query.sortOrder ?? 'desc';
+
+    const destinationId = await this.resolveDestinationFilter(
+      query.destination,
+    );
+    // The slug was supplied but doesn't exist — short-circuit to empty
+    // rather than running a query with `destinationId: undefined` that
+    // would silently broaden the result set.
+    if (query.destination && destinationId === null) {
+      return {
+        items: [],
+        meta: { page, pageSize, total: 0, totalPages: 1 },
+      };
+    }
+
+    const where = this.buildPublishedWhere(query, destinationId);
+
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.tour.findMany({
+        where,
+        include: { destination: true },
+        orderBy: { [sortBy]: sortOrder },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      this.prisma.tour.count({ where }),
+    ]);
+
+    return {
+      items,
+      meta: {
+        page,
+        pageSize,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / pageSize)),
+      },
+    };
+  }
+
+  /**
+   * Public detail — fetch by slug, only if published.
+   *
+   * Includes the parent `destination` so the FE can render breadcrumbs
+   * without a follow-up call.
+   *
+   * @throws NotFoundException — slug missing OR unpublished. We deliberately
+   *         conflate the two cases so unpublished drafts aren't discoverable
+   *         via 200-vs-404 probing.
+   */
+  async findPublishedBySlug(slug: string): Promise<Tour> {
+    const tour = await this.prisma.tour.findFirst({
+      where: { slug, isPublished: true },
+      include: { destination: true },
+    });
+    if (!tour) {
+      throw new NotFoundException({
+        code: 'TOUR_NOT_FOUND',
+        message: `Tour "${slug}" not found`,
+      });
+    }
+    return tour;
+  }
+
+  // ────────────────────────────────────────────────────────────────────────
+  // Admin reads
   // ────────────────────────────────────────────────────────────────────────
 
   /**
@@ -165,6 +274,62 @@ export class ToursService {
   // ────────────────────────────────────────────────────────────────────────
   // Internals
   // ────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Resolves the optional `destination` slug filter to a UUID. Returns:
+   *  - `undefined` when no slug was supplied (filter inactive)
+   *  - `null` when a slug was supplied but no destination matches
+   *    (caller treats this as "no rows possible")
+   *  - the id string when the slug resolves
+   */
+  private async resolveDestinationFilter(
+    slug: string | undefined,
+  ): Promise<string | null | undefined> {
+    if (!slug) return undefined;
+    const row = await this.prisma.destination.findUnique({
+      where: { slug },
+      select: { id: true },
+    });
+    return row?.id ?? null;
+  }
+
+  /**
+   * Builds the `where` clause for the public list endpoint. Always pins
+   * `isPublished: true`; merges every optional filter the caller supplied.
+   *
+   * `destinationId` is passed in (already resolved from slug) so this
+   * function stays synchronous and unit-testable without a Prisma mock.
+   */
+  private buildPublishedWhere(
+    query: ListToursQueryDto,
+    destinationId: string | null | undefined,
+  ): Prisma.TourWhereInput {
+    const search = query.q?.trim();
+    const priceFilter: Prisma.DecimalFilter = {};
+    if (query.minPrice !== undefined) priceFilter.gte = query.minPrice;
+    if (query.maxPrice !== undefined) priceFilter.lte = query.maxPrice;
+
+    return {
+      isPublished: true,
+      ...(destinationId ? { destinationId } : {}),
+      ...(query.category ? { category: query.category } : {}),
+      ...(query.duration !== undefined ? { durationDays: query.duration } : {}),
+      ...(query.featured !== undefined ? { isFeatured: query.featured } : {}),
+      ...(Object.keys(priceFilter).length > 0
+        ? { basePrice: priceFilter }
+        : {}),
+      ...(search
+        ? {
+            OR: [
+              { titleEn: { contains: search, mode: 'insensitive' } },
+              { titleVi: { contains: search, mode: 'insensitive' } },
+              { summaryEn: { contains: search, mode: 'insensitive' } },
+              { summaryVi: { contains: search, mode: 'insensitive' } },
+            ],
+          }
+        : {}),
+    };
+  }
 
   /**
    * Throws `BadRequestException` with code `INVALID_DESTINATION` when the

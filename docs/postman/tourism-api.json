@@ -1400,6 +1400,308 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Tours (Public)",
+      "description": "Public catalog browsing. No auth required. Both endpoints pin `isPublished: true` server-side, so drafts never appear here regardless of the caller.",
+      "item": [
+        {
+          "name": "GET /tours (list)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tours?page=1&pageSize=20&sortBy=createdAt&sortOrder=desc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tours"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "20"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "createdAt"
+                },
+                {
+                  "key": "sortOrder",
+                  "value": "desc"
+                },
+                {
+                  "key": "destination",
+                  "value": "hoi-an",
+                  "disabled": true
+                },
+                {
+                  "key": "category",
+                  "value": "DAY",
+                  "disabled": true
+                },
+                {
+                  "key": "minPrice",
+                  "value": "30",
+                  "disabled": true
+                },
+                {
+                  "key": "maxPrice",
+                  "value": "200",
+                  "disabled": true
+                },
+                {
+                  "key": "duration",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "featured",
+                  "value": "true",
+                  "disabled": true
+                },
+                {
+                  "key": "q",
+                  "value": "lantern",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Paginated list of PUBLISHED tours. All filters are optional and AND-combined.\n\n**Filters:**\n- `destination` — destination slug (kebab-case)\n- `category` — `DAY` | `PACKAGE` | `CUSTOM`\n- `minPrice` / `maxPrice` — inclusive bounds on basePrice\n- `duration` — exact day count\n- `featured` — boolean\n- `q` — free-text search (titleEn/titleVi/summaryEn/summaryVi)\n\n**Sort whitelist:** `createdAt`, `basePrice`, `durationDays`, `titleEn`."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/tours",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tours"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"...\",\n      \"slug\": \"hoi-an-walking-tour\",\n      \"titleEn\": \"Hoi An Walking Tour\",\n      \"basePrice\": \"49.50\",\n      \"currency\": \"USD\",\n      \"isPublished\": true,\n      \"destination\": { \"slug\": \"hoi-an\", \"nameEn\": \"Hoi An\" }\n    }\n  ],\n  \"error\": null,\n  \"meta\": { \"page\": 1, \"pageSize\": 20, \"total\": 1, \"totalPages\": 1 }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('envelope shape with data array', () => {",
+                  "  pm.expect(body.data).to.be.an('array');",
+                  "  pm.expect(body.error).to.be.null;",
+                  "});",
+                  "pm.test('meta has pagination fields', () => {",
+                  "  pm.expect(body.meta).to.have.all.keys('page','pageSize','total','totalPages');",
+                  "});",
+                  "pm.test('items only contain published tours', () => {",
+                  "  body.data.forEach((t) => pm.expect(t.isPublished).to.eql(true));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /tours?featured=true (home shelf)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tours?featured=true&pageSize=6",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tours"
+              ],
+              "query": [
+                {
+                  "key": "featured",
+                  "value": "true"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "6"
+                }
+              ]
+            },
+            "description": "Convenience query for the marketing home page hero shelf. Returns the first 6 featured + published tours."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('page size capped at 6', () => pm.expect(body.data.length).to.be.at.most(6));",
+                  "pm.test('every item is featured', () => {",
+                  "  body.data.forEach((t) => pm.expect(t.isFeatured).to.eql(true));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /tours?destination=ghost (empty result)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tours?destination=this-slug-does-not-exist",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tours"
+              ],
+              "query": [
+                {
+                  "key": "destination",
+                  "value": "this-slug-does-not-exist"
+                }
+              ]
+            },
+            "description": "Filtering by a destination slug that does not exist returns an empty `data` array — NOT a 404. Catalog browsing returns the honest answer (no rows) rather than an error."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200 (not 404)', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('data is empty array', () => {",
+                  "  pm.expect(body.data).to.be.an('array');",
+                  "  pm.expect(body.data.length).to.eql(0);",
+                  "});",
+                  "pm.test('meta.total is 0', () => pm.expect(body.meta.total).to.eql(0));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /tours/:slug (detail)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tours/{{tourSlug}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tours",
+                "{{tourSlug}}"
+              ]
+            },
+            "description": "Public detail by slug, with destination joined for breadcrumbs. Returns 404 when the slug is missing OR unpublished — the two cases are deliberately conflated so draft slugs are not probeable."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/tours/hoi-an-walking-tour",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tours",
+                    "hoi-an-walking-tour"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": { \"slug\": \"hoi-an-walking-tour\", \"titleEn\": \"Hoi An Walking Tour\", \"isPublished\": true, \"destination\": { \"slug\": \"hoi-an\" } },\n  \"error\": null\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/tours/missing",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tours",
+                    "missing"
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"TOUR_NOT_FOUND\", \"message\": \"Tour \\\"missing\\\" not found\" }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200 or 404', () => pm.expect([200, 404]).to.include(pm.response.code));",
+                  "const body = pm.response.json();",
+                  "if (pm.response.code === 200) {",
+                  "  pm.test('returns published tour with destination', () => {",
+                  "    pm.expect(body.data).to.have.property('slug');",
+                  "    pm.expect(body.data.isPublished).to.eql(true);",
+                  "    pm.expect(body.data.destination).to.have.property('slug');",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }

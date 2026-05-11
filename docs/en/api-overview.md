@@ -90,11 +90,30 @@ Slug rule: `^[a-z0-9]+(?:-[a-z0-9]+)*$` (kebab-case, 2–80 chars).
 
 Tour slug rule: same kebab-case as destinations but max 120 chars.
 
-Public list/detail (`GET /tours`, `GET /tours/:slug`) ship in Sprint B2.3; itinerary nested CRUD in B2.4; departures + uploads in B2.5–B2.6.
+### Sprint B2.3 — Tours (Public catalog)
+
+| Method | Path | Access | Description |
+| --- | --- | --- | --- |
+| GET | `/tours` | 🌐 | Paginated list of `isPublished = true` tours. Filters + sort below. |
+| GET | `/tours/:slug` | 🌐 | Single published tour with destination joined. 404 conflates "missing" with "unpublished" so draft slugs are not probeable. |
+
+Filters (all optional, AND-combined):
+
+- `destination` — destination slug (kebab-case). Slug that does not resolve → empty result (not 404).
+- `category` — `DAY` | `PACKAGE` | `CUSTOM`
+- `minPrice` / `maxPrice` — inclusive bounds on `basePrice`
+- `duration` — exact day count
+- `featured` — boolean, useful for home-page hero
+- `q` — free-text substring search (case-insensitive) over `titleEn`, `titleVi`, `summaryEn`, `summaryVi`
+
+Sort whitelist: `createdAt` (default) | `basePrice` | `durationDays` | `titleEn`. `sortOrder`: `asc` | `desc`.
+
+Pagination: `page` (default 1), `pageSize` (default 20, max 100). Response includes `meta: { page, pageSize, total, totalPages }`.
+
+Drafts never leak: both endpoints pin `isPublished: true` server-side regardless of caller.
 
 ### Future sprints (planned)
 
-- B2.3: public `/tours` list + detail (filter, sort, pagination)
 - B2.4: `/admin/tours/:slug/itinerary` (TourItineraryDay nested CRUD)
 - B2.5–B2.6: `/admin/tours/:slug/departures`, `/admin/uploads/signed-url`
 - B3: `/bookings`, `/payments/webhook`, `/admin/bookings/:id/refund`

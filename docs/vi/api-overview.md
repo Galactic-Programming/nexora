@@ -90,11 +90,30 @@ Quy tắc slug: `^[a-z0-9]+(?:-[a-z0-9]+)*$` (kebab-case, 2–80 ký tự).
 
 Tour slug rule: cùng kebab-case như destinations nhưng max 120 ký tự.
 
-Public list/detail (`GET /tours`, `GET /tours/:slug`) sẽ có ở Sprint B2.3; itinerary nested CRUD ở B2.4; departures + uploads ở B2.5–B2.6.
+### Sprint B2.3 — Tours (Public catalog)
+
+| Method | Path | Access | Mô tả |
+| --- | --- | --- | --- |
+| GET | `/tours` | 🌐 | List có phân trang các tour `isPublished = true`. Filter + sort bên dưới. |
+| GET | `/tours/:slug` | 🌐 | Tour published kèm destination đã join. 404 gộp 2 trường hợp "không tồn tại" và "unpublished" để slug draft không bị dò ra. |
+
+Filters (optional, AND-combined):
+
+- `destination` — slug destination (kebab-case). Slug không resolve được → trả mảng rỗng (không phải 404).
+- `category` — `DAY` | `PACKAGE` | `CUSTOM`
+- `minPrice` / `maxPrice` — inclusive bounds trên `basePrice`
+- `duration` — số ngày chính xác
+- `featured` — boolean, dùng cho home-page hero
+- `q` — search substring không phân biệt hoa thường trên `titleEn`, `titleVi`, `summaryEn`, `summaryVi`
+
+Sort whitelist: `createdAt` (default) | `basePrice` | `durationDays` | `titleEn`. `sortOrder`: `asc` | `desc`.
+
+Phân trang: `page` (mặc định 1), `pageSize` (mặc định 20, max 100). Response có `meta: { page, pageSize, total, totalPages }`.
+
+Drafts không leak: cả 2 endpoint đều pin `isPublished: true` ở server-side bất kể caller là ai.
 
 ### Sprint kế tiếp (kế hoạch)
 
-- B2.3: public `/tours` list + detail (filter, sort, phân trang)
 - B2.4: `/admin/tours/:slug/itinerary` (TourItineraryDay nested CRUD)
 - B2.5–B2.6: `/admin/tours/:slug/departures`, `/admin/uploads/signed-url`
 - B3: `/bookings`, `/payments/webhook`, `/admin/bookings/:id/refund`

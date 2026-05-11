@@ -75,7 +75,7 @@ pnpm exec newman run docs/postman/tourism-api.json \
 | --- | --- | --- | --- | --- |
 | B2.1 | Destinations CRUD (admin) + public list/detail | ✅ | Destinations (Public+Admin) | api-overview |
 | B2.2 | Tours admin CRUD | ✅ | Tours (Admin) | api-overview |
-| B2.3 | Tours public list (filter+sort+pagination) + detail | ⬜ | Tours (Public) | api-overview |
+| B2.3 | Tours public list (filter+sort+pagination) + detail | ✅ | Tours (Public) | api-overview |
 | B2.4 | TourItineraryDay nested CRUD | ⬜ | Tours (Admin) | api-overview |
 | B2.5 | Departures CRUD + public list per tour | ⬜ | Departures | api-overview |
 | B2.6 | Uploads: `POST /admin/uploads/signed-url` (Supabase Storage) | ⬜ | Uploads | runbooks/uploads |
