@@ -79,7 +79,7 @@ pnpm exec newman run docs/postman/tourism-api.json \
 | B2.4 | TourItineraryDay nested CRUD | ✅ | Tours (Admin) — Itinerary | api-overview |
 | B2.5 | Departures CRUD + public list per tour | ✅ | Tours (Public/Admin) — Departures | api-overview |
 | B2.6 | Uploads: `POST /admin/uploads/signed-url` (Supabase Storage) | ✅ | Uploads (Admin) | runbooks/uploads |
-| B2.7 | Seed script: 4 destinations + 10 tours + 30 departures | ⬜ | n/a | runbooks/seed |
+| B2.7 | Seed script: 4 destinations + 10 tours + 30 departures | ✅ | n/a | runbooks/seed |
 
 ---
 

@@ -16,6 +16,10 @@ export default defineConfig({
   schema: path.join('prisma', 'schema.prisma'),
   migrations: {
     path: path.join('prisma', 'migrations'),
+    // Registered by `prisma db seed`. ts-node transpiles in-memory so we
+    // don't have to maintain a built JS copy. `--transpile-only` skips
+    // type-checking (we trust `pnpm build` to catch errors before commit).
+    seed: 'ts-node --transpile-only prisma/seed.ts',
   },
   datasource: {
     url: process.env.DIRECT_URL ?? process.env.DATABASE_URL ?? '',

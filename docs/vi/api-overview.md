@@ -177,6 +177,12 @@ Errors:
 
 Flow chi tiết + setup bucket: [`docs/vi/runbooks/uploads.md`](runbooks/uploads.md).
 
+### Sprint B2.7 — Seed script
+
+Không phải HTTP surface — `pnpm db:seed` populate catalog thực tế: 4 destination, 10 tour (9 published + 1 draft), 2 itinerary day, 30 departure spread tại +30 / +75 / +150 ngày tính từ "hôm nay".
+
+Reference đầy đủ: [`docs/vi/runbooks/seed.md`](runbooks/seed.md).
+
 ### Sprint kế tiếp (kế hoạch)
 
 - B2.5–B2.6: `/admin/tours/:slug/departures`, `/admin/uploads/signed-url`

@@ -177,6 +177,12 @@ Errors:
 
 Full flow + bucket setup: [`docs/en/runbooks/uploads.md`](runbooks/uploads.md).
 
+### Sprint B2.7 — Seed script
+
+Not an HTTP surface — `pnpm db:seed` populates a realistic catalog: 4 destinations, 10 tours (9 published + 1 draft), 2 itinerary days, 30 departures spread at +30 / +75 / +150 days from "today".
+
+Full reference: [`docs/en/runbooks/seed.md`](runbooks/seed.md).
+
 ### Future sprints (planned)
 
 - B2.5–B2.6: `/admin/tours/:slug/departures`, `/admin/uploads/signed-url`
