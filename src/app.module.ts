@@ -21,6 +21,7 @@ import { DeparturesModule } from './modules/departures/departures.module';
 import { DestinationsModule } from './modules/destinations/destinations.module';
 import { HealthModule } from './modules/health/health.module';
 import { ToursModule } from './modules/tours/tours.module';
+import { UploadsModule } from './modules/uploads/uploads.module';
 import { UsersModule } from './modules/users/users.module';
 
 /**
@@ -107,6 +108,7 @@ import { UsersModule } from './modules/users/users.module';
     DestinationsModule,
     ToursModule,
     DeparturesModule,
+    UploadsModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },

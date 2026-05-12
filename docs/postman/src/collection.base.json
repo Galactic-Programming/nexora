@@ -96,6 +96,7 @@
     "07-tours-public.json",
     "08-tours-itinerary-admin.json",
     "09-tours-departures-public.json",
-    "10-tours-departures-admin.json"
+    "10-tours-departures-admin.json",
+    "11-uploads-admin.json"
   ]
 }

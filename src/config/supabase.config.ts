@@ -41,4 +41,7 @@ export const supabaseConfig = registerAs('supabase', () => ({
     .split(',')
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean),
+  // Default bucket for `/admin/uploads/signed-url`. Must exist in Supabase
+  // Storage. The Joi schema applies `'tourism-assets'` when unset.
+  storageBucket: process.env.SUPABASE_STORAGE_BUCKET ?? 'tourism-assets',
 }));

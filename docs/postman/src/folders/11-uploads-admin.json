@@ -1,0 +1,121 @@
+{
+  "name": "Uploads (Admin)",
+  "description": "Mint short-lived signed upload URLs for Supabase Storage. The backend does NOT proxy file bytes — FE uploads directly to the signed URL.\n\n**Pre-conditions:**\n1. Supabase Storage bucket `tourism-assets` exists (see `docs/en/runbooks/uploads.md`).\n2. Backend env has `SUPABASE_SERVICE_ROLE_KEY` set — signing requires the service role.\n\nThe response carries `{ uploadUrl, token, path, bucket }`. FE then calls `supabase.storage.from(bucket).uploadToSignedUrl(path, token, file)`.",
+  "item": [
+    {
+      "name": "POST /admin/uploads/signed-url (tour hero)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"purpose\": \"TOUR_HERO\",\n  \"filename\": \"hoi-an-hero.jpg\",\n  \"contentType\": \"image/jpeg\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/admin/uploads/signed-url",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "uploads", "signed-url"]
+        },
+        "description": "Returns 200 + envelope (no resource is persisted yet — this just reserves a path).\n\n**purpose enum:** `TOUR_HERO | TOUR_GALLERY | DESTINATION_HERO | USER_AVATAR`. Each maps to a fixed folder under the bucket (see runbook for the layout)."
+      },
+      "response": [
+        {
+          "name": "200 OK",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/admin/uploads/signed-url", "host": ["{{baseUrl}}"], "path": ["admin", "uploads", "signed-url"] }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"data\": {\n    \"uploadUrl\": \"https://PROJECT_REF.supabase.co/storage/v1/object/upload/sign/tourism-assets/tours/hero/1717000000000-hoi-an-hero.jpg?token=...\",\n    \"token\": \"eyJ...\",\n    \"path\": \"tours/hero/1717000000000-hoi-an-hero.jpg\",\n    \"bucket\": \"tourism-assets\"\n  },\n  \"error\": null\n}"
+        },
+        {
+          "name": "400 Bad Request (invalid filename)",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/admin/uploads/signed-url", "host": ["{{baseUrl}}"], "path": ["admin", "uploads", "signed-url"] }
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"VALIDATION_ERROR\", \"message\": \"filename must contain only letters, digits, hyphen, underscore, dot, and end with a 1-8 char extension\" }\n}"
+        },
+        {
+          "name": "502 STORAGE_SIGN_FAILED",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/admin/uploads/signed-url", "host": ["{{baseUrl}}"], "path": ["admin", "uploads", "signed-url"] }
+          },
+          "status": "Bad Gateway",
+          "code": 502,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"STORAGE_SIGN_FAILED\", \"message\": \"Could not generate a signed upload URL. Try again.\" }\n}"
+        }
+      ],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200 or 502', () => pm.expect([200, 502]).to.include(pm.response.code));",
+              "const body = pm.response.json();",
+              "if (pm.response.code === 200) {",
+              "  pm.test('returns signed URL envelope', () => {",
+              "    pm.expect(body.data.uploadUrl).to.be.a('string');",
+              "    pm.expect(body.data.token).to.be.a('string');",
+              "    pm.expect(body.data.bucket).to.eql('tourism-assets');",
+              "  });",
+              "  pm.test('path is under tours/hero folder', () => {",
+              "    pm.expect(body.data.path).to.match(/^tours\\/hero\\/\\d+-/);",
+              "  });",
+              "} else {",
+              "  pm.test('error code is STORAGE_SIGN_FAILED', () => pm.expect(body.error.code).to.eql('STORAGE_SIGN_FAILED'));",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST /admin/uploads/signed-url (destination hero)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"purpose\": \"DESTINATION_HERO\",\n  \"filename\": \"sapa-terraces.webp\",\n  \"contentType\": \"image/webp\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/admin/uploads/signed-url",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "uploads", "signed-url"]
+        },
+        "description": "Demonstrates a different `purpose` routing into a different folder (`destinations/hero/...`)."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "  const body = pm.response.json();",
+              "  pm.test('path is under destinations/hero folder', () => {",
+              "    pm.expect(body.data.path).to.match(/^destinations\\/hero\\/\\d+-/);",
+              "  });",
+              "}"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

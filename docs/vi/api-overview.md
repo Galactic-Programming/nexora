@@ -153,6 +153,30 @@ Error codes:
 - `SEATS_TOTAL_BELOW_BOOKED` (400) — update làm `seatsTotal` < `seatsBooked` hiện tại
 - `DEPARTURE_HAS_BOOKINGS` (409) — không xoá được vì còn seat đã sold (kèm fallback P2003 cho race)
 
+### Sprint B2.6 — Uploads (Signed URL admin)
+
+| Method | Path | Access | Mô tả |
+| --- | --- | --- | --- |
+| POST | `/admin/uploads/signed-url` | 🛡 | Mint Supabase Storage signed upload URL. FE PUT trực tiếp lên Supabase — Nest không chạm bytes. |
+
+Body: `{ purpose, filename, contentType? }`. Enum `purpose` map sang folder trong bucket:
+
+| Purpose | Folder |
+| --- | --- |
+| `TOUR_HERO` | `tours/hero/` |
+| `TOUR_GALLERY` | `tours/gallery/` |
+| `DESTINATION_HERO` | `destinations/hero/` |
+| `USER_AVATAR` | `users/avatars/` |
+
+Response: `{ uploadUrl, token, path, bucket }`. Path theo dạng `<folder>/<unix-ms>-<sanitized-stem>.<ext>` để đảm bảo unique.
+
+Errors:
+
+- `400 VALIDATION_ERROR` — DTO reject (bad purpose / filename / contentType)
+- `502 STORAGE_SIGN_FAILED` — Supabase Storage reject (bucket thiếu, project pause, service role key sai)
+
+Flow chi tiết + setup bucket: [`docs/vi/runbooks/uploads.md`](runbooks/uploads.md).
+
 ### Sprint kế tiếp (kế hoạch)
 
 - B2.5–B2.6: `/admin/tours/:slug/departures`, `/admin/uploads/signed-url`

@@ -153,6 +153,30 @@ Error codes:
 - `SEATS_TOTAL_BELOW_BOOKED` (400) — update would drop capacity below seats already sold
 - `DEPARTURE_HAS_BOOKINGS` (409) — delete refused because seats are sold (or P2003 race fallback)
 
+### Sprint B2.6 — Uploads (Signed URL admin)
+
+| Method | Path | Access | Description |
+| --- | --- | --- | --- |
+| POST | `/admin/uploads/signed-url` | 🛡 | Mint a Supabase Storage signed upload URL. FE then PUTs the file directly to Supabase — Nest never touches the bytes. |
+
+Request body: `{ purpose, filename, contentType? }`. `purpose` enum maps to a folder under the bucket:
+
+| Purpose | Folder |
+| --- | --- |
+| `TOUR_HERO` | `tours/hero/` |
+| `TOUR_GALLERY` | `tours/gallery/` |
+| `DESTINATION_HERO` | `destinations/hero/` |
+| `USER_AVATAR` | `users/avatars/` |
+
+Response: `{ uploadUrl, token, path, bucket }`. Path follows `<folder>/<unix-ms>-<sanitized-stem>.<ext>` to guarantee uniqueness.
+
+Errors:
+
+- `400 VALIDATION_ERROR` — DTO rejected the request (bad purpose / filename / contentType)
+- `502 STORAGE_SIGN_FAILED` — Supabase Storage rejected the sign request (bucket missing, project paused, service role key wrong)
+
+Full flow + bucket setup: [`docs/en/runbooks/uploads.md`](runbooks/uploads.md).
+
 ### Future sprints (planned)
 
 - B2.5–B2.6: `/admin/tours/:slug/departures`, `/admin/uploads/signed-url`
