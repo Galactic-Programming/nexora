@@ -1,16 +1,22 @@
 import { Module } from '@nestjs/common';
+import { PaymentsController } from './payments.controller';
+import { PaymentsService } from './payments.service';
 import { StripeService } from './stripe.service';
 
 /**
- * Bundles the Stripe wrapper so other modules can inject it without
- * touching the SDK directly. Exports `StripeService` so:
+ * Hosts the Stripe wrapper plus the webhook receiver.
  *
+ * Exports `StripeService` so:
  *  - `BookingsModule` uses it to mint Checkout sessions (B3.1).
- *  - The webhook controller (added in B3.4) will live in this module.
  *  - Admin refund (B3.5) will route through here.
+ *
+ * `PaymentsService` is module-private — only the webhook controller
+ * uses it. If admin-driven booking transitions (refund, manual cancel)
+ * ever need shared logic, expose it then.
  */
 @Module({
-  providers: [StripeService],
+  controllers: [PaymentsController],
+  providers: [StripeService, PaymentsService],
   exports: [StripeService],
 })
 export class PaymentsModule {}

@@ -10,6 +10,7 @@ export * from './types/authenticated-request';
 export * from './decorators/public.decorator';
 export * from './decorators/roles.decorator';
 export * from './decorators/current-user.decorator';
+export * from './decorators/skip-transform.decorator';
 export * from './guards/supabase-jwt.guard';
 export * from './guards/roles.guard';
 export * from './filters/http-exception.filter';

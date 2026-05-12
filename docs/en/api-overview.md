@@ -214,6 +214,29 @@ Error codes:
 
 **Note:** Without B3.4 webhook wired up, a successful Stripe payment leaves the booking in PENDING — the FE success page will show "processing". B3.4 closes the loop.
 
+### Sprint B3.4 — Stripe webhook
+
+| Method | Path | Access | Description |
+| --- | --- | --- | --- |
+| POST | `/payments/webhook` | 🌐 (signature-gated) | Stripe webhook receiver. Verifies signature, idempotent on `event.id`, mutates booking status under a row lock. |
+
+Two-layer idempotency:
+
+1. **Event-level** — every `event.id` is inserted into `payment_events` (UNIQUE). A duplicate insert returns 200 immediately without re-running side effects, so Stripe retries are safe.
+2. **Booking-level** — `checkout.session.completed` handling runs inside a Prisma transaction with `SELECT seats_total, seats_booked FROM tour_departures WHERE id = $1 FOR UPDATE`. If the booking is already PAID/REFUNDED it no-ops; if seats no longer fit (race with another concurrent payment), the booking is automatically refunded and CANCELLED.
+
+Events handled:
+
+- `checkout.session.completed` → booking PAID, `seatsBooked += N`, `paid_at` set, `stripe_payment_intent_id` persisted.
+- `checkout.session.expired` → booking CANCELLED (no seat change — we never reserved at PENDING).
+- Anything else → logged + ignored. Returning 200 for unsubscribed events avoids Stripe retry noise.
+
+Errors:
+
+- `STRIPE_WEBHOOK_INVALID` (400) — missing or invalid `Stripe-Signature`.
+
+Full local + production setup: [`docs/en/runbooks/stripe-testing.md`](runbooks/stripe-testing.md).
+
 ### Future sprints (planned)
 
 - B2.5–B2.6: `/admin/tours/:slug/departures`, `/admin/uploads/signed-url`

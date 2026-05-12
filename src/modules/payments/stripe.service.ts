@@ -113,4 +113,62 @@ export class StripeService implements OnModuleInit {
     );
     return session;
   }
+
+  /**
+   * Verifies a Stripe webhook payload's signature and returns the parsed
+   * `Event`. Wraps the SDK's `webhooks.constructEvent` so the webhook
+   * controller stays SDK-free.
+   *
+   * Stripe signs the **raw** request bytes — JSON-parsing before
+   * verification will corrupt the signature. `express.raw()` is mounted
+   * on the webhook path in `main.ts` for exactly this reason.
+   *
+   * @throws Error from the SDK when the signature header is malformed
+   *         OR the secret doesn't match. The caller should translate
+   *         this into 400 (don't 500 — Stripe will retry forever).
+   */
+  constructEvent(
+    rawBody: Buffer | string,
+    signature: string,
+    webhookSecret: string,
+  ) {
+    return this.stripe.webhooks.constructEvent(
+      rawBody,
+      signature,
+      webhookSecret,
+    );
+  }
+
+  /**
+   * Issues a full refund against a Payment Intent. Returns the Refund
+   * object so the caller can persist the refund id alongside the booking
+   * (Sprint B3.5 wires this up).
+   *
+   * Why not pass the Checkout Session id? Stripe's refund endpoint
+   * targets payments, and the Payment Intent is the canonical handle
+   * once a session completes. We persist both on the booking
+   * (`stripeSessionId` + `stripePaymentIntentId`) so refunds always have
+   * the right reference even months after checkout.
+   */
+  async createRefund(args: { paymentIntentId: string; reason?: string }) {
+    const refund = await this.stripe.refunds.create({
+      payment_intent: args.paymentIntentId,
+      // `reason` is constrained by Stripe to an enum, but we accept
+      // free-form here and only forward when caller picked one of the
+      // documented values. Anything else is logged as metadata.
+      ...(args.reason &&
+      ['duplicate', 'fraudulent', 'requested_by_customer'].includes(args.reason)
+        ? {
+            reason: args.reason as
+              | 'duplicate'
+              | 'fraudulent'
+              | 'requested_by_customer',
+          }
+        : { metadata: { internal_reason: args.reason ?? '' } }),
+    });
+    this.logger.log(
+      `Issued refund ${refund.id} for payment_intent ${args.paymentIntentId} (status=${refund.status})`,
+    );
+    return refund;
+  }
 }

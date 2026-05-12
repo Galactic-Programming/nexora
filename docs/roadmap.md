@@ -90,7 +90,7 @@ pnpm exec newman run docs/postman/tourism-api.json \
 | B3.1 | `POST /bookings` → Stripe Checkout session | ✅ | Bookings | api-overview |
 | B3.2 | `GET /bookings/me` — user history | ✅ | Bookings | api-overview |
 | B3.3 | `GET /bookings/:code` — owner or admin | ✅ | Bookings | api-overview |
-| B3.4 | `POST /payments/webhook` — Stripe webhook + idempotency + email | ⬜ | Payments | runbooks/stripe-testing |
+| B3.4 | `POST /payments/webhook` — Stripe webhook + idempotency (email in B3.6) | ✅ | Payments (Webhook) | runbooks/stripe-testing |
 | B3.5 | `POST /admin/bookings/:id/refund` | ⬜ | Bookings | api-overview |
 | B3.6 | Email service (Resend) — confirmation EN/VI | ⬜ | n/a | runbooks/email |
 

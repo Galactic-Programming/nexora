@@ -214,6 +214,29 @@ Error codes:
 
 **Note:** Chưa có B3.4 webhook, sau khi pay Stripe thành công booking vẫn PENDING — FE success page sẽ show "processing". B3.4 close loop.
 
+### Sprint B3.4 — Stripe webhook
+
+| Method | Path | Access | Mô tả |
+| --- | --- | --- | --- |
+| POST | `/payments/webhook` | 🌐 (signature-gated) | Stripe webhook receiver. Verify signature, idempotent theo `event.id`, mutate booking status dưới row lock. |
+
+Idempotency 2 lớp:
+
+1. **Event-level** — mỗi `event.id` insert vào `payment_events` (UNIQUE). Duplicate insert trả 200 ngay, không re-run side effect → Stripe retry an toàn.
+2. **Booking-level** — `checkout.session.completed` chạy trong Prisma transaction với `SELECT seats_total, seats_booked FROM tour_departures WHERE id = $1 FOR UPDATE`. Booking đã PAID/REFUNDED → no-op; seat không còn fit (race với payment khác) → tự refund + CANCEL.
+
+Event handle:
+
+- `checkout.session.completed` → booking PAID, `seatsBooked += N`, set `paid_at`, persist `stripe_payment_intent_id`.
+- `checkout.session.expired` → booking CANCELLED (không đổi seat — không reserve ở PENDING).
+- Khác → log + ignore. Trả 200 cho event không subscribe để tránh Stripe retry noise.
+
+Errors:
+
+- `STRIPE_WEBHOOK_INVALID` (400) — `Stripe-Signature` missing hoặc invalid.
+
+Full setup local + production: [`docs/vi/runbooks/stripe-testing.md`](runbooks/stripe-testing.md).
+
 ### Sprint kế tiếp (kế hoạch)
 
 - B2.5–B2.6: `/admin/tours/:slug/departures`, `/admin/uploads/signed-url`
