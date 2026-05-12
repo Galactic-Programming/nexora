@@ -183,6 +183,37 @@ Không phải HTTP surface — `pnpm db:seed` populate catalog thực tế: 4 de
 
 Reference đầy đủ: [`docs/vi/runbooks/seed.md`](runbooks/seed.md).
 
+### Sprint B3.1–B3.3 — Bookings (customer-facing)
+
+| Method | Path | Access | Mô tả |
+| --- | --- | --- | --- |
+| POST | `/bookings` | 🔐 | Tạo booking PENDING + mint Stripe Checkout session. Trả `{ bookingId, bookingCode, checkoutUrl, status }`. |
+| GET | `/bookings/me` | 🔐 | List booking của caller, mới nhất trước (top 50). |
+| GET | `/bookings/:code` | 🔐 | Chi tiết theo code. Owner-or-admin; non-owner thấy 404 giống code missing thật. |
+
+🔐 = cần JWT; 401 `USER_NOT_SYNCED` nếu chưa chạy `/auth/sync`.
+
+Body cho `POST /bookings`:
+
+- `tourSlug` (kebab-case, phải published)
+- `departureId` (UUID, phải thuộc tour AND OPEN)
+- `numAdults` (1–20), optional `numChildren` (0–20, default 0)
+- `contactName`, `contactEmail`, optional `contactPhone`, optional `specialRequests`
+
+`userId`, `currency`, `totalAmount`, `code`, `status` đều server-controlled. `seatsBooked` **chỉ webhook** (Sprint B3.4) mutate dưới row lock — không bao giờ mutate ở create.
+
+Error codes:
+
+- `TOUR_NOT_FOUND` (404) — slug missing hoặc unpublished
+- `DEPARTURE_NOT_FOUND` (404) — departure missing hoặc không thuộc tour
+- `DEPARTURE_NOT_OPEN` (400) — departure CLOSED/CANCELLED
+- `SEATS_NOT_AVAILABLE` (409) — best-effort capacity check (reservation thật ở webhook)
+- `STRIPE_SESSION_INVALID` (400) — Stripe trả session không có URL
+- `BOOKING_NOT_FOUND` (404) — cũng trả cho non-owner (chống enumeration)
+- `USER_NOT_SYNCED` (401) — chưa chạy `/auth/sync`
+
+**Note:** Chưa có B3.4 webhook, sau khi pay Stripe thành công booking vẫn PENDING — FE success page sẽ show "processing". B3.4 close loop.
+
 ### Sprint kế tiếp (kế hoạch)
 
 - B2.5–B2.6: `/admin/tours/:slug/departures`, `/admin/uploads/signed-url`

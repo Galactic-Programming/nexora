@@ -183,6 +183,37 @@ Not an HTTP surface — `pnpm db:seed` populates a realistic catalog: 4 destinat
 
 Full reference: [`docs/en/runbooks/seed.md`](runbooks/seed.md).
 
+### Sprint B3.1–B3.3 — Bookings (customer-facing)
+
+| Method | Path | Access | Description |
+| --- | --- | --- | --- |
+| POST | `/bookings` | 🔐 | Create PENDING booking + mint Stripe Checkout session. Returns `{ bookingId, bookingCode, checkoutUrl, status }`. |
+| GET | `/bookings/me` | 🔐 | Caller's own bookings, newest first (top 50). |
+| GET | `/bookings/:code` | 🔐 | One booking by code. Owner-or-admin only; non-owners see the same 404 as a truly-missing code. |
+
+🔐 = JWT required; 401 `USER_NOT_SYNCED` if the caller hasn't run `/auth/sync` yet.
+
+Body for `POST /bookings`:
+
+- `tourSlug` (kebab-case, must be published)
+- `departureId` (UUID, must belong to that tour AND be OPEN)
+- `numAdults` (1–20), optional `numChildren` (0–20, default 0)
+- `contactName`, `contactEmail`, optional `contactPhone`, optional `specialRequests`
+
+`userId`, `currency`, `totalAmount`, `code`, and `status` are server-controlled. `seatsBooked` is mutated **only by the webhook** (Sprint B3.4) under a row lock — never on create.
+
+Error codes:
+
+- `TOUR_NOT_FOUND` (404) — slug missing or unpublished
+- `DEPARTURE_NOT_FOUND` (404) — departure missing or not under the tour
+- `DEPARTURE_NOT_OPEN` (400) — departure is CLOSED/CANCELLED
+- `SEATS_NOT_AVAILABLE` (409) — best-effort capacity check (real reservation happens in webhook)
+- `STRIPE_SESSION_INVALID` (400) — Stripe returned a session without a redirect URL
+- `BOOKING_NOT_FOUND` (404) — also returned for non-owners (anti-enumeration)
+- `USER_NOT_SYNCED` (401) — caller hasn't run `/auth/sync` yet
+
+**Note:** Without B3.4 webhook wired up, a successful Stripe payment leaves the booking in PENDING — the FE success page will show "processing". B3.4 closes the loop.
+
 ### Future sprints (planned)
 
 - B2.5–B2.6: `/admin/tours/:slug/departures`, `/admin/uploads/signed-url`

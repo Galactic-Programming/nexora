@@ -2540,6 +2540,208 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Bookings",
+      "description": "Customer-facing booking flow (Sprint B3.1–B3.3). The webhook surface for `checkout.session.completed` lands in B3.4 — for now, **created bookings stay PENDING after Stripe payment** because no webhook listener writes back yet.\n\n**Pre-conditions:**\n1. `tourSlug` points at a published tour (run `Tours (Admin) → POST /admin/tours` and set `isPublished=true`, or rely on the seed catalog).\n2. The target tour has at least one OPEN departure with seats available. Easiest: run the Postman folder cycle in `Tours (Admin) — Departures` so `{{departureId}}` is set.\n3. Caller is signed in as a customer (`/auth/sync` already ran). The folder uses the customer JWT slot automatically.\n\nThe POST captures `{{bookingCode}}` for the follow-up GET requests.",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Sanity hints in the runner log when prerequisites are missing.",
+              "if (!pm.environment.get('tourSlug')) {",
+              "  console.warn('[bookings] tourSlug missing — set it or run the Tours folder first.');",
+              "}",
+              "if (!pm.environment.get('departureId')) {",
+              "  console.warn('[bookings] departureId missing — run the Departures folder to seed one.');",
+              "}"
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "name": "POST /bookings (create + Stripe Checkout session)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tourSlug\": \"{{tourSlug}}\",\n  \"departureId\": \"{{departureId}}\",\n  \"numAdults\": 2,\n  \"numChildren\": 1,\n  \"contactName\": \"Test Customer\",\n  \"contactEmail\": \"customer@example.com\",\n  \"contactPhone\": \"+84901234567\",\n  \"specialRequests\": \"Vegetarian meals for one adult.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bookings"
+              ]
+            },
+            "description": "Creates a PENDING booking and mints a Stripe Checkout session.\n\n**Response:**\n- 201 `{ data: { bookingId, bookingCode, checkoutUrl, status: 'PENDING' } }`\n- 400 `DEPARTURE_NOT_OPEN` — departure is CLOSED/CANCELLED\n- 401 `USER_NOT_SYNCED` — call `/auth/sync` first\n- 404 `TOUR_NOT_FOUND` | `DEPARTURE_NOT_FOUND`\n- 409 `SEATS_NOT_AVAILABLE` — best-effort capacity check failed\n\nOpen `checkoutUrl` in a browser to test the Stripe flow. Use test card `4242 4242 4242 4242` with any future expiry + any 3-digit CVC. The booking stays PENDING until B3.4 webhook lands."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings"
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"bookingId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n    \"bookingCode\": \"BK-ABC12345\",\n    \"checkoutUrl\": \"https://checkout.stripe.com/c/pay/cs_test_...\",\n    \"status\": \"PENDING\"\n  },\n  \"error\": null\n}"
+            },
+            {
+              "name": "409 SEATS_NOT_AVAILABLE",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "bookings"
+                  ]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"SEATS_NOT_AVAILABLE\", \"message\": \"Only 1 seat(s) left, requested 3\" }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "if (pm.response.code === 201 && body.data) {",
+                  "  pm.test('returns checkout envelope', () => {",
+                  "    pm.expect(body.data.bookingCode).to.match(/^BK-/);",
+                  "    pm.expect(body.data.checkoutUrl).to.match(/^https:\\/\\/checkout\\.stripe\\.com\\//);",
+                  "    pm.expect(body.data.status).to.eql('PENDING');",
+                  "  });",
+                  "  pm.environment.set('bookingCode', body.data.bookingCode);",
+                  "  pm.environment.set('bookingId', body.data.bookingId);",
+                  "  console.log('Open this in a browser to test Stripe:', body.data.checkoutUrl);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /bookings/me (own list)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bookings/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bookings",
+                "me"
+              ]
+            },
+            "description": "Lists the caller's bookings, newest first (max 50). Includes parent tour + departure summary so the FE can render the list without a follow-up join."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('returns an array', () => pm.expect(body.data).to.be.an('array'));",
+                  "if (body.data.length > 0) {",
+                  "  pm.test('newest first', () => {",
+                  "    const dates = body.data.map((b) => b.createdAt);",
+                  "    const sorted = dates.slice().sort().reverse();",
+                  "    pm.expect(dates).to.eql(sorted);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /bookings/:code (detail)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/bookings/{{bookingCode}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bookings",
+                "{{bookingCode}}"
+              ]
+            },
+            "description": "Owner-or-admin only. Non-owner customers see the same `404 BOOKING_NOT_FOUND` as a truly-missing code — we don't leak code existence to enumeration attacks."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200 or 404', () => pm.expect([200, 404]).to.include(pm.response.code));",
+                  "const body = pm.response.json();",
+                  "if (pm.response.code === 200) {",
+                  "  pm.test('returns booking with tour + departure joined', () => {",
+                  "    pm.expect(body.data.code).to.match(/^BK-/);",
+                  "    pm.expect(body.data.tour).to.be.an('object');",
+                  "    pm.expect(body.data.departure).to.be.an('object');",
+                  "  });",
+                  "} else {",
+                  "  pm.test('error code is BOOKING_NOT_FOUND', () => pm.expect(body.error.code).to.eql('BOOKING_NOT_FOUND'));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }

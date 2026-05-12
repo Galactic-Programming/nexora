@@ -1,0 +1,362 @@
+import {
+  BadRequestException,
+  ConflictException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import {
+  Booking,
+  BookingStatus,
+  DepartureStatus,
+  Prisma,
+  TourDeparture,
+  UserRole,
+} from '@prisma/client';
+import { BookingsService } from './bookings.service';
+import { CreateBookingDto } from './dto/create-booking.dto';
+import { StripeService } from '../payments/stripe.service';
+
+beforeAll(() => {
+  jest.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
+});
+afterAll(() => {
+  jest.restoreAllMocks();
+});
+
+const sampleTour = {
+  id: 't-1',
+  slug: 'hoi-an-walking-tour',
+  titleEn: 'Hoi An Walking Tour',
+  currency: 'USD',
+  basePrice: new Prisma.Decimal('49.50'),
+};
+
+const sampleDeparture: TourDeparture = {
+  id: 'dep-1',
+  tourId: 't-1',
+  startDate: new Date('2026-08-15T00:00:00Z'),
+  endDate: new Date('2026-08-15T00:00:00Z'),
+  priceOverride: null,
+  seatsTotal: 15,
+  seatsBooked: 2,
+  status: DepartureStatus.OPEN,
+  createdAt: new Date('2026-05-08T00:00:00Z'),
+  updatedAt: new Date('2026-05-08T00:00:00Z'),
+};
+
+const sampleBooking: Booking = {
+  id: 'b-1',
+  code: 'BK-ABCDEFGH',
+  userId: 'u-customer',
+  tourId: 't-1',
+  departureId: 'dep-1',
+  numAdults: 2,
+  numChildren: 1,
+  totalAmount: new Prisma.Decimal('148.50'),
+  currency: 'USD',
+  status: BookingStatus.PENDING,
+  contactName: 'Test User',
+  contactEmail: 'test@example.com',
+  contactPhone: null,
+  specialRequests: null,
+  stripeSessionId: null,
+  stripePaymentIntentId: null,
+  paidAt: null,
+  cancelledAt: null,
+  createdAt: new Date('2026-05-12T00:00:00Z'),
+  updatedAt: new Date('2026-05-12T00:00:00Z'),
+};
+
+const baseDto: CreateBookingDto = {
+  tourSlug: 'hoi-an-walking-tour',
+  departureId: 'dep-1',
+  numAdults: 2,
+  numChildren: 1,
+  contactName: 'Test User',
+  contactEmail: 'test@example.com',
+};
+
+function makePrisma(overrides: Partial<Record<string, jest.Mock>> = {}) {
+  return {
+    tour: {
+      findFirst: overrides.tourFindFirst ?? jest.fn(),
+    },
+    tourDeparture: {
+      findFirst: overrides.depFindFirst ?? jest.fn(),
+    },
+    booking: {
+      findUnique: overrides.bookingFindUnique ?? jest.fn(),
+      findMany: overrides.bookingFindMany ?? jest.fn(),
+      create: overrides.bookingCreate ?? jest.fn(),
+      update: overrides.bookingUpdate ?? jest.fn(),
+    },
+  };
+}
+
+function makeStripe(
+  createCheckoutSession: jest.Mock = jest.fn().mockResolvedValue({
+    id: 'cs_test_123',
+    url: 'https://checkout.stripe.com/c/pay/cs_test_123',
+  }),
+): StripeService {
+  return { createCheckoutSession } as unknown as StripeService;
+}
+
+function makeConfig(
+  values: Record<string, string> = {
+    'app.frontendUrl': 'http://localhost:3001',
+  },
+): ConfigService {
+  return {
+    getOrThrow: jest.fn((key: string) => {
+      const v = values[key];
+      if (v === undefined) throw new Error(`missing config: ${key}`);
+      return v;
+    }),
+  } as unknown as ConfigService;
+}
+
+describe('BookingsService.create', () => {
+  it('rejects TOUR_NOT_FOUND when slug missing or unpublished', async () => {
+    const tourFindFirst = jest.fn().mockResolvedValue(null);
+    const bookingCreate = jest.fn();
+    const prisma = makePrisma({ tourFindFirst, bookingCreate });
+    const svc = new BookingsService(
+      prisma as never,
+      makeStripe(),
+      makeConfig(),
+    );
+
+    await expect(svc.create('u-customer', baseDto)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    expect(bookingCreate).not.toHaveBeenCalled();
+  });
+
+  it('rejects DEPARTURE_NOT_OPEN when departure status is CLOSED', async () => {
+    const tourFindFirst = jest.fn().mockResolvedValue(sampleTour);
+    const depFindFirst = jest.fn().mockResolvedValue({
+      ...sampleDeparture,
+      status: DepartureStatus.CLOSED,
+    });
+    const bookingCreate = jest.fn();
+    const prisma = makePrisma({ tourFindFirst, depFindFirst, bookingCreate });
+    const svc = new BookingsService(
+      prisma as never,
+      makeStripe(),
+      makeConfig(),
+    );
+
+    await expect(svc.create('u-customer', baseDto)).rejects.toMatchObject({
+      response: { code: 'DEPARTURE_NOT_OPEN' },
+    });
+    expect(bookingCreate).not.toHaveBeenCalled();
+  });
+
+  it('rejects SEATS_NOT_AVAILABLE when remaining < requested', async () => {
+    const tourFindFirst = jest.fn().mockResolvedValue(sampleTour);
+    // 15 total - 14 booked = 1 remaining, but dto requests 3 (2+1).
+    const depFindFirst = jest
+      .fn()
+      .mockResolvedValue({ ...sampleDeparture, seatsBooked: 14 });
+    const bookingCreate = jest.fn();
+    const prisma = makePrisma({ tourFindFirst, depFindFirst, bookingCreate });
+    const svc = new BookingsService(
+      prisma as never,
+      makeStripe(),
+      makeConfig(),
+    );
+
+    await expect(svc.create('u-customer', baseDto)).rejects.toBeInstanceOf(
+      ConflictException,
+    );
+    await expect(svc.create('u-customer', baseDto)).rejects.toMatchObject({
+      response: { code: 'SEATS_NOT_AVAILABLE' },
+    });
+  });
+
+  it('computes total = unitPrice * (adults+children) and uses priceOverride when set', async () => {
+    const tourFindFirst = jest.fn().mockResolvedValue(sampleTour);
+    // priceOverride supersedes tour.basePrice.
+    const depFindFirst = jest.fn().mockResolvedValue({
+      ...sampleDeparture,
+      priceOverride: new Prisma.Decimal('60.00'),
+    });
+    const bookingFindUnique = jest.fn().mockResolvedValue(null);
+    const bookingCreate = jest.fn().mockResolvedValue(sampleBooking);
+    const bookingUpdate = jest.fn().mockResolvedValue(sampleBooking);
+    const createCheckoutSession = jest.fn().mockResolvedValue({
+      id: 'cs_test_123',
+      url: 'https://checkout.stripe.com/x',
+    });
+    const prisma = makePrisma({
+      tourFindFirst,
+      depFindFirst,
+      bookingFindUnique,
+      bookingCreate,
+      bookingUpdate,
+    });
+    const svc = new BookingsService(
+      prisma as never,
+      makeStripe(createCheckoutSession),
+      makeConfig(),
+    );
+
+    await svc.create('u-customer', baseDto);
+
+    // 3 seats × $60 = $180.00 → totalAmount stored as Decimal.
+    type CreateCall = {
+      data: { totalAmount: Prisma.Decimal; currency: string };
+    };
+    const calls = bookingCreate.mock.calls as unknown as CreateCall[][];
+    const arg = calls[0][0];
+    expect(arg.data.totalAmount.toString()).toBe('180');
+    expect(arg.data.currency).toBe('USD');
+
+    // Stripe gets unit_amount in cents: 60.00 * 100 = 6000, quantity = 3.
+    type StripeCall = {
+      unitAmount: number;
+      quantity: number;
+      bookingCode: string;
+    };
+    const stripeCalls = createCheckoutSession.mock
+      .calls as unknown as StripeCall[][];
+    const stripeArg = stripeCalls[0][0];
+    expect(stripeArg.unitAmount).toBe(6000);
+    expect(stripeArg.quantity).toBe(3);
+    expect(stripeArg.bookingCode).toBe(sampleBooking.code);
+  });
+
+  it('persists stripeSessionId after Stripe returns the session', async () => {
+    const tourFindFirst = jest.fn().mockResolvedValue(sampleTour);
+    const depFindFirst = jest.fn().mockResolvedValue(sampleDeparture);
+    const bookingFindUnique = jest.fn().mockResolvedValue(null);
+    const bookingCreate = jest.fn().mockResolvedValue(sampleBooking);
+    const bookingUpdate = jest.fn().mockResolvedValue(sampleBooking);
+    const prisma = makePrisma({
+      tourFindFirst,
+      depFindFirst,
+      bookingFindUnique,
+      bookingCreate,
+      bookingUpdate,
+    });
+    const svc = new BookingsService(
+      prisma as never,
+      makeStripe(),
+      makeConfig(),
+    );
+
+    const result = await svc.create('u-customer', baseDto);
+
+    expect(result.checkoutUrl).toBe(
+      'https://checkout.stripe.com/c/pay/cs_test_123',
+    );
+    expect(result.status).toBe(BookingStatus.PENDING);
+    // The follow-up update writes back the session id.
+    type UpdateCall = { data: { stripeSessionId: string } };
+    const updateCalls = bookingUpdate.mock.calls as unknown as UpdateCall[][];
+    expect(updateCalls[0][0].data.stripeSessionId).toBe('cs_test_123');
+  });
+
+  it('rejects when Stripe returns a session without a URL', async () => {
+    const tourFindFirst = jest.fn().mockResolvedValue(sampleTour);
+    const depFindFirst = jest.fn().mockResolvedValue(sampleDeparture);
+    const bookingFindUnique = jest.fn().mockResolvedValue(null);
+    const bookingCreate = jest.fn().mockResolvedValue(sampleBooking);
+    const prisma = makePrisma({
+      tourFindFirst,
+      depFindFirst,
+      bookingFindUnique,
+      bookingCreate,
+    });
+    const stripeSessionFn = jest
+      .fn()
+      .mockResolvedValue({ id: 'cs_test_999', url: null });
+    const svc = new BookingsService(
+      prisma as never,
+      makeStripe(stripeSessionFn),
+      makeConfig(),
+    );
+
+    await expect(svc.create('u-customer', baseDto)).rejects.toMatchObject({
+      response: { code: 'STRIPE_SESSION_INVALID' },
+    });
+  });
+});
+
+describe('BookingsService.findByCodeForCaller', () => {
+  it('returns the booking when caller is the owner', async () => {
+    const bookingFindUnique = jest.fn().mockResolvedValue(sampleBooking);
+    const prisma = makePrisma({ bookingFindUnique });
+    const svc = new BookingsService(
+      prisma as never,
+      makeStripe(),
+      makeConfig(),
+    );
+
+    const result = await svc.findByCodeForCaller(sampleBooking.code, {
+      id: sampleBooking.userId,
+      role: UserRole.CUSTOMER,
+    });
+
+    expect(result.id).toBe(sampleBooking.id);
+  });
+
+  it('returns the booking when caller is an ADMIN (different userId)', async () => {
+    const bookingFindUnique = jest.fn().mockResolvedValue(sampleBooking);
+    const prisma = makePrisma({ bookingFindUnique });
+    const svc = new BookingsService(
+      prisma as never,
+      makeStripe(),
+      makeConfig(),
+    );
+
+    const result = await svc.findByCodeForCaller(sampleBooking.code, {
+      id: 'u-some-admin',
+      role: UserRole.ADMIN,
+    });
+
+    expect(result.id).toBe(sampleBooking.id);
+  });
+
+  it('throws BOOKING_NOT_FOUND when non-owner CUSTOMER asks — not 403', async () => {
+    // 404 (not 403) on purpose: don't leak booking-code existence to
+    // enumeration attacks. Admins still see real not-found.
+    const bookingFindUnique = jest.fn().mockResolvedValue(sampleBooking);
+    const prisma = makePrisma({ bookingFindUnique });
+    const svc = new BookingsService(
+      prisma as never,
+      makeStripe(),
+      makeConfig(),
+    );
+
+    await expect(
+      svc.findByCodeForCaller(sampleBooking.code, {
+        id: 'u-some-other',
+        role: UserRole.CUSTOMER,
+      }),
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('throws BOOKING_NOT_FOUND when code missing', async () => {
+    const bookingFindUnique = jest.fn().mockResolvedValue(null);
+    const prisma = makePrisma({ bookingFindUnique });
+    const svc = new BookingsService(
+      prisma as never,
+      makeStripe(),
+      makeConfig(),
+    );
+
+    await expect(
+      svc.findByCodeForCaller('BK-GHOST', {
+        id: 'u-anyone',
+        role: UserRole.CUSTOMER,
+      }),
+    ).rejects.toMatchObject({ response: { code: 'BOOKING_NOT_FOUND' } });
+  });
+});
+
+// Silence the unused-import diagnostic when BadRequestException isn't
+// referenced — kept as a typed import for parity with the service file.
+void BadRequestException;

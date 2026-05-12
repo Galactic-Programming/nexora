@@ -17,9 +17,11 @@ import { SupabaseJwtGuard } from './common/guards/supabase-jwt.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { BookingsModule } from './modules/bookings/bookings.module';
 import { DeparturesModule } from './modules/departures/departures.module';
 import { DestinationsModule } from './modules/destinations/destinations.module';
 import { HealthModule } from './modules/health/health.module';
+import { PaymentsModule } from './modules/payments/payments.module';
 import { ToursModule } from './modules/tours/tours.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 import { UsersModule } from './modules/users/users.module';
@@ -109,6 +111,8 @@ import { UsersModule } from './modules/users/users.module';
     ToursModule,
     DeparturesModule,
     UploadsModule,
+    PaymentsModule,
+    BookingsModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },
