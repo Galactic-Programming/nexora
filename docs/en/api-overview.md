@@ -131,6 +131,28 @@ Error codes for the itinerary surface:
 
 `GET /tours/:slug` (public) now includes `itinerary` sorted ascending so the FE can render Day 1 → N without a client-side sort.
 
+### Sprint B2.5 — Tour Departures (Admin CRUD + Public list)
+
+| Method | Path | Access | Description |
+| --- | --- | --- | --- |
+| GET | `/tours/:slug/departures` | 🌐 | Public list. Defaults: `from = today`, `status = OPEN`. 404 conflates missing/unpublished. |
+| GET | `/admin/tours/:slug/departures` | 🛡 | Admin list — full history including CLOSED/CANCELLED. No implicit defaults. |
+| POST | `/admin/tours/:slug/departures` | 🛡 | Create one departure. |
+| PATCH | `/admin/tours/:slug/departures/:id` | 🛡 | Partial update. Capacity guard: `seatsTotal >= seatsBooked`. |
+| DELETE | `/admin/tours/:slug/departures/:id` | 🛡 | Hard delete. Pre-checks `seatsBooked === 0`. |
+
+Query params for both list endpoints: `from` (ISO 8601 date, inclusive), `to` (inclusive upper bound), `status` (`OPEN | CLOSED | CANCELLED`).
+
+`seatsBooked` is **never** accepted from clients — it's mutated only by the booking flow (Sprint B3) under transaction + row lock.
+
+Error codes:
+
+- `TOUR_NOT_FOUND` (404) — parent slug missing OR (public) unpublished
+- `DEPARTURE_NOT_FOUND` (404) — departure id missing under the parent tour
+- `INVALID_DATE_RANGE` (400) — `endDate < startDate` (revalidated when patching only one of the two)
+- `SEATS_TOTAL_BELOW_BOOKED` (400) — update would drop capacity below seats already sold
+- `DEPARTURE_HAS_BOOKINGS` (409) — delete refused because seats are sold (or P2003 race fallback)
+
 ### Future sprints (planned)
 
 - B2.5–B2.6: `/admin/tours/:slug/departures`, `/admin/uploads/signed-url`

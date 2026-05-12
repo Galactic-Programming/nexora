@@ -17,6 +17,7 @@ import { SupabaseJwtGuard } from './common/guards/supabase-jwt.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { DeparturesModule } from './modules/departures/departures.module';
 import { DestinationsModule } from './modules/destinations/destinations.module';
 import { HealthModule } from './modules/health/health.module';
 import { ToursModule } from './modules/tours/tours.module';
@@ -105,6 +106,7 @@ import { UsersModule } from './modules/users/users.module';
     UsersModule,
     DestinationsModule,
     ToursModule,
+    DeparturesModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },

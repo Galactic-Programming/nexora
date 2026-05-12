@@ -131,6 +131,28 @@ Error codes cho itinerary:
 
 `GET /tours/:slug` (public) giờ include luôn `itinerary` sort ascending để FE render Day 1 → N không cần sort client-side.
 
+### Sprint B2.5 — Tour Departures (Admin CRUD + Public list)
+
+| Method | Path | Access | Mô tả |
+| --- | --- | --- | --- |
+| GET | `/tours/:slug/departures` | 🌐 | Public list. Default: `from = today`, `status = OPEN`. 404 gộp missing/unpublished. |
+| GET | `/admin/tours/:slug/departures` | 🛡 | Admin list — full history CLOSED/CANCELLED. Không default ngầm. |
+| POST | `/admin/tours/:slug/departures` | 🛡 | Tạo 1 departure. |
+| PATCH | `/admin/tours/:slug/departures/:id` | 🛡 | Update từng phần. Capacity guard: `seatsTotal >= seatsBooked`. |
+| DELETE | `/admin/tours/:slug/departures/:id` | 🛡 | Xoá cứng. Pre-check `seatsBooked === 0`. |
+
+Query params cho cả 2 list: `from` (ISO 8601 date, inclusive), `to` (inclusive upper bound), `status` (`OPEN | CLOSED | CANCELLED`).
+
+`seatsBooked` **không bao giờ** accept từ client — chỉ được mutate qua booking flow (Sprint B3) trong transaction + row lock.
+
+Error codes:
+
+- `TOUR_NOT_FOUND` (404) — slug parent không tồn tại HOẶC (public) chưa publish
+- `DEPARTURE_NOT_FOUND` (404) — id departure không thuộc tour
+- `INVALID_DATE_RANGE` (400) — `endDate < startDate` (re-validate khi patch chỉ 1 trong 2 dates)
+- `SEATS_TOTAL_BELOW_BOOKED` (400) — update làm `seatsTotal` < `seatsBooked` hiện tại
+- `DEPARTURE_HAS_BOOKINGS` (409) — không xoá được vì còn seat đã sold (kèm fallback P2003 cho race)
+
 ### Sprint kế tiếp (kế hoạch)
 
 - B2.5–B2.6: `/admin/tours/:slug/departures`, `/admin/uploads/signed-url`

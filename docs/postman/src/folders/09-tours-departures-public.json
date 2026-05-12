@@ -1,0 +1,105 @@
+{
+  "name": "Tours (Public) — Departures",
+  "description": "Public list of upcoming departures for one tour. No auth required.\n\n**Defaults applied server-side:** `from = today` and `status = OPEN`. End users never see past or cancelled departures unless they explicitly pass the filters.\n\n404 conflates 'tour slug missing' with 'tour unpublished' so draft slugs cannot be probed via 200-vs-404 diffing.",
+  "item": [
+    {
+      "name": "GET /tours/:slug/departures (default — upcoming OPEN)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/tours/{{tourSlug}}/departures",
+          "host": ["{{baseUrl}}"],
+          "path": ["tours", "{{tourSlug}}", "departures"]
+        },
+        "description": "Returns the tour's upcoming OPEN departures, sorted ascending by `startDate`."
+      },
+      "response": [
+        {
+          "name": "200 OK",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/tours/hoi-an-walking-tour/departures", "host": ["{{baseUrl}}"], "path": ["tours", "hoi-an-walking-tour", "departures"] }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"data\": [\n    {\n      \"id\": \"...\",\n      \"tourId\": \"...\",\n      \"startDate\": \"2026-08-15T00:00:00.000Z\",\n      \"endDate\": \"2026-08-15T00:00:00.000Z\",\n      \"seatsTotal\": 15,\n      \"seatsBooked\": 0,\n      \"priceOverride\": null,\n      \"status\": \"OPEN\"\n    }\n  ],\n  \"error\": null\n}"
+        },
+        {
+          "name": "404 Not Found",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/tours/missing/departures", "host": ["{{baseUrl}}"], "path": ["tours", "missing", "departures"] }
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"TOUR_NOT_FOUND\", \"message\": \"Tour \\\"missing\\\" not found\" }\n}"
+        }
+      ],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200 or 404', () => pm.expect([200, 404]).to.include(pm.response.code));",
+              "const body = pm.response.json();",
+              "if (pm.response.code === 200) {",
+              "  pm.test('returns an array of departures', () => pm.expect(body.data).to.be.an('array'));",
+              "  pm.test('all rows are OPEN by default', () => {",
+              "    body.data.forEach((d) => pm.expect(d.status).to.eql('OPEN'));",
+              "  });",
+              "  pm.test('sorted ascending by startDate', () => {",
+              "    const dates = body.data.map((d) => d.startDate);",
+              "    const sorted = dates.slice().sort();",
+              "    pm.expect(dates).to.eql(sorted);",
+              "  });",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET /tours/:slug/departures?from=&to=&status=CLOSED",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/tours/{{tourSlug}}/departures?from=2026-01-01&to=2027-12-31&status=CLOSED",
+          "host": ["{{baseUrl}}"],
+          "path": ["tours", "{{tourSlug}}", "departures"],
+          "query": [
+            { "key": "from", "value": "2026-01-01" },
+            { "key": "to", "value": "2027-12-31" },
+            { "key": "status", "value": "CLOSED" }
+          ]
+        },
+        "description": "Demonstrates explicit filters overriding the public defaults. Status `OPEN | CLOSED | CANCELLED`."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200 or 404', () => pm.expect([200, 404]).to.include(pm.response.code));",
+              "if (pm.response.code === 200) {",
+              "  const body = pm.response.json();",
+              "  pm.test('all rows match requested status when present', () => {",
+              "    body.data.forEach((d) => pm.expect(d.status).to.eql('CLOSED'));",
+              "  });",
+              "}"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
