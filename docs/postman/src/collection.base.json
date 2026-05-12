@@ -93,6 +93,7 @@
     "04-destinations-public.json",
     "05-destinations-admin.json",
     "06-tours-admin.json",
-    "07-tours-public.json"
+    "07-tours-public.json",
+    "08-tours-itinerary-admin.json"
   ]
 }

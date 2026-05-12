@@ -112,9 +112,27 @@ Pagination: `page` (default 1), `pageSize` (default 20, max 100). Response inclu
 
 Drafts never leak: both endpoints pin `isPublished: true` server-side regardless of caller.
 
+### Sprint B2.4 — Tours itinerary (Admin nested CRUD)
+
+| Method | Path | Access | Description |
+| --- | --- | --- | --- |
+| GET | `/admin/tours/:slug/itinerary` | 🛡 | List every day, sorted ascending by `dayNumber`. |
+| POST | `/admin/tours/:slug/itinerary` | 🛡 | Create one day. 409 `ITINERARY_DAY_EXISTS` when `(tourId, dayNumber)` collides. |
+| PATCH | `/admin/tours/:slug/itinerary/:dayNumber` | 🛡 | Partial update; sending `dayNumber` renumbers the row (subject to the same uniqueness rule). |
+| DELETE | `/admin/tours/:slug/itinerary/:dayNumber` | 🛡 | Remove one day. Returns 200 + echo. |
+
+Days are addressed by `(tourSlug, dayNumber)` rather than UUID — URLs read naturally and `(tourId, dayNumber)` is already unique at the DB level.
+
+Error codes for the itinerary surface:
+
+- `TOUR_NOT_FOUND` (404) — parent slug missing
+- `ITINERARY_DAY_NOT_FOUND` (404) — day missing under the parent tour
+- `ITINERARY_DAY_EXISTS` (409) — `dayNumber` collision on create OR renumber
+
+`GET /tours/:slug` (public) now includes `itinerary` sorted ascending so the FE can render Day 1 → N without a client-side sort.
+
 ### Future sprints (planned)
 
-- B2.4: `/admin/tours/:slug/itinerary` (TourItineraryDay nested CRUD)
 - B2.5–B2.6: `/admin/tours/:slug/departures`, `/admin/uploads/signed-url`
 - B3: `/bookings`, `/payments/webhook`, `/admin/bookings/:id/refund`
 - B4: `/reviews`, `/wishlist`, `/admin/stats`

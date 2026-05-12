@@ -112,9 +112,27 @@ Phân trang: `page` (mặc định 1), `pageSize` (mặc định 20, max 100). R
 
 Drafts không leak: cả 2 endpoint đều pin `isPublished: true` ở server-side bất kể caller là ai.
 
+### Sprint B2.4 — Tours itinerary (Admin nested CRUD)
+
+| Method | Path | Access | Mô tả |
+| --- | --- | --- | --- |
+| GET | `/admin/tours/:slug/itinerary` | 🛡 | List tất cả day, sắp xếp tăng dần theo `dayNumber`. |
+| POST | `/admin/tours/:slug/itinerary` | 🛡 | Tạo 1 day. 409 `ITINERARY_DAY_EXISTS` khi `(tourId, dayNumber)` trùng. |
+| PATCH | `/admin/tours/:slug/itinerary/:dayNumber` | 🛡 | Update từng phần; gửi `dayNumber` sẽ renumber (cùng rule unique). |
+| DELETE | `/admin/tours/:slug/itinerary/:dayNumber` | 🛡 | Xoá 1 day. Trả 200 + echo. |
+
+Day được address bằng `(tourSlug, dayNumber)` thay vì UUID — URL đọc tự nhiên hơn và `(tourId, dayNumber)` đã unique ở DB.
+
+Error codes cho itinerary:
+
+- `TOUR_NOT_FOUND` (404) — slug parent không tồn tại
+- `ITINERARY_DAY_NOT_FOUND` (404) — day không tồn tại trong tour
+- `ITINERARY_DAY_EXISTS` (409) — `dayNumber` trùng khi create HOẶC renumber
+
+`GET /tours/:slug` (public) giờ include luôn `itinerary` sort ascending để FE render Day 1 → N không cần sort client-side.
+
 ### Sprint kế tiếp (kế hoạch)
 
-- B2.4: `/admin/tours/:slug/itinerary` (TourItineraryDay nested CRUD)
 - B2.5–B2.6: `/admin/tours/:slug/departures`, `/admin/uploads/signed-url`
 - B3: `/bookings`, `/payments/webhook`, `/admin/bookings/:id/refund`
 - B4: `/reviews`, `/wishlist`, `/admin/stats`

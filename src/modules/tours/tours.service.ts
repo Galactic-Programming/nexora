@@ -116,8 +116,10 @@ export class ToursService {
   /**
    * Public detail — fetch by slug, only if published.
    *
-   * Includes the parent `destination` so the FE can render breadcrumbs
-   * without a follow-up call.
+   * Includes:
+   *  - `destination` — for breadcrumbs.
+   *  - `itinerary`   — sorted ascending so the FE renders Day 1 → N in
+   *                    order without a client-side sort.
    *
    * @throws NotFoundException — slug missing OR unpublished. We deliberately
    *         conflate the two cases so unpublished drafts aren't discoverable
@@ -126,7 +128,10 @@ export class ToursService {
   async findPublishedBySlug(slug: string): Promise<Tour> {
     const tour = await this.prisma.tour.findFirst({
       where: { slug, isPublished: true },
-      include: { destination: true },
+      include: {
+        destination: true,
+        itinerary: { orderBy: { dayNumber: 'asc' } },
+      },
     });
     if (!tour) {
       throw new NotFoundException({

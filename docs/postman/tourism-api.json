@@ -1702,6 +1702,261 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Tours (Admin) — Itinerary",
+      "description": "Nested itinerary CRUD under `/admin/tours/:slug/itinerary`. Days are addressed by `(slug, dayNumber)` rather than UUID — humans (and Postman) read URLs like `/admin/tours/hoi-an-walking-tour/itinerary/7` more naturally than UUIDs.\n\n**Pre-conditions** — this folder assumes:\n1. The parent tour referenced by `{{tourSlug}}` already exists. Run `Tours (Admin) → POST /admin/tours` first if it does not.\n2. `{{itineraryDayNumber}}` is set in the environment (defaults to `7`, deliberately above any real Day 1/2/3 to avoid colliding with existing itinerary entries).\n\nThe Newman cycle here is **Create → List → Update → Delete**, so the folder cleans up after itself and is safe to re-run.",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (!pm.environment.get('itineraryDayNumber')) {",
+              "  pm.environment.set('itineraryDayNumber', '7');",
+              "}",
+              "if (!pm.environment.get('tourSlug')) {",
+              "  console.warn('[itinerary] tourSlug missing — run Tours (Admin) → POST /admin/tours first.');",
+              "}"
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "name": "POST /admin/tours/:slug/itinerary (create)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dayNumber\": {{itineraryDayNumber}},\n  \"titleEn\": \"Scratch Day\",\n  \"titleVi\": \"Ngày test\",\n  \"descriptionEn\": \"Created from Postman folder cycle.\",\n  \"descriptionVi\": \"Tạo từ chu trình test Postman.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/tours/{{tourSlug}}/itinerary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "tours",
+                "{{tourSlug}}",
+                "itinerary"
+              ]
+            },
+            "description": "Creates one itinerary day. 404 `TOUR_NOT_FOUND` when slug missing; 409 `ITINERARY_DAY_EXISTS` when `(tourId, dayNumber)` already exists."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/tours/hoi-an-walking-tour/itinerary",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "tours",
+                    "hoi-an-walking-tour",
+                    "itinerary"
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"id\": \"...\",\n    \"tourId\": \"...\",\n    \"dayNumber\": 7,\n    \"titleEn\": \"Scratch Day\",\n    \"titleVi\": \"Ngày test\"\n  },\n  \"error\": null\n}"
+            },
+            {
+              "name": "409 ITINERARY_DAY_EXISTS",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/tours/hoi-an-walking-tour/itinerary",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "tours",
+                    "hoi-an-walking-tour",
+                    "itinerary"
+                  ]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"ITINERARY_DAY_EXISTS\", \"message\": \"Day 7 already exists for tour \\\"hoi-an-walking-tour\\\"\" }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201 or 409', () => pm.expect([201, 409]).to.include(pm.response.code));",
+                  "const body = pm.response.json();",
+                  "if (pm.response.code === 201) {",
+                  "  pm.test('returns day with matching dayNumber', () => {",
+                  "    pm.expect(body.data.dayNumber).to.eql(parseInt(pm.environment.get('itineraryDayNumber'), 10));",
+                  "    pm.expect(body.data.titleEn).to.be.a('string');",
+                  "  });",
+                  "} else {",
+                  "  pm.test('error code is ITINERARY_DAY_EXISTS', () => pm.expect(body.error.code).to.eql('ITINERARY_DAY_EXISTS'));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /admin/tours/:slug/itinerary (list)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/tours/{{tourSlug}}/itinerary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "tours",
+                "{{tourSlug}}",
+                "itinerary"
+              ]
+            },
+            "description": "Lists every itinerary day for the tour, sorted ascending by `dayNumber`. 404 when the parent tour slug is missing."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('returns an array of days', () => pm.expect(body.data).to.be.an('array'));",
+                  "pm.test('sorted ascending by dayNumber', () => {",
+                  "  const nums = body.data.map((d) => d.dayNumber);",
+                  "  const sorted = nums.slice().sort((a,b) => a - b);",
+                  "  pm.expect(nums).to.eql(sorted);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /admin/tours/:slug/itinerary/:dayNumber (update)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titleEn\": \"Scratch Day (updated)\",\n  \"descriptionEn\": \"Patched from Postman.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/tours/{{tourSlug}}/itinerary/{{itineraryDayNumber}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "tours",
+                "{{tourSlug}}",
+                "itinerary",
+                "{{itineraryDayNumber}}"
+              ]
+            },
+            "description": "Partial update of one day. Sending `dayNumber` in the body renumbers it (subject to the unique constraint → 409 on collision)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('titleEn was updated', () => pm.expect(body.data.titleEn).to.eql('Scratch Day (updated)'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE /admin/tours/:slug/itinerary/:dayNumber",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/tours/{{tourSlug}}/itinerary/{{itineraryDayNumber}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "tours",
+                "{{tourSlug}}",
+                "itinerary",
+                "{{itineraryDayNumber}}"
+              ]
+            },
+            "description": "Removes one day. Returns 200 + echo of the deleted row. 404 when the slug or day is missing."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200 or 404', () => pm.expect([200, 404]).to.include(pm.response.code));",
+                  "const body = pm.response.json();",
+                  "if (pm.response.code === 200) {",
+                  "  pm.test('echo carries dayNumber', () => {",
+                  "    pm.expect(body.data.dayNumber).to.eql(parseInt(pm.environment.get('itineraryDayNumber'), 10));",
+                  "  });",
+                  "} else {",
+                  "  pm.test('error code is ITINERARY_DAY_NOT_FOUND', () => pm.expect(body.error.code).to.eql('ITINERARY_DAY_NOT_FOUND'));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }
