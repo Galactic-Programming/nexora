@@ -125,9 +125,20 @@ Schema + service tweaks so the FE customer template can wire 1:1 to the Figma de
 
 ---
 
+## Frontend phase (after BE B0–B4.6)
+
+Customer FE first, admin FE next. Both repos are siblings of `tourism-be-api`; BE-first sprint discipline stays in effect (no mid-sprint schema changes — gaps go to BACKLOG).
+
+| Phase | Repo | Plan doc |
+| --- | --- | --- |
+| Customer FE | `tourism-frontend-customer/` | [`en/frontend/customer-plan.md`](en/frontend/customer-plan.md) — 4 sprints C0→C3, ~6 weeks |
+| Admin FE | `tourism-frontend-admin/` | `en/frontend/admin-plan.md` (written after customer FE lands) |
+
+---
+
 ## Sprint B5 — Hardening + Production
 
-> ⏸ **On hold** until customer FE + admin FE land. Deploying BE alone forces redeploys whenever the FE finds gaps; we'd rather deploy a complete system once. See `sprints/b4.6-figma-alignment.md` § "Why pause B5".
+> ⏸ **On hold** until customer FE + admin FE both land. Deploying BE alone forces redeploys whenever the FE finds gaps; we'd rather deploy a complete system once. See `sprints/b4.6-figma-alignment.md` § "Why pause B5" and `frontend/customer-plan.md`.
 
 | # | Sub-feature | Status | Postman | Docs |
 | --- | --- | --- | --- | --- |
