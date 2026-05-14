@@ -108,7 +108,26 @@ pnpm exec newman run docs/postman/tourism-api.json \
 
 ---
 
+## Sprint B4.6 — Figma alignment (pre-FE)
+
+Schema + service tweaks so the FE customer template can wire 1:1 to the Figma design without backend rework mid-sprint. Detailed plan in [`sprints/b4.6-figma-alignment.md`](en/sprints/b4.6-figma-alignment.md).
+
+| # | Sub-feature | Status | Postman | Docs |
+| --- | --- | --- | --- | --- |
+| B4.6.1 | Migration: `Tour.isFeatured` + `@@index([isFeatured, isPublished])` | ⬜ | n/a | erd, sprints/b4.6 |
+| B4.6.2 | Migration: extend `TourCategory` enum with `HONEYMOON`, `MUSICAL` | ⬜ | n/a | erd, sprints/b4.6 |
+| B4.6.3 | `ListToursQueryDto`: `featured?: bool` + sort enum (`createdDesc \| priceAsc \| priceDesc \| titleAsc \| titleDesc`) | ⬜ | Tours (Public) | api-overview |
+| B4.6.4 | Tour list response: include `averageRating`, `reviewsCount`, `peopleGoing` per card | ⬜ | Tours (Public) | api-overview |
+| B4.6.5 | Admin DTOs: `isFeatured?` on `CreateTourDto` + `UpdateTourDto` | ⬜ | Tours (Admin) | api-overview |
+| B4.6.6 | Seed script: mark 2-3 featured + relabel some categories | ⬜ | n/a | runbooks/seed |
+| B4.6.7 | Tests: featured filter, sort permutations, rating/peopleGoing aggregates | ⬜ | n/a | n/a |
+| B4.6.8 | Docs: BACKLOG.md (Build Your Own Package, Newsletter) + sprint plan | ✅ | n/a | BACKLOG, sprints/b4.6 |
+
+---
+
 ## Sprint B5 — Hardening + Production
+
+> ⏸ **On hold** until customer FE + admin FE land. Deploying BE alone forces redeploys whenever the FE finds gaps; we'd rather deploy a complete system once. See `sprints/b4.6-figma-alignment.md` § "Why pause B5".
 
 | # | Sub-feature | Status | Postman | Docs |
 | --- | --- | --- | --- | --- |

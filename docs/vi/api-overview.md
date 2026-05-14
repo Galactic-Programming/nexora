@@ -364,6 +364,24 @@ Lưu ý currency: aggregate raw `totalAmount` không convert FX — OK cho seed 
 
 ### Sprint B4 hoàn tất
 
-Reviews + Wishlist + Admin stats — đã ship 5 sub-feature. Tiếp theo: Sprint B5 hardening + deploy production.
+Reviews + Wishlist + Admin stats — đã ship 5 sub-feature.
+
+### Sprint B4.6 — planned (Figma alignment trước FE)
+
+Schema + service tweak để FE template wire 1:1 với design Figma. Sub-feature bên dưới; rationale đầy đủ ở [`sprints/b4.6-figma-alignment.md`](sprints/b4.6-figma-alignment.md).
+
+| Thay đổi | Surface |
+| --- | --- |
+| `Tour.isFeatured` boolean | Schema; drives strip "Trending" home |
+| Mở rộng `TourCategory` với `HONEYMOON`, `MUSICAL` | Schema; drives Services dropdown |
+| `?featured=true` + `sort=createdDesc\|priceAsc\|priceDesc\|titleAsc\|titleDesc` | `GET /tours` query DTO |
+| `averageRating`, `reviewsCount`, `peopleGoing` per card | `GET /tours` response payload |
+| `isFeatured?` trên Create/Update DTO | `POST/PATCH /admin/tours` |
+
+Out of scope (xem [`BACKLOG.md`](../BACKLOG.md)): Build Your Own Package custom builder, newsletter subscribe, multi-currency revenue.
+
+### Sprint B5 — on hold
+
+Hardening + Railway deploy. Pause cho đến khi FE customer + FE admin cả 2 land, để deploy 1 lần cả hệ thống đã validate, thay vì redeploy BE mỗi lần FE phát hiện gap. Xem `sprints/b4.6-figma-alignment.md` § "Vì sao pause B5".
 
 Xem [`roadmap.md`](../roadmap.md) để biết tracker chi tiết theo từng sub-feature.
