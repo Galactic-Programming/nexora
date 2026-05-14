@@ -13,12 +13,21 @@ import {
   TourDeparture,
   UserRole,
 } from '@prisma/client';
+import { EmailService } from '../email/email.service';
 import { BookingsService } from './bookings.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { StripeService } from '../payments/stripe.service';
 
+const makeEmail = (): EmailService =>
+  ({
+    sendBookingConfirmation: jest.fn().mockResolvedValue(undefined),
+    sendBookingRefunded: jest.fn().mockResolvedValue(undefined),
+  }) as unknown as EmailService;
+
 beforeAll(() => {
   jest.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
+  jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+  jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
 });
 afterAll(() => {
   jest.restoreAllMocks();
@@ -126,6 +135,7 @@ describe('BookingsService.create', () => {
       prisma as never,
       makeStripe(),
       makeConfig(),
+      makeEmail(),
     );
 
     await expect(svc.create('u-customer', baseDto)).rejects.toBeInstanceOf(
@@ -146,6 +156,7 @@ describe('BookingsService.create', () => {
       prisma as never,
       makeStripe(),
       makeConfig(),
+      makeEmail(),
     );
 
     await expect(svc.create('u-customer', baseDto)).rejects.toMatchObject({
@@ -166,6 +177,7 @@ describe('BookingsService.create', () => {
       prisma as never,
       makeStripe(),
       makeConfig(),
+      makeEmail(),
     );
 
     await expect(svc.create('u-customer', baseDto)).rejects.toBeInstanceOf(
@@ -201,6 +213,7 @@ describe('BookingsService.create', () => {
       prisma as never,
       makeStripe(createCheckoutSession),
       makeConfig(),
+      makeEmail(),
     );
 
     await svc.create('u-customer', baseDto);
@@ -245,6 +258,7 @@ describe('BookingsService.create', () => {
       prisma as never,
       makeStripe(),
       makeConfig(),
+      makeEmail(),
     );
 
     const result = await svc.create('u-customer', baseDto);
@@ -277,6 +291,7 @@ describe('BookingsService.create', () => {
       prisma as never,
       makeStripe(stripeSessionFn),
       makeConfig(),
+      makeEmail(),
     );
 
     await expect(svc.create('u-customer', baseDto)).rejects.toMatchObject({
@@ -293,6 +308,7 @@ describe('BookingsService.findByCodeForCaller', () => {
       prisma as never,
       makeStripe(),
       makeConfig(),
+      makeEmail(),
     );
 
     const result = await svc.findByCodeForCaller(sampleBooking.code, {
@@ -310,6 +326,7 @@ describe('BookingsService.findByCodeForCaller', () => {
       prisma as never,
       makeStripe(),
       makeConfig(),
+      makeEmail(),
     );
 
     const result = await svc.findByCodeForCaller(sampleBooking.code, {
@@ -329,6 +346,7 @@ describe('BookingsService.findByCodeForCaller', () => {
       prisma as never,
       makeStripe(),
       makeConfig(),
+      makeEmail(),
     );
 
     await expect(
@@ -346,6 +364,7 @@ describe('BookingsService.findByCodeForCaller', () => {
       prisma as never,
       makeStripe(),
       makeConfig(),
+      makeEmail(),
     );
 
     await expect(
@@ -354,6 +373,126 @@ describe('BookingsService.findByCodeForCaller', () => {
         role: UserRole.CUSTOMER,
       }),
     ).rejects.toMatchObject({ response: { code: 'BOOKING_NOT_FOUND' } });
+  });
+});
+
+describe('BookingsService.refundByAdmin', () => {
+  const paidBooking = {
+    ...sampleBooking,
+    status: BookingStatus.PAID,
+    stripePaymentIntentId: 'pi_test_001',
+    user: { locale: 'en' },
+    tour: { titleEn: 'Hoi An Walking Tour', titleVi: 'Tour Hoi An' },
+    departure: {
+      startDate: sampleDeparture.startDate,
+      endDate: sampleDeparture.endDate,
+    },
+  };
+
+  it('rejects BOOKING_NOT_FOUND when id missing', async () => {
+    const prisma = {
+      booking: { findUnique: jest.fn().mockResolvedValue(null) },
+    };
+    const svc = new BookingsService(
+      prisma as never,
+      { createRefund: jest.fn() } as unknown as StripeService,
+      makeConfig(),
+      makeEmail(),
+    );
+    await expect(
+      svc.refundByAdmin({ bookingId: 'missing' }),
+    ).rejects.toMatchObject({
+      response: { code: 'BOOKING_NOT_FOUND' },
+    });
+  });
+
+  it('rejects BOOKING_NOT_REFUNDABLE when status is not PAID', async () => {
+    const prisma = {
+      booking: {
+        findUnique: jest
+          .fn()
+          .mockResolvedValue({ ...paidBooking, status: BookingStatus.PENDING }),
+      },
+    };
+    const svc = new BookingsService(
+      prisma as never,
+      { createRefund: jest.fn() } as unknown as StripeService,
+      makeConfig(),
+      makeEmail(),
+    );
+    await expect(svc.refundByAdmin({ bookingId: 'b-1' })).rejects.toMatchObject(
+      {
+        response: { code: 'BOOKING_NOT_REFUNDABLE' },
+      },
+    );
+  });
+
+  it('refunds, decrements seats, marks REFUNDED, and emails the customer', async () => {
+    const seatDecrement = jest.fn().mockResolvedValue(undefined);
+    const bookingUpdate = jest
+      .fn()
+      .mockResolvedValue({ ...paidBooking, status: BookingStatus.REFUNDED });
+    const tx = {
+      tourDeparture: { update: seatDecrement },
+      booking: { update: bookingUpdate },
+    };
+    const transaction = jest.fn(async (cb: (tx: unknown) => Promise<unknown>) =>
+      cb(tx),
+    );
+    const prisma = {
+      booking: { findUnique: jest.fn().mockResolvedValue(paidBooking) },
+      $transaction: transaction,
+    };
+    const refund = jest
+      .fn()
+      .mockResolvedValue({ id: 're_1', status: 'succeeded' });
+    const sendBookingRefunded = jest.fn().mockResolvedValue(undefined);
+    const email = {
+      sendBookingConfirmation: jest.fn().mockResolvedValue(undefined),
+      sendBookingRefunded,
+    } as unknown as EmailService;
+    const svc = new BookingsService(
+      prisma as never,
+      { createRefund: refund } as unknown as StripeService,
+      makeConfig(),
+      email,
+    );
+
+    await svc.refundByAdmin({ bookingId: 'b-1', reason: 'Tour cancelled' });
+
+    expect(refund).toHaveBeenCalledWith({
+      paymentIntentId: 'pi_test_001',
+      reason: 'Tour cancelled',
+    });
+    type DepCall = { data: { seatsBooked: { decrement: number } } };
+    const depCalls = seatDecrement.mock.calls as unknown as DepCall[][];
+    expect(depCalls[0][0].data.seatsBooked.decrement).toBe(3);
+    type BookCall = { data: { status: BookingStatus } };
+    const bookCalls = bookingUpdate.mock.calls as unknown as BookCall[][];
+    expect(bookCalls[0][0].data.status).toBe(BookingStatus.REFUNDED);
+    expect(sendBookingRefunded).toHaveBeenCalled();
+  });
+
+  it('rejects REFUND_FAILED and does not write to DB when Stripe errors', async () => {
+    const transaction = jest.fn();
+    const prisma = {
+      booking: { findUnique: jest.fn().mockResolvedValue(paidBooking) },
+      $transaction: transaction,
+    };
+    const refund = jest.fn().mockRejectedValue(new Error('charge expired'));
+    const svc = new BookingsService(
+      prisma as never,
+      { createRefund: refund } as unknown as StripeService,
+      makeConfig(),
+      makeEmail(),
+    );
+
+    await expect(svc.refundByAdmin({ bookingId: 'b-1' })).rejects.toMatchObject(
+      {
+        response: { code: 'REFUND_FAILED' },
+      },
+    );
+    expect(transaction).not.toHaveBeenCalled();
   });
 });
 

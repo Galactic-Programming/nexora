@@ -237,10 +237,44 @@ Errors:
 
 Full local + production setup: [`docs/en/runbooks/stripe-testing.md`](runbooks/stripe-testing.md).
 
+### Sprint B3.5 — Admin refund
+
+| Method | Path | Access | Description |
+| --- | --- | --- | --- |
+| POST | `/admin/bookings/:id/refund` | 🔒 ADMIN | Full Stripe refund on a PAID booking. Decrements `seatsBooked`, flips to REFUNDED, sets `cancelledAt`, fires the refund email. |
+
+Body:
+
+```json
+{ "reason": "Tour cancelled due to weather" }
+```
+
+`reason` is optional and free-form. If it matches one of Stripe's enum values (`duplicate` / `fraudulent` / `requested_by_customer`) it's forwarded; otherwise it's persisted as Stripe metadata.
+
+Order of operations:
+
+1. Validate booking is PAID and has `stripePaymentIntentId`.
+2. Call Stripe refund FIRST (authoritative — if Stripe rejects, the DB stays PAID).
+3. In one transaction: decrement `tour_departures.seats_booked` and flip booking to REFUNDED + `cancelledAt`.
+4. Fire `bookingRefunded` email (defensive — failures log-and-continue).
+
+Errors:
+
+- `BOOKING_NOT_FOUND` (404)
+- `BOOKING_NOT_REFUNDABLE` (400) — not PAID, or missing payment_intent.
+- `REFUND_FAILED` (400) — Stripe rejected (e.g. dispute window closed).
+
+### Sprint B3.6 — Transactional email (Resend)
+
+`EmailService` (global) wraps Resend with defensive try/catch — send failures log at WARN and never throw, so a stuck SMTP path never rolls back a PAID booking or a successful refund. Two templates ship bilingual (EN/VI) inline, selected from `user.locale`:
+
+- `bookingConfirmation` — fired by the webhook on the PAID transition.
+- `bookingRefunded` — fired by `refundByAdmin` after Stripe refund + DB commit.
+
+Setup + production checklist: [`docs/en/runbooks/email.md`](runbooks/email.md).
+
 ### Future sprints (planned)
 
-- B2.5–B2.6: `/admin/tours/:slug/departures`, `/admin/uploads/signed-url`
-- B3: `/bookings`, `/payments/webhook`, `/admin/bookings/:id/refund`
 - B4: `/reviews`, `/wishlist`, `/admin/stats`
 
 See [`roadmap.md`](../roadmap.md) for the full per-sub-feature tracker.

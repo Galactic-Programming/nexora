@@ -2817,6 +2817,95 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Admin / Bookings",
+      "description": "Admin-only refund surface (Sprint B3.5). Refunds a PAID booking via Stripe and releases the held seats back to the departure pool. Also triggers the `bookingRefunded` email (B3.6).\n\n**Pre-conditions:**\n1. Caller signed in as ADMIN (`/auth/admin/sync` already ran). The folder uses the admin JWT slot.\n2. `{{bookingId}}` env var points at a PAID booking with a `stripePaymentIntentId`. The Bookings folder doesn't capture id — copy it manually from the `GET /bookings/:code` response, or hit Supabase Studio.\n\n**Errors:**\n- 400 `BOOKING_NOT_REFUNDABLE` — booking is not PAID or has no payment_intent.\n- 400 `REFUND_FAILED` — Stripe rejected (dispute window closed, etc.).\n- 404 `BOOKING_NOT_FOUND`.\n- 403 — caller is not ADMIN.",
+      "item": [
+        {
+          "name": "POST /admin/bookings/:id/refund",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Tour cancelled due to weather\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/bookings/{{bookingId}}/refund",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "bookings",
+                "{{bookingId}}",
+                "refund"
+              ]
+            },
+            "description": "Issues a full Stripe refund against the booking's `stripePaymentIntentId`, decrements `seatsBooked` on the departure, flips the booking to `REFUNDED`, sets `cancelledAt`, and sends the customer a refund notification email.\n\nThe `reason` field is optional and free-form. If it matches one of Stripe's enum values (`duplicate` / `fraudulent` / `requested_by_customer`) it's forwarded; otherwise it's persisted as Stripe metadata."
+          },
+          "response": [
+            {
+              "name": "200 — REFUNDED",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/bookings/{{bookingId}}/refund",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "bookings",
+                    "{{bookingId}}",
+                    "refund"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"id\": \"e7c1...\",\n    \"code\": \"BK-ABCDEFGH\",\n    \"status\": \"REFUNDED\",\n    \"cancelledAt\": \"2026-05-14T08:30:00.000Z\",\n    \"stripePaymentIntentId\": \"pi_test_xxx\"\n  },\n  \"error\": null\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('status is REFUNDED', () => pm.expect(body.data.status).to.eql('REFUNDED'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }

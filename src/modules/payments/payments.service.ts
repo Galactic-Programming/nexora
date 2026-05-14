@@ -1,7 +1,8 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { BookingStatus, Prisma } from '@prisma/client';
+import { BookingStatus, Locale, Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { EmailService } from '../email/email.service';
 import { StripeService } from './stripe.service';
 
 /**
@@ -46,6 +47,7 @@ export class PaymentsService {
     private readonly prisma: PrismaService,
     private readonly stripe: StripeService,
     private readonly config: ConfigService,
+    private readonly email: EmailService,
   ) {}
 
   /**
@@ -219,6 +221,7 @@ export class PaymentsService {
       this.logger.log(
         `Booking ${bookingCode} confirmed PAID (payment_intent=${paymentIntentId ?? 'n/a'})`,
       );
+      await this.sendConfirmationEmail(bookingId);
     } else if (outcome === 'overbooked') {
       await this.refundOverbookedAndCancel({
         bookingId,
@@ -300,6 +303,49 @@ export class PaymentsService {
     this.logger.warn(
       `Auto-refunded overbooked booking ${args.bookingCode} (payment_intent=${args.paymentIntentId})`,
     );
+  }
+
+  /**
+   * Loads the booking + relations we need to render the confirmation
+   * template and hands off to `EmailService`. Failure modes are logged
+   * but never thrown — the booking is already PAID and a stuck send
+   * shouldn't force Stripe into a retry loop.
+   */
+  private async sendConfirmationEmail(bookingId: string): Promise<void> {
+    try {
+      const booking = await this.prisma.booking.findUnique({
+        where: { id: bookingId },
+        include: {
+          user: { select: { locale: true } },
+          tour: { select: { titleEn: true, titleVi: true } },
+          departure: { select: { startDate: true, endDate: true } },
+        },
+      });
+      if (!booking) return;
+      const locale = booking.user?.locale ?? Locale.en;
+      const tourTitle =
+        locale === Locale.vi ? booking.tour.titleVi : booking.tour.titleEn;
+      await this.email.sendBookingConfirmation({
+        to: booking.contactEmail,
+        locale,
+        vars: {
+          code: booking.code,
+          tourTitle,
+          contactName: booking.contactName,
+          totalAmount: booking.totalAmount.toString(),
+          currency: booking.currency,
+          numAdults: booking.numAdults,
+          numChildren: booking.numChildren,
+          startDate: booking.departure.startDate,
+          endDate: booking.departure.endDate,
+        },
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'unknown';
+      this.logger.warn(
+        `Failed to load booking ${bookingId} for confirmation email: ${message}`,
+      );
+    }
   }
 
   /**

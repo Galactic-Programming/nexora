@@ -1,8 +1,15 @@
 import { BadRequestException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BookingStatus, Prisma } from '@prisma/client';
+import { EmailService } from '../email/email.service';
 import { PaymentsService } from './payments.service';
 import { StripeService } from './stripe.service';
+
+const makeEmail = (): EmailService =>
+  ({
+    sendBookingConfirmation: jest.fn().mockResolvedValue(undefined),
+    sendBookingRefunded: jest.fn().mockResolvedValue(undefined),
+  }) as unknown as EmailService;
 
 beforeAll(() => {
   jest.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
@@ -121,6 +128,7 @@ describe('PaymentsService.handleStripeEvent', () => {
       makePrisma({}) as never,
       makeStripe(constructEvent),
       makeConfig(),
+      makeEmail(),
     );
 
     await expect(
@@ -150,6 +158,7 @@ describe('PaymentsService.handleStripeEvent', () => {
       prisma as never,
       makeStripe(constructEvent),
       makeConfig(),
+      makeEmail(),
     );
 
     const result = await svc.handleStripeEvent(Buffer.from('{}'), 'good-sig');
@@ -178,6 +187,7 @@ describe('PaymentsService.handleStripeEvent', () => {
       prisma as never,
       makeStripe(constructEvent),
       makeConfig(),
+      makeEmail(),
     );
 
     await svc.handleStripeEvent(Buffer.from('{}'), 'good-sig');
@@ -218,6 +228,7 @@ describe('PaymentsService.handleStripeEvent', () => {
       prisma as never,
       makeStripe(constructEvent, refund),
       makeConfig(),
+      makeEmail(),
     );
 
     await svc.handleStripeEvent(Buffer.from('{}'), 'good-sig');
@@ -285,6 +296,7 @@ describe('PaymentsService.handleStripeEvent', () => {
       prisma as never,
       makeStripe(constructEvent, refund),
       makeConfig(),
+      makeEmail(),
     );
 
     await svc.handleStripeEvent(Buffer.from('{}'), 'good-sig');
@@ -328,6 +340,7 @@ describe('PaymentsService.handleStripeEvent', () => {
       prisma as never,
       makeStripe(constructEvent),
       makeConfig(),
+      makeEmail(),
     );
 
     await svc.handleStripeEvent(Buffer.from('{}'), 'good-sig');
@@ -355,6 +368,7 @@ describe('PaymentsService.handleStripeEvent', () => {
       prisma as never,
       makeStripe(constructEvent),
       makeConfig(),
+      makeEmail(),
     );
 
     const result = await svc.handleStripeEvent(Buffer.from('{}'), 'good-sig');

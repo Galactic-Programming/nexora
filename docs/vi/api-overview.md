@@ -237,10 +237,44 @@ Errors:
 
 Full setup local + production: [`docs/vi/runbooks/stripe-testing.md`](runbooks/stripe-testing.md).
 
+### Sprint B3.5 — Admin refund
+
+| Method | Path | Access | Mô tả |
+| --- | --- | --- | --- |
+| POST | `/admin/bookings/:id/refund` | 🔒 ADMIN | Full refund Stripe trên booking PAID. Decrement `seatsBooked`, flip REFUNDED, set `cancelledAt`, gửi email refund. |
+
+Body:
+
+```json
+{ "reason": "Tour bị hủy do thời tiết" }
+```
+
+`reason` optional, free-form. Nếu match enum Stripe (`duplicate` / `fraudulent` / `requested_by_customer`) sẽ forward; còn lại lưu vào Stripe metadata.
+
+Thứ tự thực thi:
+
+1. Validate booking PAID + có `stripePaymentIntentId`.
+2. Gọi Stripe refund TRƯỚC (authoritative — nếu Stripe reject thì DB vẫn PAID).
+3. Trong 1 transaction: decrement `tour_departures.seats_booked` + flip booking REFUNDED + set `cancelledAt`.
+4. Gửi email `bookingRefunded` (defensive — fail log-and-continue).
+
+Lỗi:
+
+- `BOOKING_NOT_FOUND` (404)
+- `BOOKING_NOT_REFUNDABLE` (400) — không phải PAID, hoặc thiếu payment_intent.
+- `REFUND_FAILED` (400) — Stripe reject (vd: dispute window đóng).
+
+### Sprint B3.6 — Email giao dịch (Resend)
+
+`EmailService` (global) wrap Resend với try/catch defensive — send fail log WARN và không bao giờ throw, vì vậy SMTP gặp lỗi không rollback booking PAID hoặc refund thành công. 2 template ship bilingual (EN/VI) inline, chọn theo `user.locale`:
+
+- `bookingConfirmation` — webhook gửi khi transition PAID.
+- `bookingRefunded` — `refundByAdmin` gửi sau khi refund Stripe + DB commit.
+
+Setup + production checklist: [`docs/vi/runbooks/email.md`](runbooks/email.md).
+
 ### Sprint kế tiếp (kế hoạch)
 
-- B2.5–B2.6: `/admin/tours/:slug/departures`, `/admin/uploads/signed-url`
-- B3: `/bookings`, `/payments/webhook`, `/admin/bookings/:id/refund`
 - B4: `/reviews`, `/wishlist`, `/admin/stats`
 
 Xem [`roadmap.md`](../roadmap.md) để biết tracker chi tiết theo từng sub-feature.

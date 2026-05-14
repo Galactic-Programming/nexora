@@ -12,10 +12,12 @@ import {
   Booking,
   BookingStatus,
   DepartureStatus,
+  Locale,
   TourDeparture,
   UserRole,
 } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { EmailService } from '../email/email.service';
 import { StripeService } from '../payments/stripe.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 
@@ -71,6 +73,7 @@ export class BookingsService {
     private readonly prisma: PrismaService,
     private readonly stripe: StripeService,
     private readonly config: ConfigService,
+    private readonly email: EmailService,
   ) {}
 
   // ────────────────────────────────────────────────────────────────────────
@@ -266,12 +269,120 @@ export class BookingsService {
   }
 
   /**
+   * Admin-initiated refund.
+   *
+   * Pre-conditions: booking must be PAID and carry a `stripePaymentIntentId`
+   * (which the webhook persists on the PAID transition). Anything else is
+   * a 4xx — we never refund out of CANCELLED, REFUNDED, or PENDING.
+   *
+   * Order of operations:
+   *  1. Load booking; validate state.
+   *  2. Call Stripe refund FIRST (outside any DB tx). The Stripe call is
+   *     authoritative — if it fails, the booking row stays PAID and the
+   *     admin sees a `REFUND_FAILED` error. We never flip the DB to
+   *     REFUNDED for a refund that didn't actually happen.
+   *  3. In a single DB tx: decrement `seatsBooked` on the departure and
+   *     flip the booking to REFUNDED + set `cancelledAt`.
+   *  4. Fire the customer notification email (defensive — failures
+   *     log-and-continue; the refund is already committed).
+   *
+   * Idempotency: if Stripe says the payment is already refunded
+   * (`charge_already_refunded`), we still want the DB to converge to
+   * REFUNDED. We re-throw any other Stripe error as REFUND_FAILED.
+   */
+  async refundByAdmin(args: {
+    bookingId: string;
+    reason?: string;
+  }): Promise<Booking> {
+    const booking = await this.prisma.booking.findUnique({
+      where: { id: args.bookingId },
+      include: {
+        user: { select: { locale: true } },
+        tour: { select: { titleEn: true, titleVi: true } },
+        departure: { select: { startDate: true, endDate: true } },
+      },
+    });
+    if (!booking) {
+      throw new NotFoundException({
+        code: 'BOOKING_NOT_FOUND',
+        message: `Booking "${args.bookingId}" not found`,
+      });
+    }
+    if (booking.status !== BookingStatus.PAID) {
+      throw new BadRequestException({
+        code: 'BOOKING_NOT_REFUNDABLE',
+        message: `Booking is ${booking.status}; only PAID bookings can be refunded`,
+      });
+    }
+    if (!booking.stripePaymentIntentId) {
+      throw new BadRequestException({
+        code: 'BOOKING_NOT_REFUNDABLE',
+        message: 'Booking has no Stripe payment_intent — refund manually',
+      });
+    }
+
+    try {
+      await this.stripe.createRefund({
+        paymentIntentId: booking.stripePaymentIntentId,
+        reason: args.reason ?? 'requested_by_customer',
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'unknown';
+      this.logger.error(
+        `Stripe refund failed for booking ${booking.code}: ${message}`,
+      );
+      throw new BadRequestException({
+        code: 'REFUND_FAILED',
+        message: `Stripe refund failed: ${message}`,
+      });
+    }
+
+    const totalSeats = booking.numAdults + booking.numChildren;
+    const updated = await this.prisma.$transaction(async (tx) => {
+      await tx.tourDeparture.update({
+        where: { id: booking.departureId },
+        data: { seatsBooked: { decrement: totalSeats } },
+      });
+      return tx.booking.update({
+        where: { id: booking.id },
+        data: {
+          status: BookingStatus.REFUNDED,
+          cancelledAt: new Date(),
+        },
+      });
+    });
+
+    this.logger.log(
+      `Admin refunded booking ${booking.code} (payment_intent=${booking.stripePaymentIntentId}, seats=${totalSeats} released)`,
+    );
+
+    const locale = booking.user?.locale ?? Locale.en;
+    const tourTitle =
+      locale === Locale.vi ? booking.tour.titleVi : booking.tour.titleEn;
+    await this.email.sendBookingRefunded({
+      to: booking.contactEmail,
+      locale,
+      vars: {
+        code: booking.code,
+        tourTitle,
+        contactName: booking.contactName,
+        totalAmount: booking.totalAmount.toString(),
+        currency: booking.currency,
+        numAdults: booking.numAdults,
+        numChildren: booking.numChildren,
+        startDate: booking.departure.startDate,
+        endDate: booking.departure.endDate,
+      },
+    });
+
+    return updated;
+  }
+
+  /**
    * Public stub — used by the future ownership-aware methods. Kept here
    * (vs. inlined) so the role check has one home and one log message
    * the day we want to audit denied accesses.
    */
-  // Reserved for future use:
-  // private assertOwnerOrAdmin(...) — when refund (B3.5) lands here.
   private assertOwnerOrAdmin(
     booking: Pick<Booking, 'userId'>,
     caller: { id: string; role: UserRole },
