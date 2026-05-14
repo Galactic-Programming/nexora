@@ -284,6 +284,64 @@ describe('ToursService', () => {
       expect(result.meta.total).toBe(45);
       expect(result.meta.totalPages).toBe(3); // ceil(45/20)
     });
+
+    it('joins TourStats (averageRating, reviewsCount, peopleGoing) per card', async () => {
+      const tour1 = { ...sampleTour, id: 't-1' };
+      const tour2 = { ...sampleTour, id: 't-2', slug: 'sa-pa-trek' };
+      const tourFindMany = jest.fn().mockResolvedValue([tour1, tour2]);
+      const tourCount = jest.fn().mockResolvedValue(2);
+      // Only t-1 has approved reviews; only t-2 has departure seats sold.
+      const reviewGroupBy = jest
+        .fn()
+        .mockResolvedValue([
+          { tourId: 't-1', _avg: { rating: 4.5 }, _count: { _all: 3 } },
+        ]);
+      const departureGroupBy = jest
+        .fn()
+        .mockResolvedValue([{ tourId: 't-2', _sum: { seatsBooked: 17 } }]);
+      const prisma = makePrisma({
+        tourFindMany,
+        tourCount,
+        reviewGroupBy,
+        departureGroupBy,
+      });
+      const svc = new ToursService(prisma as never);
+
+      const result = await svc.findPublishedList({});
+
+      const byId = new Map(result.items.map((i) => [i.id, i]));
+      expect(byId.get('t-1')).toMatchObject({
+        averageRating: 4.5,
+        reviewsCount: 3,
+        peopleGoing: 0, // no departure seats
+      });
+      expect(byId.get('t-2')).toMatchObject({
+        averageRating: null, // no approved reviews
+        reviewsCount: 0,
+        peopleGoing: 17,
+      });
+    });
+
+    it('skips stats queries when the page is empty', async () => {
+      const tourFindMany = jest.fn().mockResolvedValue([]);
+      const tourCount = jest.fn().mockResolvedValue(0);
+      const reviewGroupBy = jest.fn();
+      const departureGroupBy = jest.fn();
+      const prisma = makePrisma({
+        tourFindMany,
+        tourCount,
+        reviewGroupBy,
+        departureGroupBy,
+      });
+      const svc = new ToursService(prisma as never);
+
+      const result = await svc.findPublishedList({});
+
+      expect(result.items).toEqual([]);
+      // Avoid two no-op groupBy round-trips on an empty page.
+      expect(reviewGroupBy).not.toHaveBeenCalled();
+      expect(departureGroupBy).not.toHaveBeenCalled();
+    });
   });
 
   describe('findPublishedBySlug', () => {
@@ -319,6 +377,33 @@ describe('ToursService', () => {
       await expect(svc.findPublishedBySlug('draft-slug')).rejects.toMatchObject(
         { response: { code: 'TOUR_NOT_FOUND' } },
       );
+    });
+
+    it('returns TourWithStats so detail page can render the rating chip', async () => {
+      const tour = { ...sampleTour, id: 't-1', isPublished: true };
+      const tourFindFirst = jest.fn().mockResolvedValue(tour);
+      const reviewGroupBy = jest
+        .fn()
+        .mockResolvedValue([
+          { tourId: 't-1', _avg: { rating: 5 }, _count: { _all: 12 } },
+        ]);
+      const departureGroupBy = jest
+        .fn()
+        .mockResolvedValue([{ tourId: 't-1', _sum: { seatsBooked: 42 } }]);
+      const prisma = makePrisma({
+        tourFindFirst,
+        reviewGroupBy,
+        departureGroupBy,
+      });
+      const svc = new ToursService(prisma as never);
+
+      const result = await svc.findPublishedBySlug('hoi-an-walking');
+
+      expect(result).toMatchObject({
+        averageRating: 5,
+        reviewsCount: 12,
+        peopleGoing: 42,
+      });
     });
   });
 });

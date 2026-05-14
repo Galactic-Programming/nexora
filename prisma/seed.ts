@@ -167,16 +167,16 @@ const TOURS: TourSeed[] = [
   {
     slug: 'hoi-an-lantern-night',
     destinationSlug: 'hoi-an',
-    titleEn: 'Hoi An Lantern Night Cruise',
-    titleVi: 'Du thuyền đêm đèn lồng Hội An',
+    titleEn: 'Hoi An Lantern Festival Night',
+    titleVi: 'Đêm hội đèn lồng Hội An',
     summaryEn:
-      'Evening river cruise with paper lantern release and street food sampling.',
+      'Evening river cruise with paper lantern release, live traditional music performances, and street food sampling.',
     summaryVi:
-      'Du thuyền sông buổi tối với thả đèn hoa đăng và nếm món ăn đường phố.',
+      'Du thuyền sông buổi tối với thả đèn hoa đăng, biểu diễn nhạc truyền thống và nếm món ăn đường phố.',
     durationDays: 1,
     maxGroupSize: 20,
     basePrice: 29,
-    category: TourCategory.DAY,
+    category: TourCategory.MUSICAL,
     difficulty: 'easy',
     isPublished: true,
     isFeatured: true,
@@ -363,19 +363,19 @@ const TOURS: TourSeed[] = [
   {
     slug: 'phu-quoc-sunset-cruise',
     destinationSlug: 'phu-quoc',
-    titleEn: 'Phu Quoc Sunset Sailing Cruise',
-    titleVi: 'Du thuyền hoàng hôn Phú Quốc',
+    titleEn: 'Phu Quoc Romantic Sunset Sail',
+    titleVi: 'Du thuyền hoàng hôn lãng mạn Phú Quốc',
     summaryEn:
-      'Sail along the west coast for sunset with sparkling wine and tapas.',
+      'Private-feel sunset sail along the west coast with sparkling wine, tapas, and a couples-friendly itinerary.',
     summaryVi:
-      'Du thuyền dọc bờ tây ngắm hoàng hôn cùng vang sủi và đồ ăn nhẹ.',
+      'Du thuyền hoàng hôn riêng tư dọc bờ tây cùng vang sủi, đồ ăn nhẹ, lịch trình thân thiện cho cặp đôi.',
     durationDays: 1,
     maxGroupSize: 16,
     basePrice: 55,
-    category: TourCategory.DAY,
+    category: TourCategory.HONEYMOON,
     difficulty: 'easy',
     isPublished: true,
-    isFeatured: false,
+    isFeatured: true,
     heroImage: 'tours/hero/phu-quoc-sunset.jpg',
     gallery: [],
     included: ['Sailing boat', 'Sparkling wine', 'Tapas', 'Guide'],
@@ -548,11 +548,35 @@ async function main(): Promise<void> {
     return buildDepartures(id, t.maxGroupSize, t.durationDays);
   });
 
-  console.log(
-    `[seed] resetting departures for ${tourIds.length} tours, inserting ${departures.length} new rows...`,
+  // Reset departures only for tours that have no bookings yet — wiping
+  // a departure with an FK-referencing booking violates the constraint
+  // and aborts the whole seed (we already saw this in real testing).
+  // Tours with live bookings keep their existing departures untouched.
+  const tourIdsWithBookings = new Set(
+    (
+      await prisma.booking.findMany({
+        where: { tourId: { in: tourIds } },
+        select: { tourId: true },
+        distinct: ['tourId'],
+      })
+    ).map((b) => b.tourId),
   );
-  await prisma.tourDeparture.deleteMany({ where: { tourId: { in: tourIds } } });
-  await prisma.tourDeparture.createMany({ data: departures });
+  const resettableTourIds = tourIds.filter(
+    (id) => !tourIdsWithBookings.has(id),
+  );
+  const resettableDepartures = departures.filter((d) =>
+    resettableTourIds.includes(d.tourId),
+  );
+
+  console.log(
+    `[seed] resetting departures for ${resettableTourIds.length}/${tourIds.length} tours ` +
+      `(${tourIdsWithBookings.size} have live bookings, keeping their departures); ` +
+      `inserting ${resettableDepartures.length} new rows...`,
+  );
+  await prisma.tourDeparture.deleteMany({
+    where: { tourId: { in: resettableTourIds } },
+  });
+  await prisma.tourDeparture.createMany({ data: resettableDepartures });
 
   console.log('[seed] done.');
 }
