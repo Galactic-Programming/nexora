@@ -332,8 +332,38 @@ Lỗi:
 
 - `TOUR_NOT_FOUND` (404) khi add với tour id không tồn tại hoặc chưa publish.
 
-### Sprint kế tiếp (kế hoạch)
+### Sprint B4.5 — Admin dashboard stats
 
-- B4.5: admin stats.
+| Method | Path | Access | Mô tả |
+| --- | --- | --- | --- |
+| GET | `/admin/stats` | 🔒 ADMIN | Payload tổng hợp dashboard — overview + status breakdown + 3 top-N list + trend 6 tháng. |
+
+Response shape:
+
+```jsonc
+{
+  "overview": {
+    "totalRevenue": "450",       // tổng PAID, Decimal dạng string
+    "currency": "USD",
+    "totalBookings": 5,
+    "paidBookings": 3,
+    "conversionRate": 0.6,        // paidBookings / totalBookings
+    "monthOverMonthGrowth": 0.5   // null nếu không có data tháng trước
+  },
+  "bookingsByStatus": { "PENDING": 1, "PAID": 3, "CANCELLED": 0, "REFUNDED": 1 },
+  "topToursByRevenue": [{ "tourId", "slug", "titleEn", "revenue", "bookingsCount" }],
+  "topToursByRating":  [{ "tourId", "slug", "titleEn", "averageRating", "reviewsCount" }],
+  "topToursByWishlist":[{ "tourId", "slug", "titleEn", "wishlistCount" }],
+  "monthlyTrend":      [{ "month": "2026-05", "bookings": 4, "revenue": "150" }]
+}
+```
+
+Implementation: tất cả slice chạy song song qua `Promise.all`. Hầu hết dùng Prisma `groupBy`/`aggregate` (đã có index: `bookings(status, createdAt)`, `reviews(tourId, isApproved)`). Monthly bucket dùng `$queryRaw` với `date_trunc('month', ...)` vì Prisma typed API chưa expose.
+
+Lưu ý currency: aggregate raw `totalAmount` không convert FX — OK cho seed USD-only của đồ án; xem xét lại khi multi-currency.
+
+### Sprint B4 hoàn tất
+
+Reviews + Wishlist + Admin stats — đã ship 5 sub-feature. Tiếp theo: Sprint B5 hardening + deploy production.
 
 Xem [`roadmap.md`](../roadmap.md) để biết tracker chi tiết theo từng sub-feature.

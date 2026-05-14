@@ -332,8 +332,38 @@ Errors:
 
 - `TOUR_NOT_FOUND` (404) on add when the tour id is unknown or unpublished.
 
-### Future sprints (planned)
+### Sprint B4.5 — Admin dashboard stats
 
-- B4.5: admin stats.
+| Method | Path | Access | Description |
+| --- | --- | --- | --- |
+| GET | `/admin/stats` | 🔒 ADMIN | Aggregated dashboard payload — overview + status breakdown + 3 top-N lists + 6-month trend. |
+
+Response shape:
+
+```jsonc
+{
+  "overview": {
+    "totalRevenue": "450",       // PAID-only sum, Decimal as string
+    "currency": "USD",
+    "totalBookings": 5,
+    "paidBookings": 3,
+    "conversionRate": 0.6,        // paidBookings / totalBookings
+    "monthOverMonthGrowth": 0.5   // null if there's no prior-month data
+  },
+  "bookingsByStatus": { "PENDING": 1, "PAID": 3, "CANCELLED": 0, "REFUNDED": 1 },
+  "topToursByRevenue": [{ "tourId", "slug", "titleEn", "revenue", "bookingsCount" }],
+  "topToursByRating":  [{ "tourId", "slug", "titleEn", "averageRating", "reviewsCount" }],
+  "topToursByWishlist":[{ "tourId", "slug", "titleEn", "wishlistCount" }],
+  "monthlyTrend":      [{ "month": "2026-05", "bookings": 4, "revenue": "150" }]
+}
+```
+
+Implementation: all slices fire in parallel via `Promise.all`. Most use Prisma `groupBy`/`aggregate` (indexed: `bookings(status, createdAt)`, `reviews(tourId, isApproved)`). The monthly bucket uses `$queryRaw` with `date_trunc('month', ...)` because Prisma's typed API doesn't expose it.
+
+Currency note: aggregates raw `totalAmount` without FX conversion — fine for the USD-only thesis seed; revisit if multi-currency lands.
+
+### Sprint B4 complete
+
+Reviews + Wishlist + Admin stats — all 5 sub-features shipped. Next stop: Sprint B5 hardening + production deploy.
 
 See [`roadmap.md`](../roadmap.md) for the full per-sub-feature tracker.

@@ -16,6 +16,7 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 import { SupabaseJwtGuard } from './common/guards/supabase-jwt.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { PrismaModule } from './prisma/prisma.module';
+import { AdminStatsModule } from './modules/admin-stats/admin-stats.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BookingsModule } from './modules/bookings/bookings.module';
 import { DeparturesModule } from './modules/departures/departures.module';
@@ -119,6 +120,7 @@ import { UsersModule } from './modules/users/users.module';
     BookingsModule,
     ReviewsModule,
     WishlistModule,
+    AdminStatsModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },

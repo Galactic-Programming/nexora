@@ -1,0 +1,60 @@
+{
+  "name": "Admin / Stats",
+  "description": "Admin dashboard aggregator (Sprint B4.5). Single endpoint that returns:\n\n- `overview`: total revenue (PAID only), total bookings, paid bookings, conversion rate, month-over-month growth %.\n- `bookingsByStatus`: count per `PENDING | PAID | CANCELLED | REFUNDED`.\n- `topToursByRevenue`: top 5 tours by PAID revenue, with slug + titleEn joined.\n- `topToursByRating`: top 5 tours by average approved rating.\n- `topToursByWishlist`: top 5 tours by wishlist count.\n- `monthlyTrend`: last 6 months of `{ month, bookings, revenue }`.\n\nAuth: ADMIN only. Built for the admin FE dashboard cards + charts in one round-trip.",
+  "item": [
+    {
+      "name": "GET /admin/stats",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/admin/stats",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "stats"]
+        },
+        "description": "Returns the full dashboard aggregate. Read-only — runs Prisma groupBy + a single $queryRaw for the monthly bucket. All queries fire in parallel."
+      },
+      "response": [
+        {
+          "name": "200 OK",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/admin/stats", "host": ["{{baseUrl}}"], "path": ["admin", "stats"] }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"data\": {\n    \"overview\": { \"totalRevenue\": \"450\", \"currency\": \"USD\", \"totalBookings\": 5, \"paidBookings\": 3, \"conversionRate\": 0.6, \"monthOverMonthGrowth\": 0.5 },\n    \"bookingsByStatus\": { \"PENDING\": 1, \"PAID\": 3, \"CANCELLED\": 0, \"REFUNDED\": 1 },\n    \"topToursByRevenue\": [{ \"tourId\": \"...\", \"slug\": \"hoi-an\", \"titleEn\": \"Hoi An\", \"revenue\": \"300\", \"bookingsCount\": 2 }],\n    \"topToursByRating\": [{ \"tourId\": \"...\", \"slug\": \"hoi-an\", \"titleEn\": \"Hoi An\", \"averageRating\": 5, \"reviewsCount\": 1 }],\n    \"topToursByWishlist\": [{ \"tourId\": \"...\", \"slug\": \"hoi-an\", \"titleEn\": \"Hoi An\", \"wishlistCount\": 3 }],\n    \"monthlyTrend\": [{ \"month\": \"2026-04\", \"bookings\": 2, \"revenue\": \"100\" }, { \"month\": \"2026-05\", \"bookings\": 4, \"revenue\": \"150\" }]\n  },\n  \"error\": null\n}"
+        }
+      ],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('overview present', () => pm.expect(body.data.overview).to.have.property('totalRevenue'));",
+              "pm.test('bookingsByStatus has all 4 keys', () => {",
+              "  pm.expect(body.data.bookingsByStatus).to.have.all.keys('PENDING', 'PAID', 'CANCELLED', 'REFUNDED');",
+              "});",
+              "pm.test('top lists are arrays', () => {",
+              "  pm.expect(body.data.topToursByRevenue).to.be.an('array');",
+              "  pm.expect(body.data.topToursByRating).to.be.an('array');",
+              "  pm.expect(body.data.topToursByWishlist).to.be.an('array');",
+              "});",
+              "pm.test('monthlyTrend is an array', () => pm.expect(body.data.monthlyTrend).to.be.an('array'));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

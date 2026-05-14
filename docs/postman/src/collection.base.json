@@ -104,6 +104,7 @@
     "15-reviews.json",
     "16-reviews-public.json",
     "17-admin-reviews.json",
-    "18-wishlist.json"
+    "18-wishlist.json",
+    "19-admin-stats.json"
   ]
 }
