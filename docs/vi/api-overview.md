@@ -273,8 +273,25 @@ Lỗi:
 
 Setup + production checklist: [`docs/vi/runbooks/email.md`](runbooks/email.md).
 
+### Sprint B4.1 — Review của khách (create)
+
+| Method | Path | Access | Mô tả |
+| --- | --- | --- | --- |
+| POST | `/reviews` | 🔒 customer | Tạo review cho 1 trong các booking PAID của caller. |
+
+Body: `{ bookingCode, rating (1-5), title?, body }`.
+
+Điều kiện: booking phải PAID, thuộc caller, và chưa có review (`Review.bookingId` UNIQUE). Row mới default `isApproved=false` và chưa hiện công khai cho đến khi admin approve (B4.3).
+
+Lỗi:
+
+- `BOOKING_NOT_FOUND` (404)
+- `BOOKING_FORBIDDEN` (403) — caller không sở hữu booking.
+- `REVIEW_NOT_ELIGIBLE` (400) — booking không phải PAID.
+- `REVIEW_ALREADY_EXISTS` (409) — booking đã có review.
+
 ### Sprint kế tiếp (kế hoạch)
 
-- B4: `/reviews`, `/wishlist`, `/admin/stats`
+- B4.2–B4.5: public review list, admin moderation, wishlist, admin stats.
 
 Xem [`roadmap.md`](../roadmap.md) để biết tracker chi tiết theo từng sub-feature.

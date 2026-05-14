@@ -100,6 +100,7 @@
     "11-uploads-admin.json",
     "12-bookings.json",
     "13-payments-webhook.json",
-    "14-admin-bookings.json"
+    "14-admin-bookings.json",
+    "15-reviews.json"
   ]
 }

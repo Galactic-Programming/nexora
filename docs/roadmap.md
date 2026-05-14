@@ -100,7 +100,7 @@ pnpm exec newman run docs/postman/tourism-api.json \
 
 | # | Sub-feature | Status | Postman | Docs |
 | --- | --- | --- | --- | --- |
-| B4.1 | `POST /reviews` — only for PAID bookings | ⬜ | Reviews | api-overview |
+| B4.1 | `POST /reviews` — only for PAID bookings | ✅ | Reviews | api-overview |
 | B4.2 | `GET /tours/:slug/reviews` — public, approved only | ⬜ | Reviews | api-overview |
 | B4.3 | `PATCH /admin/reviews/:id` — approve/reject | ⬜ | Reviews | api-overview |
 | B4.4 | Wishlist endpoints | ⬜ | Wishlist | api-overview |

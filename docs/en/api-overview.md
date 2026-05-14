@@ -273,8 +273,25 @@ Errors:
 
 Setup + production checklist: [`docs/en/runbooks/email.md`](runbooks/email.md).
 
+### Sprint B4.1 — Customer reviews (create)
+
+| Method | Path | Access | Description |
+| --- | --- | --- | --- |
+| POST | `/reviews` | 🔒 customer | Creates a review for one of the caller's PAID bookings. |
+
+Body: `{ bookingCode, rating (1-5), title?, body }`.
+
+Eligibility: booking must be PAID, owned by the caller, and not already reviewed (`Review.bookingId` UNIQUE). New rows default to `isApproved=false` and aren't visible publicly until an admin flips the flag (B4.3).
+
+Errors:
+
+- `BOOKING_NOT_FOUND` (404)
+- `BOOKING_FORBIDDEN` (403) — caller does not own the booking.
+- `REVIEW_NOT_ELIGIBLE` (400) — booking is not PAID.
+- `REVIEW_ALREADY_EXISTS` (409) — booking already has a review.
+
 ### Future sprints (planned)
 
-- B4: `/reviews`, `/wishlist`, `/admin/stats`
+- B4.2–B4.5: public review list, admin moderation, wishlist, admin stats.
 
 See [`roadmap.md`](../roadmap.md) for the full per-sub-feature tracker.

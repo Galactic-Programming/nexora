@@ -1,0 +1,52 @@
+{
+  "name": "Reviews",
+  "description": "Customer review surface (Sprint B4.1). Reviews require:\n1. A PAID booking owned by the caller.\n2. Caller signed in (`/auth/sync` done).\n3. The booking hasn't been reviewed yet (`Review.bookingId` UNIQUE).\n\nReviews land with `isApproved=false` and aren't visible publicly until admin flips the flag (B4.3 in `Admin / Reviews`).\n\nPre-condition: `{{bookingCode}}` env var points at a PAID booking. The Bookings folder captures this after a successful pay flow.",
+  "item": [
+    {
+      "name": "POST /reviews (create — pending approval)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"bookingCode\": \"{{bookingCode}}\",\n  \"rating\": 5,\n  \"title\": \"Unforgettable trip\",\n  \"body\": \"Guide was excellent and the itinerary was very well paced. Highly recommended for first-time visitors.\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/reviews",
+          "host": ["{{baseUrl}}"],
+          "path": ["reviews"]
+        },
+        "description": "Creates a review for one of the caller's PAID bookings.\n\nErrors:\n- 400 `REVIEW_NOT_ELIGIBLE` — booking is not PAID.\n- 401 `USER_NOT_SYNCED`.\n- 403 `BOOKING_FORBIDDEN` — caller is not the booking owner.\n- 404 `BOOKING_NOT_FOUND`.\n- 409 `REVIEW_ALREADY_EXISTS` — booking already has a review."
+      },
+      "response": [
+        {
+          "name": "201 Created (pending approval)",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/reviews", "host": ["{{baseUrl}}"], "path": ["reviews"] }
+          },
+          "status": "Created",
+          "code": 201,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"data\": {\n    \"id\": \"r-abc\",\n    \"tourId\": \"t-1\",\n    \"userId\": \"u-1\",\n    \"bookingId\": \"b-1\",\n    \"rating\": 5,\n    \"title\": \"Unforgettable trip\",\n    \"body\": \"...\",\n    \"isApproved\": false,\n    \"createdAt\": \"2026-05-14T09:30:00.000Z\"\n  },\n  \"error\": null\n}"
+        }
+      ],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 201', () => pm.response.to.have.status(201));",
+              "const body = pm.response.json();",
+              "pm.test('isApproved is false on create', () => pm.expect(body.data.isApproved).to.eql(false));",
+              "if (body.data && body.data.id) pm.environment.set('reviewId', body.data.id);"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -23,6 +23,7 @@ import { DestinationsModule } from './modules/destinations/destinations.module';
 import { EmailModule } from './modules/email/email.module';
 import { HealthModule } from './modules/health/health.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
 import { ToursModule } from './modules/tours/tours.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 import { UsersModule } from './modules/users/users.module';
@@ -115,6 +116,7 @@ import { UsersModule } from './modules/users/users.module';
     UploadsModule,
     PaymentsModule,
     BookingsModule,
+    ReviewsModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },
