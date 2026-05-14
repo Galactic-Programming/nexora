@@ -74,6 +74,14 @@ function makePrisma(overrides: Partial<Record<string, jest.Mock>> = {}) {
     destination: {
       findUnique: overrides.destinationFindUnique ?? jest.fn(),
     },
+    review: {
+      // computeStats joins approved reviews onto every public Tour read.
+      groupBy: overrides.reviewGroupBy ?? jest.fn().mockResolvedValue([]),
+    },
+    tourDeparture: {
+      // computeStats sums seatsBooked across departures for `peopleGoing`.
+      groupBy: overrides.departureGroupBy ?? jest.fn().mockResolvedValue([]),
+    },
     // `$transaction` accepts an array of Prisma promises and resolves to an
     // array. In these tests the mocked Prisma client returns plain values
     // (not real PrismaPromise objects), so we resolve them directly.

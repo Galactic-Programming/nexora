@@ -116,9 +116,9 @@ Schema + service tweaks so the FE customer template can wire 1:1 to the Figma de
 | --- | --- | --- | --- | --- |
 | B4.6.1 | Migration: `Tour.isFeatured` + `@@index([isFeatured, isPublished])` | ✅ | n/a | erd, sprints/b4.6 |
 | B4.6.2 | Migration: extend `TourCategory` enum with `HONEYMOON`, `MUSICAL` | ✅ | n/a | erd, sprints/b4.6 |
-| B4.6.3 | `ListToursQueryDto`: `featured?: bool` + sort enum (`createdDesc \| priceAsc \| priceDesc \| titleAsc \| titleDesc`) | ⬜ | Tours (Public) | api-overview |
-| B4.6.4 | Tour list response: include `averageRating`, `reviewsCount`, `peopleGoing` per card | ⬜ | Tours (Public) | api-overview |
-| B4.6.5 | Admin DTOs: `isFeatured?` on `CreateTourDto` + `UpdateTourDto` | ⬜ | Tours (Admin) | api-overview |
+| B4.6.3 | `ListToursQueryDto`: `featured?` + 2-axis `sortBy`/`sortOrder` (pre-existing) | ✅ | Tours (Public) | api-overview |
+| B4.6.4 | Tour list + detail response: `averageRating`, `reviewsCount`, `peopleGoing` per card | ✅ | Tours (Public) | api-overview |
+| B4.6.5 | Admin DTOs: `isFeatured?` on `CreateTourDto` + `UpdateTourDto` (pre-existing) | ✅ | Tours (Admin) | api-overview |
 | B4.6.6 | Seed script: mark 2-3 featured + relabel some categories | ⬜ | n/a | runbooks/seed |
 | B4.6.7 | Tests: featured filter, sort permutations, rating/peopleGoing aggregates | ⬜ | n/a | n/a |
 | B4.6.8 | Docs: BACKLOG.md (Build Your Own Package, Newsletter) + sprint plan | ✅ | n/a | BACKLOG, sprints/b4.6 |

@@ -18,8 +18,27 @@ import { UpdateTourDto } from './dto/update-tour.dto';
  * hoists `meta` to the response envelope top level, so consumers see
  * `{ data: items, error: null, meta }`.
  */
+/**
+ * Per-card aggregate stats joined onto every public Tour payload.
+ *
+ *  - `averageRating` — mean of approved-only review ratings; `null` when
+ *    no approved reviews exist (FE renders "no rating yet" instead of "0★").
+ *  - `reviewsCount`  — count of approved reviews. Drafts never inflate this.
+ *  - `peopleGoing`   — total `seatsBooked` across the tour's departures.
+ *    Drives the "120+ People" badge on Figma tour cards. Includes all
+ *    statuses, since the seat counter only ever goes up on PAID + down
+ *    on admin refund.
+ */
+export interface TourStats {
+  averageRating: number | null;
+  reviewsCount: number;
+  peopleGoing: number;
+}
+
+export type TourWithStats = Tour & TourStats;
+
 export interface PaginatedTours {
-  items: Tour[];
+  items: TourWithStats[];
   meta: {
     page: number;
     pageSize: number;
@@ -102,8 +121,14 @@ export class ToursService {
       this.prisma.tour.count({ where }),
     ]);
 
+    const stats = await this.computeStats(items.map((t) => t.id));
+    const itemsWithStats: TourWithStats[] = items.map((t) => ({
+      ...t,
+      ...(stats.get(t.id) ?? emptyStats()),
+    }));
+
     return {
-      items,
+      items: itemsWithStats,
       meta: {
         page,
         pageSize,
@@ -125,7 +150,7 @@ export class ToursService {
    *         conflate the two cases so unpublished drafts aren't discoverable
    *         via 200-vs-404 probing.
    */
-  async findPublishedBySlug(slug: string): Promise<Tour> {
+  async findPublishedBySlug(slug: string): Promise<TourWithStats> {
     const tour = await this.prisma.tour.findFirst({
       where: { slug, isPublished: true },
       include: {
@@ -139,7 +164,8 @@ export class ToursService {
         message: `Tour "${slug}" not found`,
       });
     }
-    return tour;
+    const stats = await this.computeStats([tour.id]);
+    return { ...tour, ...(stats.get(tour.id) ?? emptyStats()) };
   }
 
   // ────────────────────────────────────────────────────────────────────────
@@ -436,4 +462,60 @@ export class ToursService {
       err.code === 'P2003'
     );
   }
+
+  /**
+   * Aggregates approved-review averages + count and departure seat sums
+   * for the supplied tour ids. Returns a Map so callers can join by id
+   * without re-scanning arrays.
+   *
+   * Two queries in parallel (both indexed):
+   *  - `reviews.groupBy` filtered on `isApproved` — uses
+   *    `reviews(tour_id, is_approved)` index.
+   *  - `tour_departures.groupBy _sum.seatsBooked` — sequential scan on
+   *    the small departure set is fine; the index isn't needed.
+   *
+   * Empty input list short-circuits to an empty map so a zero-result
+   * tour list doesn't fire two no-op queries.
+   */
+  private async computeStats(
+    tourIds: string[],
+  ): Promise<Map<string, TourStats>> {
+    if (tourIds.length === 0) return new Map();
+    const [reviewGroups, seatGroups] = await Promise.all([
+      this.prisma.review.groupBy({
+        by: ['tourId'],
+        where: { tourId: { in: tourIds }, isApproved: true },
+        _avg: { rating: true },
+        _count: { _all: true },
+      }),
+      this.prisma.tourDeparture.groupBy({
+        by: ['tourId'],
+        where: { tourId: { in: tourIds } },
+        _sum: { seatsBooked: true },
+      }),
+    ]);
+    const map = new Map<string, TourStats>();
+    for (const id of tourIds) {
+      map.set(id, emptyStats());
+    }
+    for (const r of reviewGroups) {
+      const entry = map.get(r.tourId);
+      if (entry) {
+        entry.averageRating = r._avg.rating;
+        entry.reviewsCount = r._count._all;
+      }
+    }
+    for (const s of seatGroups) {
+      const entry = map.get(s.tourId);
+      if (entry) {
+        entry.peopleGoing = s._sum.seatsBooked ?? 0;
+      }
+    }
+    return map;
+  }
+}
+
+/** Zero-value stats for tours with no reviews or no departures yet. */
+function emptyStats(): TourStats {
+  return { averageRating: null, reviewsCount: 0, peopleGoing: 0 };
 }
