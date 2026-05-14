@@ -318,8 +318,22 @@ Lỗi:
 
 - `REVIEW_NOT_FOUND` (404)
 
+### Sprint B4.4 — Wishlist
+
+| Method | Path | Access | Mô tả |
+| --- | --- | --- | --- |
+| POST | `/wishlist/:tourId` | 🔒 customer | Thêm tour. Upsert idempotent. |
+| DELETE | `/wishlist/:tourId` | 🔒 customer | Xóa tour. Idempotent. |
+| GET | `/wishlist/me` | 🔒 customer | List của caller, newest-first, join tour preview. |
+
+Schema: composite-PK `(userId, tourId)`. Tour preview join vào `GET /me` gồm slug, cả 2 title, summary, hero image, basePrice, currency, durationDays — đủ render card không cần fetch thêm.
+
+Lỗi:
+
+- `TOUR_NOT_FOUND` (404) khi add với tour id không tồn tại hoặc chưa publish.
+
 ### Sprint kế tiếp (kế hoạch)
 
-- B4.4–B4.5: wishlist, admin stats.
+- B4.5: admin stats.
 
 Xem [`roadmap.md`](../roadmap.md) để biết tracker chi tiết theo từng sub-feature.

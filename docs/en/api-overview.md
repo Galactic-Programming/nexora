@@ -318,8 +318,22 @@ Errors:
 
 - `REVIEW_NOT_FOUND` (404)
 
+### Sprint B4.4 — Wishlist
+
+| Method | Path | Access | Description |
+| --- | --- | --- | --- |
+| POST | `/wishlist/:tourId` | 🔒 customer | Add a tour. Idempotent upsert. |
+| DELETE | `/wishlist/:tourId` | 🔒 customer | Remove a tour. Idempotent. |
+| GET | `/wishlist/me` | 🔒 customer | Caller's list newest-first, with tour preview joined. |
+
+Schema: composite-PK `(userId, tourId)`. The marketing preview joined into `GET /me` includes slug, both titles, summaries, hero image, basePrice, currency, and durationDays — enough for a card without a second fetch.
+
+Errors:
+
+- `TOUR_NOT_FOUND` (404) on add when the tour id is unknown or unpublished.
+
 ### Future sprints (planned)
 
-- B4.4–B4.5: wishlist, admin stats.
+- B4.5: admin stats.
 
 See [`roadmap.md`](../roadmap.md) for the full per-sub-feature tracker.

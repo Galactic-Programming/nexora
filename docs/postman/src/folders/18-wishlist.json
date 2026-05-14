@@ -1,0 +1,88 @@
+{
+  "name": "Wishlist",
+  "description": "Customer wishlist surface (Sprint B4.4). 3 endpoints, all auth-gated to the calling customer.\n\n**Idempotency:**\n- `POST /wishlist/:tourId` upserts — re-posting the same tour is a no-op 200.\n- `DELETE /wishlist/:tourId` removes via `deleteMany`, so deleting an absent row returns 204 without error.\n\n**Pre-condition:** `{{tourId}}` env var points at a published tour UUID. Easiest source: copy the `id` field from `GET /tours/:slug` response.",
+  "item": [
+    {
+      "name": "POST /wishlist/:tourId (add)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/wishlist/{{tourId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["wishlist", "{{tourId}}"]
+        },
+        "description": "Adds the tour to the caller's wishlist. Idempotent."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('row contains tourId', () => pm.expect(body.data.tourId).to.be.a('string'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET /wishlist/me",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/wishlist/me",
+          "host": ["{{baseUrl}}"],
+          "path": ["wishlist", "me"]
+        },
+        "description": "Returns the caller's wishlist newest-first, with tour preview joined (slug, titles, hero image, basePrice, currency, durationDays)."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('data is an array', () => pm.expect(body.data).to.be.an('array'));",
+              "if (body.data.length) {",
+              "  pm.test('row includes joined tour preview', () => pm.expect(body.data[0].tour).to.have.property('slug'));",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "DELETE /wishlist/:tourId (remove)",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/wishlist/{{tourId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["wishlist", "{{tourId}}"]
+        },
+        "description": "Removes the tour from caller's wishlist. Idempotent — removing an absent row still returns 204."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 204', () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

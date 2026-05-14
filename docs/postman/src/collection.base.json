@@ -103,6 +103,7 @@
     "14-admin-bookings.json",
     "15-reviews.json",
     "16-reviews-public.json",
-    "17-admin-reviews.json"
+    "17-admin-reviews.json",
+    "18-wishlist.json"
   ]
 }
