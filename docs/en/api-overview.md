@@ -290,8 +290,22 @@ Errors:
 - `REVIEW_NOT_ELIGIBLE` (400) — booking is not PAID.
 - `REVIEW_ALREADY_EXISTS` (409) — booking already has a review.
 
+### Sprint B4.2 — Public review list
+
+| Method | Path | Access | Description |
+| --- | --- | --- | --- |
+| GET | `/tours/:slug/reviews` | 🌐 public | Paginated approved reviews for one tour. |
+
+Query: `?page=1&limit=10` (max 50). Sort fixed to newest-first.
+
+Response body strips PII — only `reviewer.fullName` is exposed, never email, phone, userId, or bookingId. `meta.averageRating` is computed across **all** approved reviews (not just the current page), suitable for the FE tour card.
+
+Errors:
+
+- `TOUR_NOT_FOUND` (404) — slug missing or tour unpublished.
+
 ### Future sprints (planned)
 
-- B4.2–B4.5: public review list, admin moderation, wishlist, admin stats.
+- B4.3–B4.5: admin moderation, wishlist, admin stats.
 
 See [`roadmap.md`](../roadmap.md) for the full per-sub-feature tracker.

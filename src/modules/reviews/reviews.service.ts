@@ -9,6 +9,31 @@ import {
 import { BookingStatus, Prisma, Review } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateReviewDto } from './dto/create-review.dto';
+import { ListReviewsQueryDto } from './dto/list-reviews-query.dto';
+
+/**
+ * Shape of a public review item — strips bookingId + userId so the
+ * customer's purchase history isn't probeable from the marketing page.
+ * `reviewer` exposes only the public-safe display name.
+ */
+export interface PublicReview {
+  id: string;
+  rating: number;
+  title: string | null;
+  body: string;
+  createdAt: Date;
+  reviewer: { fullName: string };
+}
+
+export interface PaginatedPublicReviews {
+  data: PublicReview[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    averageRating: number | null;
+  };
+}
 
 /**
  * Customer review surface (Sprint B4.1).
@@ -95,5 +120,75 @@ export class ReviewsService {
       }
       throw err;
     }
+  }
+
+  /**
+   * Public list of approved reviews for one tour. Strips PII (booking
+   * code, user id, email) and projects only the display name. Paginated
+   * because a popular tour can accumulate hundreds of reviews; the FE
+   * paginates the list view but caches the average rating from `meta`
+   * for the tour card.
+   *
+   * Tour-not-found: we look up the slug here (not just `tourId`) so the
+   * caller can hit `/tours/X/reviews` with an unknown slug and get a
+   * clean 404 instead of "200 with empty array", which would hide bugs
+   * in the FE routing.
+   */
+  async findApprovedForTour(
+    slug: string,
+    query: ListReviewsQueryDto,
+  ): Promise<PaginatedPublicReviews> {
+    const tour = await this.prisma.tour.findFirst({
+      where: { slug, isPublished: true },
+      select: { id: true },
+    });
+    if (!tour) {
+      throw new NotFoundException({
+        code: 'TOUR_NOT_FOUND',
+        message: `Tour "${slug}" not found`,
+      });
+    }
+
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+    const where = { tourId: tour.id, isApproved: true } as const;
+
+    const [rows, total, aggregate] = await this.prisma.$transaction([
+      this.prisma.review.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+        select: {
+          id: true,
+          rating: true,
+          title: true,
+          body: true,
+          createdAt: true,
+          user: { select: { fullName: true } },
+        },
+      }),
+      this.prisma.review.count({ where }),
+      this.prisma.review.aggregate({ where, _avg: { rating: true } }),
+    ]);
+
+    const data: PublicReview[] = rows.map((row) => ({
+      id: row.id,
+      rating: row.rating,
+      title: row.title,
+      body: row.body,
+      createdAt: row.createdAt,
+      reviewer: { fullName: row.user?.fullName ?? 'Anonymous' },
+    }));
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        averageRating: aggregate._avg.rating ?? null,
+      },
+    };
   }
 }

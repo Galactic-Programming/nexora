@@ -2980,6 +2980,93 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Reviews (Public)",
+      "description": "Public read of approved reviews for one tour (Sprint B4.2). No auth required. Service-layer strips PII — only `reviewer.fullName` is exposed, never email/phone/userId.\n\nPagination: `?page=1&limit=10` (max 50). Sort is fixed to newest-first.\n\n`meta.averageRating` is computed across ALL approved reviews for the tour (not just the current page) — handy for the FE tour card.",
+      "item": [
+        {
+          "name": "GET /tours/:slug/reviews",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tours/{{tourSlug}}/reviews?page=1&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tours",
+                "{{tourSlug}}",
+                "reviews"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Returns approved reviews paginated, newest first. Drafts (`isApproved=false`) are never visible here.\n\nErrors:\n- 404 `TOUR_NOT_FOUND` — slug missing or tour unpublished."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/tours/{{tourSlug}}/reviews",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tours",
+                    "{{tourSlug}}",
+                    "reviews"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"r-abc\",\n      \"rating\": 5,\n      \"title\": \"Unforgettable trip\",\n      \"body\": \"Guide was excellent...\",\n      \"createdAt\": \"2026-05-14T09:30:00.000Z\",\n      \"reviewer\": { \"fullName\": \"Alice Nguyen\" }\n    }\n  ],\n  \"error\": null,\n  \"meta\": { \"total\": 1, \"page\": 1, \"limit\": 10, \"averageRating\": 5 }\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('data is an array', () => pm.expect(body.data).to.be.an('array'));",
+                  "pm.test('meta has averageRating field', () => pm.expect(body.meta).to.have.property('averageRating'));",
+                  "if (body.data.length) {",
+                  "  pm.test('no PII leaked (no email/userId)', () => {",
+                  "    const row = body.data[0];",
+                  "    pm.expect(row).to.not.have.property('userId');",
+                  "    pm.expect(row).to.not.have.property('bookingId');",
+                  "    pm.expect(row.reviewer).to.not.have.property('email');",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }

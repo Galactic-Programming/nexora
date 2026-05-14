@@ -118,3 +118,85 @@ describe('ReviewsService.createForCustomer', () => {
     ).rejects.toBeInstanceOf(ConflictException);
   });
 });
+
+describe('ReviewsService.findApprovedForTour', () => {
+  function makeListPrisma(opts: {
+    tour?: { id: string } | null;
+    rows?: Array<{
+      id: string;
+      rating: number;
+      title: string | null;
+      body: string;
+      createdAt: Date;
+      user: { fullName: string } | null;
+    }>;
+    total?: number;
+    avg?: number | null;
+  }) {
+    return {
+      tour: {
+        findFirst: jest
+          .fn()
+          .mockResolvedValue(
+            opts.tour === undefined ? { id: 't-1' } : opts.tour,
+          ),
+      },
+      review: {
+        findMany: jest.fn().mockResolvedValue(opts.rows ?? []),
+        count: jest.fn().mockResolvedValue(opts.total ?? 0),
+        aggregate: jest
+          .fn()
+          .mockResolvedValue({ _avg: { rating: opts.avg ?? null } }),
+      },
+      $transaction: jest.fn(async (ops: Promise<unknown>[]) =>
+        Promise.all(ops),
+      ),
+    };
+  }
+
+  it('throws TOUR_NOT_FOUND when slug is missing or unpublished', async () => {
+    const svc = new ReviewsService(makeListPrisma({ tour: null }) as never);
+    await expect(svc.findApprovedForTour('ghost', {})).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
+
+  it('returns paginated approved reviews + average rating', async () => {
+    const prisma = makeListPrisma({
+      rows: [
+        {
+          id: 'r-1',
+          rating: 5,
+          title: 'Good',
+          body: 'great',
+          createdAt: new Date('2026-05-01'),
+          user: { fullName: 'Alice' },
+        },
+      ],
+      total: 1,
+      avg: 4.5,
+    });
+    const svc = new ReviewsService(prisma as never);
+
+    const result = await svc.findApprovedForTour('hoi-an-walking-tour', {});
+
+    expect(result.data).toHaveLength(1);
+    expect(result.data[0].reviewer.fullName).toBe('Alice');
+    expect(result.meta.total).toBe(1);
+    expect(result.meta.averageRating).toBe(4.5);
+    type WhereCall = { where: { isApproved: boolean } };
+    const calls = prisma.review.findMany.mock.calls as unknown as WhereCall[][];
+    expect(calls[0][0].where.isApproved).toBe(true);
+  });
+
+  it('returns empty data + null average when nothing is approved yet', async () => {
+    const svc = new ReviewsService(
+      makeListPrisma({ rows: [], total: 0, avg: null }) as never,
+    );
+
+    const result = await svc.findApprovedForTour('hoi-an-walking-tour', {});
+
+    expect(result.data).toEqual([]);
+    expect(result.meta.averageRating).toBeNull();
+  });
+});

@@ -290,8 +290,22 @@ Lỗi:
 - `REVIEW_NOT_ELIGIBLE` (400) — booking không phải PAID.
 - `REVIEW_ALREADY_EXISTS` (409) — booking đã có review.
 
+### Sprint B4.2 — Public review list
+
+| Method | Path | Access | Mô tả |
+| --- | --- | --- | --- |
+| GET | `/tours/:slug/reviews` | 🌐 public | Approved review của 1 tour, paginated. |
+
+Query: `?page=1&limit=10` (max 50). Sort fixed newest-first.
+
+Response strip PII — chỉ expose `reviewer.fullName`, không bao giờ email/phone/userId/bookingId. `meta.averageRating` tính trên **toàn bộ** approved review (không chỉ page hiện tại), dùng cho FE tour card.
+
+Lỗi:
+
+- `TOUR_NOT_FOUND` (404) — slug không tồn tại hoặc tour chưa publish.
+
 ### Sprint kế tiếp (kế hoạch)
 
-- B4.2–B4.5: public review list, admin moderation, wishlist, admin stats.
+- B4.3–B4.5: admin moderation, wishlist, admin stats.
 
 Xem [`roadmap.md`](../roadmap.md) để biết tracker chi tiết theo từng sub-feature.
