@@ -1,6 +1,6 @@
 # Runbook — Postman với Supabase Auth
 
-> 🇬🇧 English version: [`../../en/runbooks/postman-auth.md`](../../en/runbooks/postman-auth.md).
+> 🇬🇧 English version: [`../en/postman-auth.md`](../en/postman-auth.md).
 
 Cách Postman collection xác thực với API.
 

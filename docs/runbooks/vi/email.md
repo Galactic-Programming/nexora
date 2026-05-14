@@ -1,6 +1,6 @@
 # Runbook — Email giao dịch (Resend)
 
-> 🇬🇧 English version: [`../../en/runbooks/email.md`](../../en/runbooks/email.md).
+> 🇬🇧 English version: [`../en/email.md`](../en/email.md).
 
 Cover 2 email tự động backend gửi:
 

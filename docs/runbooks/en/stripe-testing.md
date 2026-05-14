@@ -1,6 +1,6 @@
 # Runbook — Stripe testing (Checkout + webhook)
 
-> 🇻🇳 Bản tiếng Việt: [`../../vi/runbooks/stripe-testing.md`](../../vi/runbooks/stripe-testing.md).
+> 🇻🇳 Bản tiếng Việt: [`../vi/stripe-testing.md`](../vi/stripe-testing.md).
 
 How to exercise the full booking → payment → confirmation loop locally with Stripe test mode + the Stripe CLI.
 
@@ -11,13 +11,17 @@ Stripe sends webhook events from its own servers. Localhost isn't reachable from
 ## One-time setup
 
 1. **Install Stripe CLI** (already done if `stripe --version` works):
+
    ```bash
    winget install --id Stripe.StripeCLI
    ```
+
 2. **Log in** — opens a browser for OAuth:
+
    ```bash
    stripe login
    ```
+
    This pairs the CLI with your Stripe test account. No API keys needed; the CLI uses a restricted "CLI key" scoped to that machine.
 3. **Confirm `STRIPE_SECRET_KEY=sk_test_...`** is set in `.env`. The CLI doesn't read this — the **backend** uses it to mint Checkout sessions.
 
@@ -47,6 +51,7 @@ pnpm start:dev
 ```
 
 In Postman:
+
 1. `Auth → POST /auth/sync` (customer)
 2. `Bookings → POST /bookings` — copy `checkoutUrl` from the response
 3. Open the URL in a browser
@@ -112,6 +117,7 @@ stripe trigger checkout.session.expired
 ```
 
 This sends a synthetic event — note it won't carry a real `bookingId` in metadata, so the backend ignores it. To test the real flow:
+
 1. Create a booking via `POST /bookings`.
 2. Don't pay.
 3. Wait 30 min (or shorten the session expiry in `StripeService.createCheckoutSession` to e.g. 60s for testing).

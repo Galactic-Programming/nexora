@@ -72,5 +72,5 @@ Last reviewed: 2026-05-14.
 
 ## Notes
 
-- Promotion of an item from backlog to a sprint requires updating `docs/roadmap.md` first.
+- Promotion of an item from backlog to a sprint requires updating `docs/planning/roadmap.md` first.
 - If something here is genuinely dead (e.g. partner logos are settled as static), strike it through but keep the entry so the decision is auditable.

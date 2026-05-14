@@ -175,13 +175,13 @@ Errors:
 - `400 VALIDATION_ERROR` — DTO reject (bad purpose / filename / contentType)
 - `502 STORAGE_SIGN_FAILED` — Supabase Storage reject (bucket thiếu, project pause, service role key sai)
 
-Flow chi tiết + setup bucket: [`docs/vi/runbooks/uploads.md`](runbooks/uploads.md).
+Flow chi tiết + setup bucket: [`docs/runbooks/vi/uploads.md`](../../runbooks/vi/uploads.md).
 
 ### Sprint B2.7 — Seed script
 
 Không phải HTTP surface — `pnpm db:seed` populate catalog thực tế: 4 destination, 10 tour (9 published + 1 draft), 2 itinerary day, 30 departure spread tại +30 / +75 / +150 ngày tính từ "hôm nay".
 
-Reference đầy đủ: [`docs/vi/runbooks/seed.md`](runbooks/seed.md).
+Reference đầy đủ: [`docs/runbooks/vi/seed.md`](../../runbooks/vi/seed.md).
 
 ### Sprint B3.1–B3.3 — Bookings (customer-facing)
 
@@ -235,7 +235,7 @@ Errors:
 
 - `STRIPE_WEBHOOK_INVALID` (400) — `Stripe-Signature` missing hoặc invalid.
 
-Full setup local + production: [`docs/vi/runbooks/stripe-testing.md`](runbooks/stripe-testing.md).
+Full setup local + production: [`docs/runbooks/vi/stripe-testing.md`](../../runbooks/vi/stripe-testing.md).
 
 ### Sprint B3.5 — Admin refund
 
@@ -271,7 +271,7 @@ Lỗi:
 - `bookingConfirmation` — webhook gửi khi transition PAID.
 - `bookingRefunded` — `refundByAdmin` gửi sau khi refund Stripe + DB commit.
 
-Setup + production checklist: [`docs/vi/runbooks/email.md`](runbooks/email.md).
+Setup + production checklist: [`docs/runbooks/vi/email.md`](../../runbooks/vi/email.md).
 
 ### Sprint B4.1 — Review của khách (create)
 

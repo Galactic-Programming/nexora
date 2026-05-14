@@ -1,6 +1,6 @@
 # Runbook — Postman with Supabase Auth
 
-> 🇻🇳 Bản tiếng Việt: [`../../vi/runbooks/postman-auth.md`](../../vi/runbooks/postman-auth.md).
+> 🇻🇳 Bản tiếng Việt: [`../vi/postman-auth.md`](../vi/postman-auth.md).
 
 How the Postman collection authenticates against this API.
 

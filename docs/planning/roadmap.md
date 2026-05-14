@@ -110,7 +110,7 @@ pnpm exec newman run docs/postman/tourism-api.json \
 
 ## Sprint B4.6 — Figma alignment (pre-FE)
 
-Schema + service tweaks so the FE customer template can wire 1:1 to the Figma design without backend rework mid-sprint. Detailed plan in [`sprints/b4.6-figma-alignment.md`](en/sprints/b4.6-figma-alignment.md).
+Schema + service tweaks so the FE customer template can wire 1:1 to the Figma design without backend rework mid-sprint. Detailed plan in [`sprints/b4.6-figma-alignment.md`](sprints/b4.6-figma-alignment.md).
 
 | # | Sub-feature | Status | Postman | Docs |
 | --- | --- | --- | --- | --- |
@@ -131,14 +131,14 @@ Customer FE first, admin FE next. Both repos are siblings of `tourism-be-api`; B
 
 | Phase | Repo | Plan doc |
 | --- | --- | --- |
-| Customer FE | `tourism-frontend-customer/` | [`en/frontend/customer-plan.md`](en/frontend/customer-plan.md) — 4 sprints C0→C3, ~6 weeks |
-| Admin FE | `tourism-frontend-admin/` | `en/frontend/admin-plan.md` (written after customer FE lands) |
+| Customer FE | `tourism-frontend-customer/` | See `tourism-frontend-customer/docs/en/plan.md` (+ VI parallel) — 4 sprints C0→C3, ~6 weeks |
+| Admin FE | `tourism-frontend-admin/` | `tourism-frontend-admin/docs/en/plan.md` (written after customer FE lands) |
 
 ---
 
 ## Sprint B5 — Hardening + Production
 
-> ⏸ **On hold** until customer FE + admin FE both land. Deploying BE alone forces redeploys whenever the FE finds gaps; we'd rather deploy a complete system once. See `sprints/b4.6-figma-alignment.md` § "Why pause B5" and `frontend/customer-plan.md`.
+> ⏸ **On hold** until customer FE + admin FE both land. Deploying BE alone forces redeploys whenever the FE finds gaps; we'd rather deploy a complete system once. See [`sprints/b4.6-figma-alignment.md`](sprints/b4.6-figma-alignment.md) § "Why pause B5" and `tourism-frontend-customer/docs/en/plan.md`.
 
 | # | Sub-feature | Status | Postman | Docs |
 | --- | --- | --- | --- | --- |

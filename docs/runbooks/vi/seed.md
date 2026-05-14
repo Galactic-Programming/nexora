@@ -1,6 +1,6 @@
 # Runbook — Database seed
 
-> 🇬🇧 English version: [`../../en/runbooks/seed.md`](../../en/runbooks/seed.md).
+> 🇬🇧 English version: [`../en/seed.md`](../en/seed.md).
 
 Populate Supabase Postgres với catalog thực tế (4 destination, 10 tour, 30 departure, 2 itinerary day) cho local dev, Postman runs, và demo screenshot.
 
