@@ -114,8 +114,8 @@ Schema + service tweaks so the FE customer template can wire 1:1 to the Figma de
 
 | # | Sub-feature | Status | Postman | Docs |
 | --- | --- | --- | --- | --- |
-| B4.6.1 | Migration: `Tour.isFeatured` + `@@index([isFeatured, isPublished])` | ⬜ | n/a | erd, sprints/b4.6 |
-| B4.6.2 | Migration: extend `TourCategory` enum with `HONEYMOON`, `MUSICAL` | ⬜ | n/a | erd, sprints/b4.6 |
+| B4.6.1 | Migration: `Tour.isFeatured` + `@@index([isFeatured, isPublished])` | ✅ | n/a | erd, sprints/b4.6 |
+| B4.6.2 | Migration: extend `TourCategory` enum with `HONEYMOON`, `MUSICAL` | ✅ | n/a | erd, sprints/b4.6 |
 | B4.6.3 | `ListToursQueryDto`: `featured?: bool` + sort enum (`createdDesc \| priceAsc \| priceDesc \| titleAsc \| titleDesc`) | ⬜ | Tours (Public) | api-overview |
 | B4.6.4 | Tour list response: include `averageRating`, `reviewsCount`, `peopleGoing` per card | ⬜ | Tours (Public) | api-overview |
 | B4.6.5 | Admin DTOs: `isFeatured?` on `CreateTourDto` + `UpdateTourDto` | ⬜ | Tours (Admin) | api-overview |

@@ -56,7 +56,7 @@ erDiagram
         int max_group_size
         decimal base_price
         string currency
-        enum category "DAY|PACKAGE|CUSTOM"
+        enum category "DAY|PACKAGE|CUSTOM|HONEYMOON|MUSICAL"
         string difficulty
         bool is_published
         bool is_featured
@@ -142,7 +142,7 @@ erDiagram
 | `tours` | `(slug)` UNIQUE | Public detail lookup |
 | `tours` | `(is_published, category)` | Filtered catalog query |
 | `tours` | `(destination_id)` | List by destination |
-| `tours` | `(is_featured)` | Home page featured strip |
+| `tours` | `(is_featured, is_published)` | Home page featured strip (published + featured combo) |
 | `tour_departures` | `(tour_id, start_date)` | Upcoming departures of a tour |
 | `bookings` | `(user_id, status)` | "My bookings" history |
 | `bookings` | `(stripe_session_id)` UNIQUE | Webhook lookup |

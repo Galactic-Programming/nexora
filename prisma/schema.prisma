@@ -27,6 +27,8 @@ enum TourCategory {
   DAY
   PACKAGE
   CUSTOM
+  HONEYMOON
+  MUSICAL
 }
 
 enum DepartureStatus {
@@ -126,7 +128,7 @@ model Tour {
 
   @@index([isPublished, category])
   @@index([destinationId])
-  @@index([isFeatured])
+  @@index([isFeatured, isPublished])
   @@map("tours")
 }
 
