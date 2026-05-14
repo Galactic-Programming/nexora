@@ -304,8 +304,22 @@ Errors:
 
 - `TOUR_NOT_FOUND` (404) — slug missing or tour unpublished.
 
+### Sprint B4.3 — Admin moderation
+
+| Method | Path | Access | Description |
+| --- | --- | --- | --- |
+| PATCH | `/admin/reviews/:id` | 🔒 ADMIN | Toggle `isApproved` on a single review. |
+
+Body: `{ "isApproved": true | false }`.
+
+Idempotent — flipping a row to its current value is a no-op write. The boolean shape (vs. separate approve/reject endpoints) lets an admin re-draft a previously-published review if it gets flagged later.
+
+Errors:
+
+- `REVIEW_NOT_FOUND` (404)
+
 ### Future sprints (planned)
 
-- B4.3–B4.5: admin moderation, wishlist, admin stats.
+- B4.4–B4.5: wishlist, admin stats.
 
 See [`roadmap.md`](../roadmap.md) for the full per-sub-feature tracker.

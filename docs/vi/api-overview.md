@@ -304,8 +304,22 @@ Lỗi:
 
 - `TOUR_NOT_FOUND` (404) — slug không tồn tại hoặc tour chưa publish.
 
+### Sprint B4.3 — Admin moderation
+
+| Method | Path | Access | Mô tả |
+| --- | --- | --- | --- |
+| PATCH | `/admin/reviews/:id` | 🔒 ADMIN | Toggle `isApproved` của 1 review. |
+
+Body: `{ "isApproved": true | false }`.
+
+Idempotent — flip về cùng giá trị hiện tại là no-op write. Dạng boolean (vs. 2 endpoint approve/reject riêng) cho phép admin re-draft 1 review đã publish nếu bị flag sau.
+
+Lỗi:
+
+- `REVIEW_NOT_FOUND` (404)
+
 ### Sprint kế tiếp (kế hoạch)
 
-- B4.3–B4.5: admin moderation, wishlist, admin stats.
+- B4.4–B4.5: wishlist, admin stats.
 
 Xem [`roadmap.md`](../roadmap.md) để biết tracker chi tiết theo từng sub-feature.

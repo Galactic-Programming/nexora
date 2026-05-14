@@ -3067,6 +3067,145 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Admin / Reviews",
+      "description": "Admin moderation surface (Sprint B4.3). Approve or re-draft a single review by id.\n\n**Pre-conditions:**\n1. Caller signed in as ADMIN (`/auth/admin/sync` already ran).\n2. `{{reviewId}}` env var points at an existing review. The customer Reviews folder captures this id when POST /reviews succeeds.\n\nThe boolean shape (vs. separate approve/reject endpoints) lets the admin flip a previously-published review back to draft if it gets flagged later.",
+      "item": [
+        {
+          "name": "PATCH /admin/reviews/:id (approve)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isApproved\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/reviews/{{reviewId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "reviews",
+                "{{reviewId}}"
+              ]
+            },
+            "description": "Flips `isApproved=true` so the review appears on `GET /tours/:slug/reviews`. Idempotent — re-running on an already-approved row writes the same value.\n\nErrors:\n- 401 missing/invalid token.\n- 403 caller is not ADMIN.\n- 404 `REVIEW_NOT_FOUND`."
+          },
+          "response": [
+            {
+              "name": "200 OK (approved)",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/reviews/{{reviewId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "reviews",
+                    "{{reviewId}}"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": { \"id\": \"r-abc\", \"isApproved\": true, \"updatedAt\": \"2026-05-14T09:50:00.000Z\" },\n  \"error\": null\n}"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('isApproved is true after approve', () => pm.expect(body.data.isApproved).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /admin/reviews/:id (re-draft)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isApproved\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/reviews/{{reviewId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "reviews",
+                "{{reviewId}}"
+              ]
+            },
+            "description": "Reverts the review back to draft. Useful when a previously-approved review gets flagged later. The row stays in the DB so the customer can still see/edit (future) but it disappears from the public list."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('isApproved is false after re-draft', () => pm.expect(body.data.isApproved).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }

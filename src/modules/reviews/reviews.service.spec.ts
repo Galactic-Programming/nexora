@@ -200,3 +200,57 @@ describe('ReviewsService.findApprovedForTour', () => {
     expect(result.meta.averageRating).toBeNull();
   });
 });
+
+describe('ReviewsService.moderateById', () => {
+  it('throws REVIEW_NOT_FOUND when id missing', async () => {
+    const update = jest.fn();
+    const prisma = {
+      review: {
+        findUnique: jest.fn().mockResolvedValue(null),
+        update,
+      },
+    };
+    const svc = new ReviewsService(prisma as never);
+    await expect(svc.moderateById('missing', true)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it('flips isApproved on the row when approving', async () => {
+    const update = jest.fn().mockResolvedValue({ id: 'r-1', isApproved: true });
+    const prisma = {
+      review: {
+        findUnique: jest.fn().mockResolvedValue({ id: 'r-1' }),
+        update,
+      },
+    };
+    const svc = new ReviewsService(prisma as never);
+
+    await svc.moderateById('r-1', true);
+
+    type UpdCall = { where: { id: string }; data: { isApproved: boolean } };
+    const calls = update.mock.calls as unknown as UpdCall[][];
+    expect(calls[0][0].where.id).toBe('r-1');
+    expect(calls[0][0].data.isApproved).toBe(true);
+  });
+
+  it('can re-draft an approved review (isApproved=false)', async () => {
+    const update = jest
+      .fn()
+      .mockResolvedValue({ id: 'r-1', isApproved: false });
+    const prisma = {
+      review: {
+        findUnique: jest.fn().mockResolvedValue({ id: 'r-1' }),
+        update,
+      },
+    };
+    const svc = new ReviewsService(prisma as never);
+
+    await svc.moderateById('r-1', false);
+
+    type UpdCall = { data: { isApproved: boolean } };
+    const calls = update.mock.calls as unknown as UpdCall[][];
+    expect(calls[0][0].data.isApproved).toBe(false);
+  });
+});

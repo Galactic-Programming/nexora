@@ -102,6 +102,7 @@
     "13-payments-webhook.json",
     "14-admin-bookings.json",
     "15-reviews.json",
-    "16-reviews-public.json"
+    "16-reviews-public.json",
+    "17-admin-reviews.json"
   ]
 }

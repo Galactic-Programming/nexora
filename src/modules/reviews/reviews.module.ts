@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AdminReviewsController } from './admin-reviews.controller';
 import { PublicReviewsController } from './public-reviews.controller';
 import { ReviewsController } from './reviews.controller';
 import { ReviewsService } from './reviews.service';
@@ -10,7 +11,11 @@ import { ReviewsService } from './reviews.service';
  * future stats joins (B4.5).
  */
 @Module({
-  controllers: [ReviewsController, PublicReviewsController],
+  controllers: [
+    ReviewsController,
+    PublicReviewsController,
+    AdminReviewsController,
+  ],
   providers: [ReviewsService],
   exports: [ReviewsService],
 })

@@ -191,4 +191,35 @@ export class ReviewsService {
       },
     };
   }
+
+  /**
+   * Admin moderation toggle. Idempotent — flipping a row to its current
+   * value is a no-op write (Prisma still issues the UPDATE but Postgres
+   * doesn't change the row contents). The boolean shape (vs. separate
+   * approve/reject endpoints) lets the admin re-draft a review later
+   * if it gets flagged after going public.
+   *
+   * @throws NotFoundException — `REVIEW_NOT_FOUND` for missing id.
+   */
+  async moderateById(reviewId: string, isApproved: boolean): Promise<Review> {
+    const existing = await this.prisma.review.findUnique({
+      where: { id: reviewId },
+      select: { id: true },
+    });
+    if (!existing) {
+      throw new NotFoundException({
+        code: 'REVIEW_NOT_FOUND',
+        message: `Review "${reviewId}" not found`,
+      });
+    }
+
+    const updated = await this.prisma.review.update({
+      where: { id: reviewId },
+      data: { isApproved },
+    });
+    this.logger.log(
+      `Admin moderated review ${reviewId} → isApproved=${isApproved}`,
+    );
+    return updated;
+  }
 }
