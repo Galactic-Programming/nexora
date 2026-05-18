@@ -44,7 +44,7 @@ src/
     └── health/             /health, /health/ready
 ```
 
-Future modules (per [roadmap.md](../roadmap.md)): `auth`, `users`, `destinations`,
+Future modules (per [roadmap.md](../../planning/roadmap.md)): `auth`, `users`, `destinations`,
 `tours`, `departures`, `bookings`, `payments`, `reviews`, `wishlist`, `uploads`,
 `admin`.
 
@@ -97,7 +97,7 @@ Pagination: controllers return `{ items, meta }`; the interceptor moves
   - `DATABASE_URL` → **Transaction pooler** (port 6543, `aws-N-<region>.pooler.supabase.com`). Append `?pgbouncer=true&connection_limit=1`. Used by `PrismaClient` at runtime. Prepared statements are disabled automatically.
   - `DIRECT_URL` → **Session pooler** (port 5432, same hostname). Used by `prisma migrate` (declared in `prisma.config.ts`). Supports prepared statements + long transactions, which migrations need.
   - We do NOT use the "Direct Connection" (`db.<ref>.supabase.co:5432`) because it requires IPv6 or a paid IPv4 add-on.
-- Schema: see [`erd.md`](../erd.md) and [`../../prisma/schema.prisma`](../../prisma/schema.prisma).
+- Schema: see [`erd.md`](erd.md) and [`prisma/schema.prisma`](../../../prisma/schema.prisma).
 
 ## Configuration
 

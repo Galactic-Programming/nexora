@@ -2,7 +2,7 @@
 
 Single source of truth for sprint progress. Update **every time** a sub-feature is shipped (code + tests + Postman + docs).
 
-Languages: 🇬🇧 docs in [en/](./en/), 🇻🇳 docs in [vi/](./vi/).
+Docs layout: see [`../README.md`](../README.md). Bilingual content lives in [`reference/`](../reference/) and [`runbooks/`](../runbooks/) (🇬🇧 `en/` ⇄ 🇻🇳 `vi/`); this `planning/` folder is EN-only.
 
 ---
 

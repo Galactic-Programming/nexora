@@ -44,7 +44,7 @@ src/
     └── health/             /health, /health/ready
 ```
 
-Các module sẽ thêm theo [roadmap.md](../roadmap.md): `auth`, `users`,
+Các module sẽ thêm theo [roadmap.md](../../planning/roadmap.md): `auth`, `users`,
 `destinations`, `tours`, `departures`, `bookings`, `payments`, `reviews`,
 `wishlist`, `uploads`, `admin`.
 
@@ -97,7 +97,7 @@ Phân trang: controller trả về `{ items, meta }`; interceptor sẽ chuyển
   - `DATABASE_URL` → **Transaction pooler** (port 6543, `aws-N-<region>.pooler.supabase.com`). Thêm `?pgbouncer=true&connection_limit=1`. Dùng bởi `PrismaClient` ở runtime. Prepared statements tự động bị tắt.
   - `DIRECT_URL` → **Session pooler** (port 5432, cùng hostname). Dùng bởi `prisma migrate` (khai báo trong `prisma.config.ts`). Hỗ trợ prepared statements + long transactions mà migration cần.
   - Ta KHÔNG dùng "Direct Connection" thật (`db.<ref>.supabase.co:5432`) vì nó yêu cầu IPv6 hoặc IPv4 add-on (trả phí).
-- Schema: xem [`erd.md`](../erd.md) và [`../../prisma/schema.prisma`](../../prisma/schema.prisma).
+- Schema: xem [`erd.md`](../en/erd.md) và [`prisma/schema.prisma`](../../../prisma/schema.prisma).
 
 ## Cấu hình
 

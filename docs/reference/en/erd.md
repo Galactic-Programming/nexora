@@ -1,6 +1,6 @@
 # Tourism API — Entity Relationship Diagram
 
-> Source of truth: [`prisma/schema.prisma`](../prisma/schema.prisma).
+> Source of truth: [`prisma/schema.prisma`](../../../prisma/schema.prisma).
 > Render with [dbdiagram.io](https://dbdiagram.io) or VS Code Mermaid preview.
 
 ## Mermaid ER

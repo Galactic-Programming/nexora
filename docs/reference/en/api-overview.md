@@ -366,22 +366,22 @@ Currency note: aggregates raw `totalAmount` without FX conversion — fine for t
 
 Reviews + Wishlist + Admin stats — all 5 sub-features shipped.
 
-### Sprint B4.6 — planned (pre-FE alignment)
+### Sprint B4.6 — ✅ shipped 2026-05-14 (pre-FE alignment)
 
-Schema + service tweaks so the FE template can wire 1:1 to the Figma design. Sub-features below; full rationale in [`sprints/b4.6-figma-alignment.md`](sprints/b4.6-figma-alignment.md).
+Schema + service tweaks so the FE template can wire 1:1 to the Figma design. Sub-features below; full rationale in [`sprints/b4.6-figma-alignment.md`](../../planning/sprints/b4.6-figma-alignment.md).
 
 | Change | Surface |
 | --- | --- |
 | `Tour.isFeatured` boolean | Schema; drives home "Trending" strip |
 | Extend `TourCategory` with `HONEYMOON`, `MUSICAL` | Schema; drives Services dropdown |
-| `?featured=true` + `sort=createdDesc\|priceAsc\|priceDesc\|titleAsc\|titleDesc` | `GET /tours` query DTO |
+| `?featured=true` + `sortBy=createdAt\|basePrice\|durationDays\|titleEn` + `sortOrder=asc\|desc` | `GET /tours` query DTO |
 | `averageRating`, `reviewsCount`, `peopleGoing` per card | `GET /tours` response payload |
 | `isFeatured?` on Create/Update DTOs | `POST/PATCH /admin/tours` |
 
-Out of scope (see [`BACKLOG.md`](../BACKLOG.md)): Build Your Own Package custom builder, newsletter subscribe, multi-currency revenue.
+Out of scope (see [`BACKLOG.md`](../../planning/BACKLOG.md)): Build Your Own Package custom builder, newsletter subscribe, multi-currency revenue.
 
 ### Sprint B5 — on hold
 
-Hardening + Railway deploy. Paused until the customer FE + admin FE both land, so we deploy a complete system once instead of redeploying the BE every time the FE finds a gap. See `sprints/b4.6-figma-alignment.md` § "Why pause B5".
+Hardening + Railway deploy. Paused until the customer FE + admin FE both land, so we deploy a complete system once instead of redeploying the BE every time the FE finds a gap. See [`sprints/b4.6-figma-alignment.md`](../../planning/sprints/b4.6-figma-alignment.md) § "Why pause B5".
 
-See [`roadmap.md`](../roadmap.md) for the full per-sub-feature tracker.
+See [`roadmap.md`](../../planning/roadmap.md) for the full per-sub-feature tracker.
