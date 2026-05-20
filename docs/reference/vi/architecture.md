@@ -34,19 +34,24 @@ src/
 │                           adapter (Prisma 7 bắt buộc dùng driver adapter)
 ├── common/
 │   ├── types/              ApiResponse envelope, AuthenticatedRequest
+│   ├── dto/                ApiErrorDto, ApiMetaDto — class Swagger-renderable
+│   │                       tương ứng với type envelope (B4.7)
 │   ├── decorators/         @Public, @Roles, @CurrentUser, @SupabaseIdentity
 │   ├── guards/             SupabaseJwtGuard (JWKS + fallback HS256),
 │   │                       RolesGuard
 │   ├── filters/            HttpExceptionFilter — định dạng lỗi đồng nhất
 │   └── interceptors/       TransformInterceptor — bọc response trong
 │                           {data, error, meta}
-└── modules/
-    └── health/             /health, /health/ready
+└── modules/                auth, users, destinations, tours, departures,
+                            bookings, payments, reviews, wishlist, uploads,
+                            admin-stats, email, health
 ```
 
-Các module sẽ thêm theo [roadmap.md](../../planning/roadmap.md): `auth`, `users`,
-`destinations`, `tours`, `departures`, `bookings`, `payments`, `reviews`,
-`wishlist`, `uploads`, `admin`.
+Mỗi module có folder `dto/` chứa cả request DTO (vd `CreateTourDto`) và
+response DTO (vd `TourDto`, `TourWithStatsDto`, `TourDetailDto`) để Swagger
+render cho `openapi-typescript-codegen` consume. Xem
+[roadmap.md](../../planning/roadmap.md) Sprint B4.7 để biết lý do thêm
+response DTO coverage.
 
 ## Vòng đời request
 

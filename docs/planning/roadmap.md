@@ -129,10 +129,25 @@ Schema + service tweaks so the FE customer template can wire 1:1 to the Figma de
 
 Customer FE first, admin FE next. Both repos are siblings of `tourism-be-api`; BE-first sprint discipline stays in effect (no mid-sprint schema changes — gaps go to BACKLOG).
 
-| Phase | Repo | Plan doc |
-| --- | --- | --- |
-| Customer FE | `tourism-frontend-customer/` | See `tourism-frontend-customer/docs/en/plan.md` (+ VI parallel) — 4 sprints C0→C3, ~6 weeks |
-| Admin FE | `tourism-frontend-admin/` | `tourism-frontend-admin/docs/en/plan.md` (written after customer FE lands) |
+| Phase | Repo | Status | Plan doc |
+| --- | --- | --- | --- |
+| Customer FE | `tourism-frontend-customer/` | 🚧 C0 ✅ done (2026-05-20) — C1 next | See `tourism-frontend-customer/docs/en/plan.md` (+ VI parallel) — 4 sprints C0→C3, ~6 weeks |
+| Admin FE | `tourism-frontend-admin/` | ⬜ Not started | `tourism-frontend-admin/docs/en/plan.md` (written after customer FE lands) |
+
+---
+
+## Sprint B4.7 — Response DTO coverage (triggered by FE C0)
+
+Triggered during customer FE Sprint C0 when `openapi-typescript-codegen` was wired to the live Swagger spec. The BE was returning Prisma model types directly (`Promise<Tour>`, `Promise<Booking>`, etc.), which Swagger renders as untyped responses — so the generated FE client had request DTOs only, no response models. Approach: add Swagger response decorators with explicit DTO classes; **do not** refactor controllers or services (decorators are pure documentation metadata — runtime path untouched).
+
+| # | Sub-feature | Status | Postman | Docs |
+| --- | --- | --- | --- | --- |
+| B4.7.1 | New `src/common/dto/api-response.dto.ts` (`ApiErrorDto`, `ApiMetaDto`) | ✅ | n/a | architecture |
+| B4.7.2 | Per-module response DTOs: `UserDto`, `DestinationDto` + paginated wrapper, `TourDto` + `TourWithStatsDto` + `TourDetailDto` + paginated wrapper + `ItineraryDayDto`, `DepartureDto`, `BookingDto` + `CreateBookingResponseDto`, `ReviewDto` + `PublicReviewDto` + paginated wrapper, `WishlistItemDto` | ✅ | n/a | api-overview |
+| B4.7.3 | Wire `@ApiOkResponse` / `@ApiCreatedResponse` / `@ApiNoContentResponse` on all 12 customer-facing + admin controllers (25 endpoints total) | ✅ | n/a | api-overview |
+| B4.7.4 | Verify: BE `pnpm test` 87/87 pass + `tsc --noEmit` clean | ✅ | n/a | n/a |
+| B4.7.5 | Add `postinstall: prisma generate` to `package.json` (avoids TS2305 after `pnpm install`) | ✅ | n/a | runbooks/local-dev |
+| B4.7.6 | Regenerate FE API client → 31 typed models (was 15) | ✅ | n/a | FE plan |
 
 ---
 

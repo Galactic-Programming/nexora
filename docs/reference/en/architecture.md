@@ -34,19 +34,24 @@ src/
 │                           adapter (Prisma 7 requires a driver adapter)
 ├── common/
 │   ├── types/              ApiResponse envelope, AuthenticatedRequest
+│   ├── dto/                ApiErrorDto, ApiMetaDto — Swagger-renderable
+│   │                       counterparts of the envelope types (B4.7)
 │   ├── decorators/         @Public, @Roles, @CurrentUser, @SupabaseIdentity
 │   ├── guards/             SupabaseJwtGuard (JWKS + HS256 fallback),
 │   │                       RolesGuard
 │   ├── filters/            HttpExceptionFilter — uniform error envelope
 │   └── interceptors/       TransformInterceptor — wraps responses in
 │                           {data, error, meta}
-└── modules/
-    └── health/             /health, /health/ready
+└── modules/                auth, users, destinations, tours, departures,
+                            bookings, payments, reviews, wishlist, uploads,
+                            admin-stats, email, health
 ```
 
-Future modules (per [roadmap.md](../../planning/roadmap.md)): `auth`, `users`, `destinations`,
-`tours`, `departures`, `bookings`, `payments`, `reviews`, `wishlist`, `uploads`,
-`admin`.
+Per-module `dto/` folders hold both request DTOs (e.g. `CreateTourDto`)
+and response DTOs (e.g. `TourDto`, `TourWithStatsDto`, `TourDetailDto`)
+that Swagger renders for `openapi-typescript-codegen` to consume.
+See [roadmap.md](../../planning/roadmap.md) Sprint B4.7 for the response
+DTO coverage rationale.
 
 ## Request lifecycle
 
