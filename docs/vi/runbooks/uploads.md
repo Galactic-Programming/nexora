@@ -1,6 +1,6 @@
 # Runbook — Uploads (Supabase Storage signed URLs)
 
-> 🇬🇧 English version: [`../en/uploads.md`](../en/uploads.md).
+> 🇬🇧 English version: [`../../en/runbooks/uploads.md`](../../en/runbooks/uploads.md).
 
 Cách admin FE upload ảnh/file lên Supabase Storage mà không proxy bytes qua Nest backend.
 

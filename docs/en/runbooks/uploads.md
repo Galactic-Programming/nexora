@@ -1,6 +1,6 @@
 # Runbook — Uploads (Supabase Storage signed URLs)
 
-> 🇻🇳 Bản tiếng Việt: [`../vi/uploads.md`](../vi/uploads.md).
+> 🇻🇳 Bản tiếng Việt: [`../../vi/runbooks/uploads.md`](../../vi/runbooks/uploads.md).
 
 How the admin FE uploads images/files to Supabase Storage without proxying bytes through this Nest backend.
 

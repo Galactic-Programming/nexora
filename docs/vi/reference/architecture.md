@@ -1,6 +1,6 @@
 # Kiến trúc — tourism-be-api
 
-> 🇬🇧 English version: [`../en/architecture.md`](../en/architecture.md).
+> 🇬🇧 English version: [`../../en/reference/architecture.md`](../../en/reference/architecture.md).
 
 ## Tổng quan
 
@@ -50,7 +50,7 @@ src/
 Mỗi module có folder `dto/` chứa cả request DTO (vd `CreateTourDto`) và
 response DTO (vd `TourDto`, `TourWithStatsDto`, `TourDetailDto`) để Swagger
 render cho `openapi-typescript-codegen` consume. Xem
-[roadmap.md](../../planning/roadmap.md) Sprint B4.7 để biết lý do thêm
+[roadmap.md](../../en/planning/roadmap.md) Sprint B4.7 để biết lý do thêm
 response DTO coverage.
 
 ## Vòng đời request
@@ -102,7 +102,7 @@ Phân trang: controller trả về `{ items, meta }`; interceptor sẽ chuyển
   - `DATABASE_URL` → **Transaction pooler** (port 6543, `aws-N-<region>.pooler.supabase.com`). Thêm `?pgbouncer=true&connection_limit=1`. Dùng bởi `PrismaClient` ở runtime. Prepared statements tự động bị tắt.
   - `DIRECT_URL` → **Session pooler** (port 5432, cùng hostname). Dùng bởi `prisma migrate` (khai báo trong `prisma.config.ts`). Hỗ trợ prepared statements + long transactions mà migration cần.
   - Ta KHÔNG dùng "Direct Connection" thật (`db.<ref>.supabase.co:5432`) vì nó yêu cầu IPv6 hoặc IPv4 add-on (trả phí).
-- Schema: xem [`erd.md`](../en/erd.md) và [`prisma/schema.prisma`](../../../prisma/schema.prisma).
+- Schema: xem [`erd.md`](../../en/reference/erd.md) và [`prisma/schema.prisma`](../../../prisma/schema.prisma).
 
 ## Cấu hình
 

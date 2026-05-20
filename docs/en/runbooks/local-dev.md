@@ -1,6 +1,6 @@
 # Runbook — Local development
 
-> 🇻🇳 Bản tiếng Việt: [`../vi/local-dev.md`](../vi/local-dev.md).
+> 🇻🇳 Bản tiếng Việt: [`../../vi/runbooks/local-dev.md`](../../vi/runbooks/local-dev.md).
 
 ## Prerequisites
 

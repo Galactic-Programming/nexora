@@ -1,6 +1,6 @@
 # Runbook — Phát triển local
 
-> 🇬🇧 English version: [`../en/local-dev.md`](../en/local-dev.md).
+> 🇬🇧 English version: [`../../en/runbooks/local-dev.md`](../../en/runbooks/local-dev.md).
 
 ## Yêu cầu
 

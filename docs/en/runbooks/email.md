@@ -1,6 +1,6 @@
 # Runbook — Transactional email (Resend)
 
-> 🇻🇳 Vietnamese version: [`../vi/email.md`](../vi/email.md).
+> 🇻🇳 Vietnamese version: [`../../vi/runbooks/email.md`](../../vi/runbooks/email.md).
 
 Covers the two transactional emails the API sends on its own:
 

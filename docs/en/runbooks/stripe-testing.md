@@ -1,6 +1,6 @@
 # Runbook — Stripe testing (Checkout + webhook)
 
-> 🇻🇳 Bản tiếng Việt: [`../vi/stripe-testing.md`](../vi/stripe-testing.md).
+> 🇻🇳 Bản tiếng Việt: [`../../vi/runbooks/stripe-testing.md`](../../vi/runbooks/stripe-testing.md).
 
 How to exercise the full booking → payment → confirmation loop locally with Stripe test mode + the Stripe CLI.
 

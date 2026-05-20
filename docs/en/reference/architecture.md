@@ -1,6 +1,6 @@
 # Architecture — tourism-be-api
 
-> 🇻🇳 Bản tiếng Việt: [`../vi/architecture.md`](../vi/architecture.md).
+> 🇻🇳 Bản tiếng Việt: [`../../vi/reference/architecture.md`](../../vi/reference/architecture.md).
 
 ## High-level
 
@@ -50,7 +50,7 @@ src/
 Per-module `dto/` folders hold both request DTOs (e.g. `CreateTourDto`)
 and response DTOs (e.g. `TourDto`, `TourWithStatsDto`, `TourDetailDto`)
 that Swagger renders for `openapi-typescript-codegen` to consume.
-See [roadmap.md](../../planning/roadmap.md) Sprint B4.7 for the response
+See [roadmap.md](../planning/roadmap.md) Sprint B4.7 for the response
 DTO coverage rationale.
 
 ## Request lifecycle

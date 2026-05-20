@@ -1,6 +1,6 @@
 # API Overview
 
-> 🇻🇳 Bản tiếng Việt: [`../vi/api-overview.md`](../vi/api-overview.md).
+> 🇻🇳 Bản tiếng Việt: [`../../vi/reference/api-overview.md`](../../vi/reference/api-overview.md).
 
 Base URL: `${API_PREFIX}` (default `/api/v1`). Swagger UI: `/api/docs` (dev only).
 
@@ -175,13 +175,13 @@ Errors:
 - `400 VALIDATION_ERROR` — DTO rejected the request (bad purpose / filename / contentType)
 - `502 STORAGE_SIGN_FAILED` — Supabase Storage rejected the sign request (bucket missing, project paused, service role key wrong)
 
-Full flow + bucket setup: [`docs/runbooks/en/uploads.md`](../../runbooks/en/uploads.md).
+Full flow + bucket setup: [`docs/en/runbooks/uploads.md`](../runbooks/uploads.md).
 
 ### Sprint B2.7 — Seed script
 
 Not an HTTP surface — `pnpm db:seed` populates a realistic catalog: 4 destinations, 10 tours (9 published + 1 draft), 2 itinerary days, 30 departures spread at +30 / +75 / +150 days from "today".
 
-Full reference: [`docs/runbooks/en/seed.md`](../../runbooks/en/seed.md).
+Full reference: [`docs/en/runbooks/seed.md`](../runbooks/seed.md).
 
 ### Sprint B3.1–B3.3 — Bookings (customer-facing)
 
@@ -235,7 +235,7 @@ Errors:
 
 - `STRIPE_WEBHOOK_INVALID` (400) — missing or invalid `Stripe-Signature`.
 
-Full local + production setup: [`docs/runbooks/en/stripe-testing.md`](../../runbooks/en/stripe-testing.md).
+Full local + production setup: [`docs/en/runbooks/stripe-testing.md`](../runbooks/stripe-testing.md).
 
 ### Sprint B3.5 — Admin refund
 
@@ -271,7 +271,7 @@ Errors:
 - `bookingConfirmation` — fired by the webhook on the PAID transition.
 - `bookingRefunded` — fired by `refundByAdmin` after Stripe refund + DB commit.
 
-Setup + production checklist: [`docs/runbooks/en/email.md`](../../runbooks/en/email.md).
+Setup + production checklist: [`docs/en/runbooks/email.md`](../runbooks/email.md).
 
 ### Sprint B4.1 — Customer reviews (create)
 
@@ -368,7 +368,7 @@ Reviews + Wishlist + Admin stats — all 5 sub-features shipped.
 
 ### Sprint B4.6 — ✅ shipped 2026-05-14 (pre-FE alignment)
 
-Schema + service tweaks so the FE template can wire 1:1 to the Figma design. Sub-features below; full rationale in [`sprints/b4.6-figma-alignment.md`](../../planning/sprints/b4.6-figma-alignment.md).
+Schema + service tweaks so the FE template can wire 1:1 to the Figma design. Sub-features below; full rationale in [`sprints/b4.6-figma-alignment.md`](../planning/sprints/b4.6-figma-alignment.md).
 
 | Change | Surface |
 | --- | --- |
@@ -378,10 +378,10 @@ Schema + service tweaks so the FE template can wire 1:1 to the Figma design. Sub
 | `averageRating`, `reviewsCount`, `peopleGoing` per card | `GET /tours` response payload |
 | `isFeatured?` on Create/Update DTOs | `POST/PATCH /admin/tours` |
 
-Out of scope (see [`BACKLOG.md`](../../planning/BACKLOG.md)): Build Your Own Package custom builder, newsletter subscribe, multi-currency revenue.
+Out of scope (see [`BACKLOG.md`](../planning/BACKLOG.md)): Build Your Own Package custom builder, newsletter subscribe, multi-currency revenue.
 
 ### Sprint B5 — on hold
 
-Hardening + Railway deploy. Paused until the customer FE + admin FE both land, so we deploy a complete system once instead of redeploying the BE every time the FE finds a gap. See [`sprints/b4.6-figma-alignment.md`](../../planning/sprints/b4.6-figma-alignment.md) § "Why pause B5".
+Hardening + Railway deploy. Paused until the customer FE + admin FE both land, so we deploy a complete system once instead of redeploying the BE every time the FE finds a gap. See [`sprints/b4.6-figma-alignment.md`](../planning/sprints/b4.6-figma-alignment.md) § "Why pause B5".
 
-See [`roadmap.md`](../../planning/roadmap.md) for the full per-sub-feature tracker.
+See [`roadmap.md`](../planning/roadmap.md) for the full per-sub-feature tracker.

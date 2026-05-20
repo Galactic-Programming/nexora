@@ -1,6 +1,6 @@
 # Tổng quan API
 
-> 🇬🇧 English version: [`../en/api-overview.md`](../en/api-overview.md).
+> 🇬🇧 English version: [`../../en/reference/api-overview.md`](../../en/reference/api-overview.md).
 
 Base URL: `${API_PREFIX}` (mặc định `/api/v1`). Swagger UI: `/api/docs` (chỉ ở dev).
 
@@ -175,13 +175,13 @@ Errors:
 - `400 VALIDATION_ERROR` — DTO reject (bad purpose / filename / contentType)
 - `502 STORAGE_SIGN_FAILED` — Supabase Storage reject (bucket thiếu, project pause, service role key sai)
 
-Flow chi tiết + setup bucket: [`docs/runbooks/vi/uploads.md`](../../runbooks/vi/uploads.md).
+Flow chi tiết + setup bucket: [`docs/vi/runbooks/uploads.md`](../runbooks/uploads.md).
 
 ### Sprint B2.7 — Seed script
 
 Không phải HTTP surface — `pnpm db:seed` populate catalog thực tế: 4 destination, 10 tour (9 published + 1 draft), 2 itinerary day, 30 departure spread tại +30 / +75 / +150 ngày tính từ "hôm nay".
 
-Reference đầy đủ: [`docs/runbooks/vi/seed.md`](../../runbooks/vi/seed.md).
+Reference đầy đủ: [`docs/vi/runbooks/seed.md`](../runbooks/seed.md).
 
 ### Sprint B3.1–B3.3 — Bookings (customer-facing)
 
@@ -235,7 +235,7 @@ Errors:
 
 - `STRIPE_WEBHOOK_INVALID` (400) — `Stripe-Signature` missing hoặc invalid.
 
-Full setup local + production: [`docs/runbooks/vi/stripe-testing.md`](../../runbooks/vi/stripe-testing.md).
+Full setup local + production: [`docs/vi/runbooks/stripe-testing.md`](../runbooks/stripe-testing.md).
 
 ### Sprint B3.5 — Admin refund
 
@@ -271,7 +271,7 @@ Lỗi:
 - `bookingConfirmation` — webhook gửi khi transition PAID.
 - `bookingRefunded` — `refundByAdmin` gửi sau khi refund Stripe + DB commit.
 
-Setup + production checklist: [`docs/runbooks/vi/email.md`](../../runbooks/vi/email.md).
+Setup + production checklist: [`docs/vi/runbooks/email.md`](../runbooks/email.md).
 
 ### Sprint B4.1 — Review của khách (create)
 
@@ -368,7 +368,7 @@ Reviews + Wishlist + Admin stats — đã ship 5 sub-feature.
 
 ### Sprint B4.6 — ✅ đã ship 2026-05-14 (Figma alignment trước FE)
 
-Schema + service tweak để FE template wire 1:1 với design Figma. Sub-feature bên dưới; rationale đầy đủ ở [`sprints/b4.6-figma-alignment.md`](../../planning/sprints/b4.6-figma-alignment.md).
+Schema + service tweak để FE template wire 1:1 với design Figma. Sub-feature bên dưới; rationale đầy đủ ở [`sprints/b4.6-figma-alignment.md`](../../en/planning/sprints/b4.6-figma-alignment.md).
 
 | Thay đổi | Surface |
 | --- | --- |
@@ -378,10 +378,10 @@ Schema + service tweak để FE template wire 1:1 với design Figma. Sub-featur
 | `averageRating`, `reviewsCount`, `peopleGoing` per card | `GET /tours` response payload |
 | `isFeatured?` trên Create/Update DTO | `POST/PATCH /admin/tours` |
 
-Out of scope (xem [`BACKLOG.md`](../../planning/BACKLOG.md)): Build Your Own Package custom builder, newsletter subscribe, multi-currency revenue.
+Out of scope (xem [`BACKLOG.md`](../../en/planning/BACKLOG.md)): Build Your Own Package custom builder, newsletter subscribe, multi-currency revenue.
 
 ### Sprint B5 — on hold
 
-Hardening + Railway deploy. Pause cho đến khi FE customer + FE admin cả 2 land, để deploy 1 lần cả hệ thống đã validate, thay vì redeploy BE mỗi lần FE phát hiện gap. Xem [`sprints/b4.6-figma-alignment.md`](../../planning/sprints/b4.6-figma-alignment.md) § "Vì sao pause B5".
+Hardening + Railway deploy. Pause cho đến khi FE customer + FE admin cả 2 land, để deploy 1 lần cả hệ thống đã validate, thay vì redeploy BE mỗi lần FE phát hiện gap. Xem [`sprints/b4.6-figma-alignment.md`](../../en/planning/sprints/b4.6-figma-alignment.md) § "Vì sao pause B5".
 
-Xem [`roadmap.md`](../../planning/roadmap.md) để biết tracker chi tiết theo từng sub-feature.
+Xem [`roadmap.md`](../../en/planning/roadmap.md) để biết tracker chi tiết theo từng sub-feature.
