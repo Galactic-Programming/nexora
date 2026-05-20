@@ -11,12 +11,15 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiNoContentResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { Tour, User, Wishlist } from '@prisma/client';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { WishlistItemDto } from './dto/wishlist.dto';
 import { WishlistService } from './wishlist.service';
 
 /**
@@ -39,8 +42,8 @@ export class WishlistController {
   @Post(':tourId')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Add a tour to caller's wishlist (idempotent)" })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
+    type: WishlistItemDto,
     description: 'Wishlist row (created or existing)',
   })
   @ApiResponse({ status: 401, description: 'User not synced' })
@@ -67,7 +70,7 @@ export class WishlistController {
   @ApiOperation({
     summary: "Remove a tour from caller's wishlist (idempotent)",
   })
-  @ApiResponse({ status: 204, description: 'Removed (or already absent)' })
+  @ApiNoContentResponse({ description: 'Removed (or already absent)' })
   @ApiResponse({ status: 401, description: 'User not synced' })
   async remove(
     @CurrentUser() user: User | null,
@@ -89,7 +92,10 @@ export class WishlistController {
   @Get('me')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Caller's wishlist with joined tour previews" })
-  @ApiResponse({ status: 200, description: 'Array of wishlist rows + tour' })
+  @ApiOkResponse({
+    type: [WishlistItemDto],
+    description: 'Array of wishlist rows + tour',
+  })
   @ApiResponse({ status: 401, description: 'User not synced' })
   list(
     @CurrentUser() user: User | null,

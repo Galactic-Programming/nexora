@@ -1,6 +1,7 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiOkResponse,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -8,6 +9,7 @@ import {
 import { User } from '@prisma/client';
 import { SupabaseIdentity } from '../../common/decorators/current-user.decorator';
 import type { SupabaseAuthIdentity } from '../../common/types/authenticated-request';
+import { UserDto } from '../users/dto/user.dto';
 import { AuthService } from './auth.service';
 import { SyncUserDto } from './dto/sync-user.dto';
 
@@ -47,7 +49,7 @@ export class AuthController {
       'Idempotent. The first call creates a `User` row keyed by the Supabase `sub`; subsequent calls refresh email/profile fields. ' +
       'The frontend should call this once after sign-in/sign-up before issuing any other authenticated request.',
   })
-  @ApiResponse({ status: 200, description: 'User upserted' })
+  @ApiOkResponse({ type: UserDto, description: 'User upserted' })
   @ApiResponse({ status: 401, description: 'Missing or invalid JWT' })
   syncCustomer(
     @SupabaseIdentity() identity: SupabaseAuthIdentity,
@@ -75,7 +77,7 @@ export class AuthController {
       'Same upsert as `/auth/sync` but elevates the user to ADMIN. Caller email must be in `ADMIN_EMAILS`; otherwise 403. ' +
       'Use this after admins log into the admin frontend.',
   })
-  @ApiResponse({ status: 200, description: 'User upserted as ADMIN' })
+  @ApiOkResponse({ type: UserDto, description: 'User upserted as ADMIN' })
   @ApiResponse({ status: 401, description: 'Missing or invalid JWT' })
   @ApiResponse({ status: 403, description: 'Email not on admin allowlist' })
   syncAdmin(

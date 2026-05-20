@@ -12,6 +12,8 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -23,7 +25,9 @@ import {
   PaginatedDestinations,
 } from './destinations.service';
 import { CreateDestinationDto } from './dto/create-destination.dto';
+import { DestinationDto } from './dto/destination.dto';
 import { ListDestinationsQueryDto } from './dto/list-destinations-query.dto';
+import { PaginatedDestinationsDto } from './dto/paginated-destinations.dto';
 import { UpdateDestinationDto } from './dto/update-destination.dto';
 
 /**
@@ -51,7 +55,10 @@ export class AdminDestinationsController {
    */
   @Get()
   @ApiOperation({ summary: 'Admin: list all destinations (incl. drafts)' })
-  @ApiResponse({ status: 200, description: 'Paginated destinations' })
+  @ApiOkResponse({
+    type: PaginatedDestinationsDto,
+    description: 'Paginated destinations',
+  })
   @ApiResponse({ status: 401, description: 'Missing or invalid JWT' })
   @ApiResponse({ status: 403, description: 'Not an ADMIN' })
   list(
@@ -65,7 +72,7 @@ export class AdminDestinationsController {
    */
   @Get(':slug')
   @ApiOperation({ summary: 'Admin: get one destination by slug' })
-  @ApiResponse({ status: 200, description: 'Destination' })
+  @ApiOkResponse({ type: DestinationDto, description: 'Destination' })
   @ApiResponse({ status: 404, description: 'Slug not found' })
   detail(@Param('slug') slug: string): Promise<Destination> {
     return this.destinationsService.findBySlug(slug);
@@ -79,7 +86,7 @@ export class AdminDestinationsController {
    */
   @Post()
   @ApiOperation({ summary: 'Admin: create a destination' })
-  @ApiResponse({ status: 201, description: 'Created' })
+  @ApiCreatedResponse({ type: DestinationDto, description: 'Created' })
   @ApiResponse({ status: 409, description: 'Slug already exists' })
   create(@Body() body: CreateDestinationDto): Promise<Destination> {
     return this.destinationsService.create(body);
@@ -95,7 +102,7 @@ export class AdminDestinationsController {
   @Patch(':slug')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Admin: partial update a destination' })
-  @ApiResponse({ status: 200, description: 'Updated' })
+  @ApiOkResponse({ type: DestinationDto, description: 'Updated' })
   @ApiResponse({ status: 404, description: 'Slug not found' })
   @ApiResponse({ status: 409, description: 'New slug already exists' })
   update(
@@ -114,7 +121,7 @@ export class AdminDestinationsController {
   @Delete(':slug')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Admin: delete a destination' })
-  @ApiResponse({ status: 200, description: 'Deleted (echo)' })
+  @ApiOkResponse({ type: DestinationDto, description: 'Deleted (echo)' })
   @ApiResponse({ status: 404, description: 'Slug not found' })
   @ApiResponse({
     status: 409,

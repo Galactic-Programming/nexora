@@ -1,7 +1,13 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiOkResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
 import { ListReviewsQueryDto } from './dto/list-reviews-query.dto';
+import { PaginatedPublicReviewsDto } from './dto/paginated-reviews.dto';
 import { PaginatedPublicReviews, ReviewsService } from './reviews.service';
 
 /**
@@ -20,7 +26,10 @@ export class PublicReviewsController {
   @Get()
   @Public()
   @ApiOperation({ summary: 'List approved reviews for a tour (paginated)' })
-  @ApiResponse({ status: 200, description: 'Paginated approved reviews' })
+  @ApiOkResponse({
+    type: PaginatedPublicReviewsDto,
+    description: 'Paginated approved reviews',
+  })
   @ApiResponse({
     status: 404,
     description: 'Tour slug not found or unpublished',

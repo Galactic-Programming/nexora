@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiOkResponse,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -14,6 +15,7 @@ import {
 import { User } from '@prisma/client';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { UpdateMeDto } from './dto/update-me.dto';
+import { UserDto } from './dto/user.dto';
 import { UsersService } from './users.service';
 
 /**
@@ -41,7 +43,7 @@ export class UsersController {
    */
   @Get('me')
   @ApiOperation({ summary: 'Return the current user profile' })
-  @ApiResponse({ status: 200, description: 'Profile' })
+  @ApiOkResponse({ type: UserDto, description: 'Profile' })
   @ApiResponse({ status: 401, description: 'Missing or invalid JWT' })
   @ApiResponse({
     status: 404,
@@ -72,7 +74,7 @@ export class UsersController {
    */
   @Patch('me')
   @ApiOperation({ summary: 'Update the current user profile' })
-  @ApiResponse({ status: 200, description: 'Updated profile' })
+  @ApiOkResponse({ type: UserDto, description: 'Updated profile' })
   @ApiResponse({ status: 401, description: 'Missing or invalid JWT' })
   updateMe(
     @CurrentUser() user: User | null,

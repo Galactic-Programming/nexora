@@ -11,6 +11,8 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -18,6 +20,7 @@ import {
 import { Tour, UserRole } from '@prisma/client';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CreateTourDto } from './dto/create-tour.dto';
+import { TourDto } from './dto/tour.dto';
 import { UpdateTourDto } from './dto/update-tour.dto';
 import { ToursService } from './tours.service';
 
@@ -50,7 +53,7 @@ export class AdminToursController {
    */
   @Get(':slug')
   @ApiOperation({ summary: 'Admin: get one tour by slug (with destination)' })
-  @ApiResponse({ status: 200, description: 'Tour' })
+  @ApiOkResponse({ type: TourDto, description: 'Tour' })
   @ApiResponse({ status: 404, description: 'Slug not found' })
   detail(@Param('slug') slug: string): Promise<Tour> {
     return this.toursService.findBySlug(slug);
@@ -66,7 +69,7 @@ export class AdminToursController {
    */
   @Post()
   @ApiOperation({ summary: 'Admin: create a tour' })
-  @ApiResponse({ status: 201, description: 'Created' })
+  @ApiCreatedResponse({ type: TourDto, description: 'Created' })
   @ApiResponse({ status: 400, description: 'Invalid destinationId' })
   @ApiResponse({ status: 409, description: 'Slug already exists' })
   create(@Body() body: CreateTourDto): Promise<Tour> {
@@ -82,7 +85,7 @@ export class AdminToursController {
   @Patch(':slug')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Admin: partial update a tour' })
-  @ApiResponse({ status: 200, description: 'Updated' })
+  @ApiOkResponse({ type: TourDto, description: 'Updated' })
   @ApiResponse({ status: 400, description: 'Invalid destinationId' })
   @ApiResponse({ status: 404, description: 'Slug not found' })
   @ApiResponse({ status: 409, description: 'New slug already exists' })
@@ -103,7 +106,7 @@ export class AdminToursController {
   @Delete(':slug')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Admin: delete a tour' })
-  @ApiResponse({ status: 200, description: 'Deleted (echo)' })
+  @ApiOkResponse({ type: TourDto, description: 'Deleted (echo)' })
   @ApiResponse({ status: 404, description: 'Slug not found' })
   @ApiResponse({
     status: 409,

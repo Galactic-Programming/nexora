@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiOkResponse,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -16,6 +17,7 @@ import {
 import { Review, UserRole } from '@prisma/client';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { ModerateReviewDto } from './dto/moderate-review.dto';
+import { ReviewDto } from './dto/review.dto';
 import { ReviewsService } from './reviews.service';
 
 /**
@@ -35,7 +37,7 @@ export class AdminReviewsController {
   @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Approve or re-draft a review (admin)' })
-  @ApiResponse({ status: 200, description: 'Updated review row' })
+  @ApiOkResponse({ type: ReviewDto, description: 'Updated review row' })
   @ApiResponse({ status: 401, description: 'Missing/invalid token' })
   @ApiResponse({ status: 403, description: 'Caller is not an admin' })
   @ApiResponse({ status: 404, description: 'Review not found' })

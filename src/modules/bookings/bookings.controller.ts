@@ -10,6 +10,8 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -17,6 +19,7 @@ import {
 import { Booking, User } from '@prisma/client';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { BookingsService, CreatedBooking } from './bookings.service';
+import { BookingDto, CreateBookingResponseDto } from './dto/booking.dto';
 import { CreateBookingDto } from './dto/create-booking.dto';
 
 /**
@@ -54,7 +57,10 @@ export class BookingsController {
    */
   @Post()
   @ApiOperation({ summary: 'Create a booking + Stripe Checkout session' })
-  @ApiResponse({ status: 201, description: 'Created + checkout URL minted' })
+  @ApiCreatedResponse({
+    type: CreateBookingResponseDto,
+    description: 'Created + checkout URL minted',
+  })
   @ApiResponse({ status: 400, description: 'Departure not OPEN' })
   @ApiResponse({ status: 401, description: 'User not synced' })
   @ApiResponse({ status: 404, description: 'Tour or departure not found' })
@@ -79,8 +85,8 @@ export class BookingsController {
   @Get('me')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Caller's bookings (newest first, top 50)" })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
+    type: [BookingDto],
     description: 'Bookings with tour + departure joined',
   })
   @ApiResponse({ status: 401, description: 'User not synced' })
@@ -105,7 +111,7 @@ export class BookingsController {
    */
   @Get(':code')
   @ApiOperation({ summary: 'Get one booking by code (owner or admin)' })
-  @ApiResponse({ status: 200, description: 'Booking detail' })
+  @ApiOkResponse({ type: BookingDto, description: 'Booking detail' })
   @ApiResponse({ status: 401, description: 'User not synced' })
   @ApiResponse({ status: 404, description: 'Booking not found or not owned' })
   detail(

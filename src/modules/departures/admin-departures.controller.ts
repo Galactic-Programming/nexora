@@ -13,6 +13,8 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -21,6 +23,7 @@ import { TourDeparture, UserRole } from '@prisma/client';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { DeparturesService } from './departures.service';
 import { CreateDepartureDto } from './dto/create-departure.dto';
+import { DepartureDto } from './dto/departure.dto';
 import { ListDeparturesQueryDto } from './dto/list-departures-query.dto';
 import { UpdateDepartureDto } from './dto/update-departure.dto';
 
@@ -47,8 +50,8 @@ export class AdminDeparturesController {
    */
   @Get()
   @ApiOperation({ summary: 'Admin: list departures (full history)' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
+    type: [DepartureDto],
     description: 'Departures ordered by startDate asc',
   })
   @ApiResponse({ status: 404, description: 'Tour slug not found' })
@@ -67,7 +70,7 @@ export class AdminDeparturesController {
    */
   @Post()
   @ApiOperation({ summary: 'Admin: create a departure' })
-  @ApiResponse({ status: 201, description: 'Created' })
+  @ApiCreatedResponse({ type: DepartureDto, description: 'Created' })
   @ApiResponse({ status: 400, description: 'Invalid date range' })
   @ApiResponse({ status: 404, description: 'Tour slug not found' })
   create(
@@ -89,7 +92,7 @@ export class AdminDeparturesController {
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Admin: partial update a departure' })
-  @ApiResponse({ status: 200, description: 'Updated' })
+  @ApiOkResponse({ type: DepartureDto, description: 'Updated' })
   @ApiResponse({
     status: 400,
     description: 'Invalid date range or seatsTotal below seatsBooked',
@@ -115,7 +118,7 @@ export class AdminDeparturesController {
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Admin: delete a departure' })
-  @ApiResponse({ status: 200, description: 'Deleted (echo)' })
+  @ApiOkResponse({ type: DepartureDto, description: 'Deleted (echo)' })
   @ApiResponse({ status: 404, description: 'Tour or departure not found' })
   @ApiResponse({ status: 409, description: 'Departure has bookings' })
   remove(

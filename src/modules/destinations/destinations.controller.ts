@@ -1,12 +1,19 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiOkResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Destination } from '@prisma/client';
 import { Public } from '../../common/decorators/public.decorator';
 import {
   DestinationsService,
   PaginatedDestinations,
 } from './destinations.service';
+import { DestinationDto } from './dto/destination.dto';
 import { ListDestinationsQueryDto } from './dto/list-destinations-query.dto';
+import { PaginatedDestinationsDto } from './dto/paginated-destinations.dto';
 
 /**
  * Public read-only surface for browsing destinations.
@@ -30,7 +37,10 @@ export class DestinationsController {
   @Get()
   @Public()
   @ApiOperation({ summary: 'List active destinations (paginated)' })
-  @ApiResponse({ status: 200, description: 'Paginated destinations' })
+  @ApiOkResponse({
+    type: PaginatedDestinationsDto,
+    description: 'Paginated destinations',
+  })
   list(
     @Query() query: ListDestinationsQueryDto,
   ): Promise<PaginatedDestinations> {
@@ -47,7 +57,7 @@ export class DestinationsController {
   @Get(':slug')
   @Public()
   @ApiOperation({ summary: 'Get one active destination by slug' })
-  @ApiResponse({ status: 200, description: 'Destination' })
+  @ApiOkResponse({ type: DestinationDto, description: 'Destination' })
   @ApiResponse({ status: 404, description: 'Slug not found or inactive' })
   detail(@Param('slug') slug: string): Promise<Destination> {
     return this.destinationsService.findPublicBySlug(slug);

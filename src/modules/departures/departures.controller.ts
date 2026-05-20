@@ -1,8 +1,14 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiOkResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { TourDeparture } from '@prisma/client';
 import { Public } from '../../common/decorators/public.decorator';
 import { DeparturesService } from './departures.service';
+import { DepartureDto } from './dto/departure.dto';
 import { ListDeparturesQueryDto } from './dto/list-departures-query.dto';
 
 /**
@@ -28,8 +34,8 @@ export class DeparturesController {
   @Get()
   @Public()
   @ApiOperation({ summary: 'List upcoming departures for a tour' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
+    type: [DepartureDto],
     description: 'Departures ordered by startDate asc',
   })
   @ApiResponse({

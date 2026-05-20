@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiCreatedResponse,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -15,6 +16,7 @@ import {
 import { Review, User } from '@prisma/client';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { CreateReviewDto } from './dto/create-review.dto';
+import { ReviewDto } from './dto/review.dto';
 import { ReviewsService } from './reviews.service';
 
 /**
@@ -35,7 +37,10 @@ export class ReviewsController {
   @ApiOperation({
     summary: "Create a review for one of caller's PAID bookings",
   })
-  @ApiResponse({ status: 201, description: 'Created (pending approval)' })
+  @ApiCreatedResponse({
+    type: ReviewDto,
+    description: 'Created (pending approval)',
+  })
   @ApiResponse({ status: 400, description: 'Booking not PAID' })
   @ApiResponse({ status: 401, description: 'User not synced' })
   @ApiResponse({ status: 403, description: 'Not the owner of the booking' })

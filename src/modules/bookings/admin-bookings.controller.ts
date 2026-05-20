@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiOkResponse,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -16,6 +17,7 @@ import {
 import { Booking, UserRole } from '@prisma/client';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { BookingsService } from './bookings.service';
+import { BookingDto } from './dto/booking.dto';
 import { RefundBookingDto } from './dto/refund-booking.dto';
 
 /**
@@ -50,8 +52,8 @@ export class AdminBookingsController {
   @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Refund a PAID booking (admin)' })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
+    type: BookingDto,
     description: 'Booking REFUNDED + seats released',
   })
   @ApiResponse({ status: 400, description: 'Not refundable or Stripe failed' })

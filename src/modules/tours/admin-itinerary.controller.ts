@@ -12,6 +12,8 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -19,6 +21,7 @@ import {
 import { TourItineraryDay, UserRole } from '@prisma/client';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CreateItineraryDayDto } from './dto/create-itinerary-day.dto';
+import { ItineraryDayDto } from './dto/itinerary-day.dto';
 import { UpdateItineraryDayDto } from './dto/update-itinerary-day.dto';
 import { ItineraryService } from './itinerary.service';
 
@@ -47,7 +50,10 @@ export class AdminItineraryController {
    */
   @Get()
   @ApiOperation({ summary: 'Admin: list itinerary days for a tour' })
-  @ApiResponse({ status: 200, description: 'Days ordered by dayNumber asc' })
+  @ApiOkResponse({
+    type: [ItineraryDayDto],
+    description: 'Days ordered by dayNumber asc',
+  })
   @ApiResponse({ status: 404, description: 'Tour slug not found' })
   list(@Param('slug') slug: string): Promise<TourItineraryDay[]> {
     return this.itineraryService.listForTour(slug);
@@ -61,7 +67,7 @@ export class AdminItineraryController {
    */
   @Post()
   @ApiOperation({ summary: 'Admin: create an itinerary day' })
-  @ApiResponse({ status: 201, description: 'Created' })
+  @ApiCreatedResponse({ type: ItineraryDayDto, description: 'Created' })
   @ApiResponse({ status: 404, description: 'Tour slug not found' })
   @ApiResponse({
     status: 409,
@@ -86,7 +92,7 @@ export class AdminItineraryController {
   @Patch(':dayNumber')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Admin: partial update an itinerary day' })
-  @ApiResponse({ status: 200, description: 'Updated' })
+  @ApiOkResponse({ type: ItineraryDayDto, description: 'Updated' })
   @ApiResponse({ status: 404, description: 'Tour or day not found' })
   @ApiResponse({ status: 409, description: 'Renumber collision' })
   update(
@@ -107,7 +113,7 @@ export class AdminItineraryController {
   @Delete(':dayNumber')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Admin: delete an itinerary day' })
-  @ApiResponse({ status: 200, description: 'Deleted (echo)' })
+  @ApiOkResponse({ type: ItineraryDayDto, description: 'Deleted (echo)' })
   @ApiResponse({ status: 404, description: 'Tour or day not found' })
   remove(
     @Param('slug') slug: string,
