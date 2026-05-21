@@ -70,7 +70,8 @@ const DESTINATIONS: DestinationSeed[] = [
     nameVi: 'Hội An',
     country: 'Vietnam',
     region: 'Central',
-    heroImage: 'destinations/hero/hoi-an.jpg',
+    heroImage:
+      'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=1200&q=80',
     descriptionEn:
       'UNESCO-listed Ancient Town glowing with silk lanterns, riverside cafés, and centuries-old merchant houses.',
     descriptionVi:
@@ -82,7 +83,8 @@ const DESTINATIONS: DestinationSeed[] = [
     nameVi: 'Hà Nội',
     country: 'Vietnam',
     region: 'North',
-    heroImage: 'destinations/hero/ha-noi.jpg',
+    heroImage:
+      'https://images.unsplash.com/photo-1528181304800-259b08848526?auto=format&fit=crop&w=1200&q=80',
     descriptionEn:
       'A thousand-year-old capital where French colonial boulevards meet bustling motorbike-filled alleys.',
     descriptionVi:
@@ -94,7 +96,8 @@ const DESTINATIONS: DestinationSeed[] = [
     nameVi: 'Sa Pa',
     country: 'Vietnam',
     region: 'Northwest',
-    heroImage: 'destinations/hero/sa-pa.jpg',
+    heroImage:
+      'https://images.unsplash.com/photo-1493957988430-a5f2e15f39a3?auto=format&fit=crop&w=1200&q=80',
     descriptionEn:
       'Misty mountain town overlooking emerald rice terraces and home to Vietnam’s highest peak, Fansipan.',
     descriptionVi:
@@ -106,7 +109,8 @@ const DESTINATIONS: DestinationSeed[] = [
     nameVi: 'Phú Quốc',
     country: 'Vietnam',
     region: 'South',
-    heroImage: 'destinations/hero/phu-quoc.jpg',
+    heroImage:
+      'https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=1200&q=80',
     descriptionEn:
       'Tropical island getaway with white-sand beaches, pepper farms, and Vietnam’s clearest snorkelling waters.',
     descriptionVi:
@@ -158,8 +162,12 @@ const TOURS: TourSeed[] = [
     difficulty: 'easy',
     isPublished: true,
     isFeatured: true,
-    heroImage: 'tours/hero/hoi-an-walking.jpg',
-    gallery: ['tours/gallery/hoi-an-1.jpg', 'tours/gallery/hoi-an-2.jpg'],
+    heroImage:
+      'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1551958219-acbc608c6377?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1200&q=80',
+    ],
     included: ['Local guide', 'Bottled water', 'Heritage site entrance'],
     excluded: ['Lunch', 'Personal expenses'],
     meetingPoint: 'Hoi An tourist info centre, 78 Le Loi street',
@@ -180,8 +188,11 @@ const TOURS: TourSeed[] = [
     difficulty: 'easy',
     isPublished: true,
     isFeatured: true,
-    heroImage: 'tours/hero/hoi-an-lantern.jpg',
-    gallery: ['tours/gallery/hoi-an-lantern-1.jpg'],
+    heroImage:
+      'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=1200&q=80',
+    ],
     included: ['Boat ride', 'Lantern', 'Street food vouchers'],
     excluded: ['Tips'],
     meetingPoint: 'Bach Dang street pier',
@@ -204,7 +215,8 @@ const TOURS: TourSeed[] = [
     // tour MUST NOT appear in GET /tours but MUST appear in /admin/tours.
     isPublished: false,
     isFeatured: false,
-    heroImage: 'tours/hero/hoi-an-cooking.jpg',
+    heroImage:
+      'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1200&q=80',
     gallery: [],
     included: ['Market tour', 'Basket boat', 'Cooking class', 'Lunch'],
     excluded: ['Drinks'],
@@ -225,8 +237,11 @@ const TOURS: TourSeed[] = [
     difficulty: 'easy',
     isPublished: true,
     isFeatured: false,
-    heroImage: 'tours/hero/ha-noi-old-quarter.jpg',
-    gallery: ['tours/gallery/ha-noi-1.jpg'],
+    heroImage:
+      'https://images.unsplash.com/photo-1555921015-5532091f6026?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1539635278303-d4002c07eae3?auto=format&fit=crop&w=1200&q=80',
+    ],
     included: ['Cyclo ride', 'Local guide', 'Bottled water'],
     excluded: ['Lunch'],
     meetingPoint: 'St Joseph cathedral, Nha Tho street',
@@ -247,8 +262,12 @@ const TOURS: TourSeed[] = [
     difficulty: 'easy',
     isPublished: true,
     isFeatured: true,
-    heroImage: 'tours/hero/ha-long-bay.jpg',
-    gallery: ['tours/gallery/ha-long-1.jpg', 'tours/gallery/ha-long-2.jpg'],
+    heroImage:
+      'https://images.unsplash.com/photo-1620625515032-6ed0c1790c75?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1620625515032-6ed0c1790c75?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1551958219-acbc608c6377?auto=format&fit=crop&w=1200&q=80',
+    ],
     included: ['Coach transfer', 'Boat cruise', 'Kayak', 'Seafood lunch'],
     excluded: ['Tips', 'Drinks beyond water'],
     meetingPoint: 'Hanoi Opera House',
@@ -268,7 +287,8 @@ const TOURS: TourSeed[] = [
     difficulty: 'easy',
     isPublished: true,
     isFeatured: false,
-    heroImage: 'tours/hero/ha-noi-food.jpg',
+    heroImage:
+      'https://images.unsplash.com/photo-1539635278303-d4002c07eae3?auto=format&fit=crop&w=1200&q=80',
     gallery: [],
     included: ['All food + drinks', 'Local guide'],
     excluded: ['Tips'],
@@ -290,8 +310,12 @@ const TOURS: TourSeed[] = [
     difficulty: 'moderate',
     isPublished: true,
     isFeatured: true,
-    heroImage: 'tours/hero/sa-pa-trek.jpg',
-    gallery: ['tours/gallery/sa-pa-1.jpg', 'tours/gallery/sa-pa-2.jpg'],
+    heroImage:
+      'https://images.unsplash.com/photo-1493957988430-a5f2e15f39a3?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1493957988430-a5f2e15f39a3?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=1200&q=80',
+    ],
     included: ['Guide', 'Homestay night', '3 meals', 'Insurance'],
     excluded: ['Personal trekking gear', 'Drinks'],
     meetingPoint: 'Sapa central square',
@@ -332,7 +356,8 @@ const TOURS: TourSeed[] = [
     difficulty: 'easy',
     isPublished: true,
     isFeatured: false,
-    heroImage: 'tours/hero/fansipan.jpg',
+    heroImage:
+      'https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=1200&q=80',
     gallery: [],
     included: ['Cable car ticket', 'Funicular', 'Guide'],
     excluded: ['Meals'],
@@ -354,8 +379,11 @@ const TOURS: TourSeed[] = [
     difficulty: 'easy',
     isPublished: true,
     isFeatured: true,
-    heroImage: 'tours/hero/phu-quoc-islands.jpg',
-    gallery: ['tours/gallery/phu-quoc-1.jpg'],
+    heroImage:
+      'https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=1200&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=1200&q=80',
+    ],
     included: ['Speedboat', 'Snorkel gear', 'BBQ lunch', 'Insurance'],
     excluded: ['Drinks', 'Underwater camera rental'],
     meetingPoint: 'An Thoi port',
@@ -376,7 +404,8 @@ const TOURS: TourSeed[] = [
     difficulty: 'easy',
     isPublished: true,
     isFeatured: true,
-    heroImage: 'tours/hero/phu-quoc-sunset.jpg',
+    heroImage:
+      'https://images.unsplash.com/photo-1493780474015-ba834fd0ce2f?auto=format&fit=crop&w=1200&q=80',
     gallery: [],
     included: ['Sailing boat', 'Sparkling wine', 'Tapas', 'Guide'],
     excluded: ['Tips'],
