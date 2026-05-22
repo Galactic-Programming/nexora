@@ -131,7 +131,7 @@ Customer FE first, admin FE next. Both repos are siblings of `tourism-be-api`; B
 
 | Phase | Repo | Status | Plan doc |
 | --- | --- | --- | --- |
-| Customer FE | `tourism-frontend-customer/` | 🚧 C0 ✅ + C1.1+C1.2+C1.3 ✅ (2026-05-22) — C1.4 next | See `tourism-frontend-customer/docs/en/plan.md` (+ VI parallel) — 4 sprints C0→C3, ~6 weeks |
+| Customer FE | `tourism-frontend-customer/` | 🚧 C0 ✅ + C1.1+C1.2+C1.3+C1.4 ✅ (2026-05-22) — C1.5 next | See `tourism-frontend-customer/docs/en/plan.md` (+ VI parallel) — 4 sprints C0→C3, ~6 weeks |
 | Admin FE | `tourism-frontend-admin/` | ⬜ Not started | `tourism-frontend-admin/docs/en/plan.md` (written after customer FE lands) |
 
 ---
