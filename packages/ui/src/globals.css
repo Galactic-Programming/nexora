@@ -1,0 +1,5 @@
+/*
+ * Shared design-system stylesheet for @tourism/ui.
+ * shadcn/ui will populate this with Tailwind v4 directives and theme tokens
+ * in Phase 3 (`shadcn init`). Apps import it via `@tourism/ui/globals.css`.
+ */

@@ -1,0 +1,11 @@
+{
+  "extends": "@tourism/typescript-config/react-library.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@tourism/ui/*": ["./src/*"]
+    }
+  },
+  "include": ["src", "eslint.config.mjs"],
+  "exclude": ["node_modules", "dist"]
+}
