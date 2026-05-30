@@ -1,6 +1,6 @@
 {
   "name": "Admin / Bookings",
-  "description": "Admin-only refund surface (Sprint B3.5). Refunds a PAID booking via Stripe and releases the held seats back to the departure pool. Also triggers the `bookingRefunded` email (B3.6).\n\n**Pre-conditions:**\n1. Caller signed in as ADMIN (`/auth/admin/sync` already ran). The folder uses the admin JWT slot.\n2. `{{bookingId}}` env var points at a PAID booking with a `stripePaymentIntentId`. The Bookings folder doesn't capture id — copy it manually from the `GET /bookings/:code` response, or hit Supabase Studio.\n\n**Errors:**\n- 400 `BOOKING_NOT_REFUNDABLE` — booking is not PAID or has no payment_intent.\n- 400 `REFUND_FAILED` — Stripe rejected (dispute window closed, etc.).\n- 404 `BOOKING_NOT_FOUND`.\n- 403 — caller is not ADMIN.",
+  "description": "Admin-only refund surface (Sprint B3.5). Refunds a PAID booking via Stripe and releases the held seats back to the departure pool. Also triggers the `bookingRefunded` email (B3.6).\n\n**Pre-conditions:**\n1. Caller signed in as ADMIN (`/auth/admin/sync` already ran). The folder uses the admin JWT slot.\n2. `{{refundBookingId}}` env var points at a PAID booking with a `stripePaymentIntentId`. The Bookings folder doesn't capture id — copy it manually from the `GET /bookings/:code` response, or hit Supabase Studio.\n\n**Errors:**\n- 400 `BOOKING_NOT_REFUNDABLE` — booking is not PAID or has no payment_intent.\n- 400 `REFUND_FAILED` — Stripe rejected (dispute window closed, etc.).\n- 404 `BOOKING_NOT_FOUND`.\n- 403 — caller is not ADMIN.",
   "item": [
     {
       "name": "POST /admin/bookings/:id/refund",
@@ -16,9 +16,9 @@
           "raw": "{\n  \"reason\": \"Tour cancelled due to weather\"\n}"
         },
         "url": {
-          "raw": "{{baseUrl}}/admin/bookings/{{bookingId}}/refund",
+          "raw": "{{baseUrl}}/admin/bookings/{{refundBookingId}}/refund",
           "host": ["{{baseUrl}}"],
-          "path": ["admin", "bookings", "{{bookingId}}", "refund"]
+          "path": ["admin", "bookings", "{{refundBookingId}}", "refund"]
         },
         "description": "Issues a full Stripe refund against the booking's `stripePaymentIntentId`, decrements `seatsBooked` on the departure, flips the booking to `REFUNDED`, sets `cancelledAt`, and sends the customer a refund notification email.\n\nThe `reason` field is optional and free-form. If it matches one of Stripe's enum values (`duplicate` / `fraudulent` / `requested_by_customer`) it's forwarded; otherwise it's persisted as Stripe metadata."
       },
@@ -29,9 +29,9 @@
             "method": "POST",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/admin/bookings/{{bookingId}}/refund",
+              "raw": "{{baseUrl}}/admin/bookings/{{refundBookingId}}/refund",
               "host": ["{{baseUrl}}"],
-              "path": ["admin", "bookings", "{{bookingId}}", "refund"]
+              "path": ["admin", "bookings", "{{refundBookingId}}", "refund"]
             }
           },
           "status": "OK",

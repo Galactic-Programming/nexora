@@ -9,7 +9,7 @@
         "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"bookingCode\": \"{{bookingCode}}\",\n  \"rating\": 5,\n  \"title\": \"Unforgettable trip\",\n  \"body\": \"Guide was excellent and the itinerary was very well paced. Highly recommended for first-time visitors.\"\n}"
+          "raw": "{\n  \"bookingCode\": \"{{reviewBookingCode}}\",\n  \"rating\": 5,\n  \"title\": \"Unforgettable trip\",\n  \"body\": \"Guide was excellent and the itinerary was very well paced. Highly recommended for first-time visitors.\"\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/reviews",

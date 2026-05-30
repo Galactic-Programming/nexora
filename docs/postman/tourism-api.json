@@ -1695,6 +1695,8 @@
                   "    pm.expect(body.data.isPublished).to.eql(true);",
                   "    pm.expect(body.data.destination).to.have.property('slug');",
                   "  });",
+                  "  // Capture the tour UUID so the Wishlist folder can address it.",
+                  "  if (body.data && body.data.id) pm.environment.set('tourId', body.data.id);",
                   "}"
                 ]
               }
@@ -2550,13 +2552,27 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "// Sanity hints in the runner log when prerequisites are missing.",
-              "if (!pm.environment.get('tourSlug')) {",
-              "  console.warn('[bookings] tourSlug missing — set it or run the Tours folder first.');",
-              "}",
-              "if (!pm.environment.get('departureId')) {",
-              "  console.warn('[bookings] departureId missing — run the Departures folder to seed one.');",
-              "}"
+              "// Self-sufficient: fetch an OPEN departure with enough free seats for",
+              "// this booking (2 adults + 1 child = 3) and pin it as {{departureId}}.",
+              "// This decouples Bookings from the Departures (Admin) folder, which",
+              "// creates → closes → DELETES its own departure and would otherwise",
+              "// leave {{departureId}} unset by the time we reach this request.",
+              "const slug = pm.environment.get('tourSlug');",
+              "if (!slug) { console.warn('[bookings] tourSlug missing'); return; }",
+              "const REQUIRED_SEATS = 3;",
+              "pm.sendRequest({",
+              "  url: pm.environment.get('baseUrl') + '/tours/' + slug + '/departures',",
+              "  method: 'GET',",
+              "}, (err, res) => {",
+              "  if (err) { console.warn('[bookings] departure fetch failed', err); return; }",
+              "  const list = (res.json().data || []);",
+              "  // Prefer the OPEN departure with the most free seats.",
+              "  const open = list",
+              "    .filter((d) => d.status === 'OPEN' && (d.seatsTotal - d.seatsBooked) >= REQUIRED_SEATS)",
+              "    .sort((a, b) => (b.seatsTotal - b.seatsBooked) - (a.seatsTotal - a.seatsBooked));",
+              "  if (open.length) { pm.environment.set('departureId', open[0].id); }",
+              "  else { console.warn('[bookings] no OPEN departure with >= ' + REQUIRED_SEATS + ' free seats for ' + slug); }",
+              "});"
             ]
           }
         }
@@ -2820,7 +2836,7 @@
     },
     {
       "name": "Admin / Bookings",
-      "description": "Admin-only refund surface (Sprint B3.5). Refunds a PAID booking via Stripe and releases the held seats back to the departure pool. Also triggers the `bookingRefunded` email (B3.6).\n\n**Pre-conditions:**\n1. Caller signed in as ADMIN (`/auth/admin/sync` already ran). The folder uses the admin JWT slot.\n2. `{{bookingId}}` env var points at a PAID booking with a `stripePaymentIntentId`. The Bookings folder doesn't capture id — copy it manually from the `GET /bookings/:code` response, or hit Supabase Studio.\n\n**Errors:**\n- 400 `BOOKING_NOT_REFUNDABLE` — booking is not PAID or has no payment_intent.\n- 400 `REFUND_FAILED` — Stripe rejected (dispute window closed, etc.).\n- 404 `BOOKING_NOT_FOUND`.\n- 403 — caller is not ADMIN.",
+      "description": "Admin-only refund surface (Sprint B3.5). Refunds a PAID booking via Stripe and releases the held seats back to the departure pool. Also triggers the `bookingRefunded` email (B3.6).\n\n**Pre-conditions:**\n1. Caller signed in as ADMIN (`/auth/admin/sync` already ran). The folder uses the admin JWT slot.\n2. `{{refundBookingId}}` env var points at a PAID booking with a `stripePaymentIntentId`. The Bookings folder doesn't capture id — copy it manually from the `GET /bookings/:code` response, or hit Supabase Studio.\n\n**Errors:**\n- 400 `BOOKING_NOT_REFUNDABLE` — booking is not PAID or has no payment_intent.\n- 400 `REFUND_FAILED` — Stripe rejected (dispute window closed, etc.).\n- 404 `BOOKING_NOT_FOUND`.\n- 403 — caller is not ADMIN.",
       "item": [
         {
           "name": "POST /admin/bookings/:id/refund",
@@ -2847,14 +2863,14 @@
               "raw": "{\n  \"reason\": \"Tour cancelled due to weather\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/admin/bookings/{{bookingId}}/refund",
+              "raw": "{{baseUrl}}/admin/bookings/{{refundBookingId}}/refund",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "admin",
                 "bookings",
-                "{{bookingId}}",
+                "{{refundBookingId}}",
                 "refund"
               ]
             },
@@ -2867,14 +2883,14 @@
                 "method": "POST",
                 "header": [],
                 "url": {
-                  "raw": "{{baseUrl}}/admin/bookings/{{bookingId}}/refund",
+                  "raw": "{{baseUrl}}/admin/bookings/{{refundBookingId}}/refund",
                   "host": [
                     "{{baseUrl}}"
                   ],
                   "path": [
                     "admin",
                     "bookings",
-                    "{{bookingId}}",
+                    "{{refundBookingId}}",
                     "refund"
                   ]
                 }
@@ -2923,7 +2939,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"bookingCode\": \"{{bookingCode}}\",\n  \"rating\": 5,\n  \"title\": \"Unforgettable trip\",\n  \"body\": \"Guide was excellent and the itinerary was very well paced. Highly recommended for first-time visitors.\"\n}"
+              "raw": "{\n  \"bookingCode\": \"{{reviewBookingCode}}\",\n  \"rating\": 5,\n  \"title\": \"Unforgettable trip\",\n  \"body\": \"Guide was excellent and the itinerary was very well paced. Highly recommended for first-time visitors.\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/reviews",

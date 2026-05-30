@@ -7,13 +7,27 @@
       "script": {
         "type": "text/javascript",
         "exec": [
-          "// Sanity hints in the runner log when prerequisites are missing.",
-          "if (!pm.environment.get('tourSlug')) {",
-          "  console.warn('[bookings] tourSlug missing — set it or run the Tours folder first.');",
-          "}",
-          "if (!pm.environment.get('departureId')) {",
-          "  console.warn('[bookings] departureId missing — run the Departures folder to seed one.');",
-          "}"
+          "// Self-sufficient: fetch an OPEN departure with enough free seats for",
+          "// this booking (2 adults + 1 child = 3) and pin it as {{departureId}}.",
+          "// This decouples Bookings from the Departures (Admin) folder, which",
+          "// creates → closes → DELETES its own departure and would otherwise",
+          "// leave {{departureId}} unset by the time we reach this request.",
+          "const slug = pm.environment.get('tourSlug');",
+          "if (!slug) { console.warn('[bookings] tourSlug missing'); return; }",
+          "const REQUIRED_SEATS = 3;",
+          "pm.sendRequest({",
+          "  url: pm.environment.get('baseUrl') + '/tours/' + slug + '/departures',",
+          "  method: 'GET',",
+          "}, (err, res) => {",
+          "  if (err) { console.warn('[bookings] departure fetch failed', err); return; }",
+          "  const list = (res.json().data || []);",
+          "  // Prefer the OPEN departure with the most free seats.",
+          "  const open = list",
+          "    .filter((d) => d.status === 'OPEN' && (d.seatsTotal - d.seatsBooked) >= REQUIRED_SEATS)",
+          "    .sort((a, b) => (b.seatsTotal - b.seatsBooked) - (a.seatsTotal - a.seatsBooked));",
+          "  if (open.length) { pm.environment.set('departureId', open[0].id); }",
+          "  else { console.warn('[bookings] no OPEN departure with >= ' + REQUIRED_SEATS + ' free seats for ' + slug); }",
+          "});"
         ]
       }
     }

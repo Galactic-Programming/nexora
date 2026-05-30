@@ -13,7 +13,9 @@
     "test": "turbo run test",
     "dev": "turbo run dev",
     "postman:build": "node docs/postman/src/build.mjs",
-    "postman:check": "node docs/postman/src/build.mjs --check"
+    "postman:check": "node docs/postman/src/build.mjs --check",
+    "postman:seed": "node docs/postman/seed-test-data.mjs",
+    "postman:test": "pnpm dlx newman@6 run docs/postman/tourism-api.json -e .tmp/postman.env.json --reporters cli --reporter-cli-no-banner"
   },
   "devDependencies": {
     "prettier": "^3.4.2",

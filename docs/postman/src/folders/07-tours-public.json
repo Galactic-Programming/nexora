@@ -183,6 +183,8 @@
               "    pm.expect(body.data.isPublished).to.eql(true);",
               "    pm.expect(body.data.destination).to.have.property('slug');",
               "  });",
+              "  // Capture the tour UUID so the Wishlist folder can address it.",
+              "  if (body.data && body.data.id) pm.environment.set('tourId', body.data.id);",
               "}"
             ]
           }
