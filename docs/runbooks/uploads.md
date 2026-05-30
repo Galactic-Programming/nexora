@@ -1,6 +1,5 @@
 # Runbook — Uploads (Supabase Storage signed URLs)
 
-
 How the admin FE uploads images/files to Supabase Storage without proxying bytes through this Nest backend.
 
 ## Why signed URLs (and not multipart upload to Nest)

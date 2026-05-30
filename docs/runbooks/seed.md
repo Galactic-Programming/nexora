@@ -1,6 +1,5 @@
 # Runbook — Database seed
 
-
 Populates the Supabase Postgres with a realistic catalog (4 destinations, 10 tours, 30 departures, 2 itinerary days) for local development, Postman runs, and demo screenshots.
 
 ## Run it

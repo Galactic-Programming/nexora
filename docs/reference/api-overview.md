@@ -1,6 +1,5 @@
 # API Overview
 
-
 Base URL: `${API_PREFIX}` (default `/api/v1`). Swagger UI: `/api/docs` (dev only).
 
 ## Response envelope
@@ -377,7 +376,7 @@ Schema + service tweaks so the FE template can wire 1:1 to the Figma design. Sub
 | `averageRating`, `reviewsCount`, `peopleGoing` per card | `GET /tours` response payload |
 | `isFeatured?` on Create/Update DTOs | `POST/PATCH /admin/tours` |
 
-Out of scope (see [`BACKLOG.md`](../planning/BACKLOG.md)): Build Your Own Package custom builder, newsletter subscribe, multi-currency revenue.
+Out of scope (see [`backlog.md`](../planning/backlog.md)): Build Your Own Package custom builder, newsletter subscribe, multi-currency revenue.
 
 ### Sprint B5 — on hold
 

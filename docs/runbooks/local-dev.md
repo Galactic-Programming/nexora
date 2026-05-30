@@ -1,6 +1,5 @@
 # Runbook — Local development
 
-
 ## Prerequisites
 
 - Node.js ≥ 22 (the repo's TypeScript build targets ES2023)

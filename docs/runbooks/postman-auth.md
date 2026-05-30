@@ -1,6 +1,5 @@
 # Runbook — Postman with Supabase Auth
 
-
 How the Postman collection authenticates against this API.
 
 ## Collection structure (where to edit)

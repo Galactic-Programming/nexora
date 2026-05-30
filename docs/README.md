@@ -17,9 +17,9 @@ Pick the path that matches what you're trying to do:
 | --- | --- |
 | **New dev** joining the BE | [reference/architecture.md](reference/architecture.md) → [reference/api-overview.md](reference/api-overview.md) → [reference/erd.md](reference/erd.md) → [runbooks/local-dev.md](runbooks/local-dev.md) |
 | **Operator** running the system | [runbooks/local-dev.md](runbooks/local-dev.md) + the topic-specific runbook you need in [runbooks/](runbooks/) |
-| **Sprint reviewer / planner** | [planning/roadmap.md](planning/roadmap.md) → [planning/BACKLOG.md](planning/BACKLOG.md) → [planning/sprints/](planning/sprints/) |
-| **FE dev** wiring against the API | [reference/api-overview.md](reference/api-overview.md) + [reference/functions.md](reference/functions.md) + live Swagger at `http://localhost:3000/api/docs` + Postman ([postman/tourism-api.json](postman/tourism-api.json)) |
-| **Drawing diagrams** (activity / sequence) | [reference/functions.md](reference/functions.md) — per-function step lists + entity/model/table mapping |
+| **Sprint reviewer / planner** | [planning/roadmap.md](planning/roadmap.md) → [planning/backlog.md](planning/backlog.md) → [planning/sprints/](planning/sprints/) |
+| **FE dev** wiring against the API | [reference/api-overview.md](reference/api-overview.md) + [reference/functions-customer.md](reference/functions-customer.md) + [reference/functions-admin.md](reference/functions-admin.md) + live Swagger at `http://localhost:3000/api/docs` + Postman ([postman/tourism-api.json](postman/tourism-api.json)) |
+| **Drawing diagrams** (activity / sequence) | [reference/functions-customer.md](reference/functions-customer.md) + [reference/functions-admin.md](reference/functions-admin.md) — per-function step lists + entity/model/table mapping |
 
 ## Layout
 
@@ -30,8 +30,8 @@ docs/
 │   ├── architecture.md        modules, request lifecycle, auth, DB, envelope
 │   ├── api-overview.md        every endpoint by sprint: access, body, errors
 │   ├── erd.md                 Mermaid ERD + indexes (mirrors schema.prisma)
-│   └── functions.md           function catalog split Customer vs Admin
-│                              (numbered step descriptions, for diagrams)
+│   ├── functions-customer.md  customer (User) function catalog — U-xx + S-xx
+│   └── functions-admin.md     admin function catalog — A-xx (for diagrams)
 ├── runbooks/                  operations
 │   ├── local-dev.md           clone → install → env → migrate → run
 │   ├── seed.md                `pnpm db:seed` catalog
@@ -41,7 +41,7 @@ docs/
 │   └── email.md               Resend transactional email setup
 ├── planning/                  cross-repo planning
 │   ├── roadmap.md             sprint roadmap (BE + planned FE)
-│   ├── BACKLOG.md             deferred items not in any active sprint
+│   ├── backlog.md             deferred items not in any active sprint
 │   └── sprints/               per-sprint plans (B4.6, …)
 └── postman/                   generated Postman collection + sources
     ├── tourism-api.json       ← import into Postman / Newman

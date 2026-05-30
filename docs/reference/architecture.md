@@ -1,6 +1,5 @@
 # Architecture — tourism-be-api
 
-
 ## High-level
 
 ```flow

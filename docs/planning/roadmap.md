@@ -121,7 +121,7 @@ Schema + service tweaks so the FE customer template can wire 1:1 to the Figma de
 | B4.6.5 | Admin DTOs: `isFeatured?` on `CreateTourDto` + `UpdateTourDto` (pre-existing) | ✅ | Tours (Admin) | api-overview |
 | B4.6.6 | Seed script: relabel `phu-quoc-sunset-cruise`→HONEYMOON + featured, `hoi-an-lantern-night`→MUSICAL; FK-safe departure reset | ✅ | n/a | runbooks/seed |
 | B4.6.7 | Tests: stats join on list, stats join on detail, empty-page skip | ✅ | n/a | n/a |
-| B4.6.8 | Docs: BACKLOG.md (Build Your Own Package, Newsletter) + sprint plan | ✅ | n/a | BACKLOG, sprints/b4.6 |
+| B4.6.8 | Docs: backlog.md (Build Your Own Package, Newsletter) + sprint plan | ✅ | n/a | backlog, sprints/b4.6 |
 
 ---
 

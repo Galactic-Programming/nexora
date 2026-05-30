@@ -1,6 +1,5 @@
 # Runbook — Transactional email (Resend)
 
-
 Covers the two transactional emails the API sends on its own:
 
 - `bookingConfirmation` — fired by the Stripe webhook after a successful PAID transition (Sprint B3.4 + B3.6).

@@ -1,6 +1,5 @@
 # Runbook — Stripe testing (Checkout + webhook)
 
-
 How to exercise the full booking → payment → confirmation loop locally with Stripe test mode + the Stripe CLI.
 
 ## Why a CLI tunnel
