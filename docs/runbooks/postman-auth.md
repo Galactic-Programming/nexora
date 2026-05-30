@@ -1,6 +1,5 @@
 # Runbook — Postman with Supabase Auth
 
-> 🇻🇳 Bản tiếng Việt: [`../../vi/runbooks/postman-auth.md`](../../vi/runbooks/postman-auth.md).
 
 How the Postman collection authenticates against this API.
 
@@ -83,7 +82,7 @@ await sb.auth.admin.createUser({
 
 Pick the collection → "Run" → select the `local` environment → "Run Tourism API". The `Health`, `Auth`, and `Users` folders all pass green when:
 
-- Backend is running (`pnpm start:dev`)
+- Backend is running (`pnpm --filter @tourism/api start:dev`)
 - Supabase project has the test users
 - `ADMIN_EMAILS` in the backend's `.env` contains `adminEmail`
 

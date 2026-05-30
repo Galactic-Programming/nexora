@@ -46,7 +46,7 @@ export interface SignedUploadUrl {
  *    controller's `@Roles(ADMIN)` guard) and WHERE the file lands
  *    (folder is derived server-side from the purpose enum).
  *
- * Bucket must exist with the right RLS — see `docs/en/runbooks/uploads.md`.
+ * Bucket must exist with the right RLS — see `docs/runbooks/uploads.md`.
  */
 @Injectable()
 export class UploadsService implements OnModuleInit {

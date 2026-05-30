@@ -32,7 +32,7 @@ export const envValidationSchema = Joi.object({
 
   // ── Database (Supabase Postgres via Supavisor) ─────────────────────────────
   // Both URLs are required — runtime queries vs. migrations use different
-  // pooler modes. See docs/en/runbooks/local-dev.md §2.
+  // pooler modes. See docs/runbooks/local-dev.md §2.
   DATABASE_URL: Joi.string()
     .uri({ scheme: ['postgresql', 'postgres'] })
     .required(),

@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "b1f5a000-0000-4000-a000-000000000001",
     "name": "Tourism API",
-    "description": "REST API for the tourism booking platform.\n\nThis collection is GENERATED. Do NOT edit `docs/postman/tourism-api.json` directly — edit the source files in `docs/postman/src/` and run `pnpm postman:build` instead. See `docs/en/runbooks/postman-auth.md` for the build workflow.\n\nFolder source files live in `docs/postman/src/folders/` (one file per top-level folder). The build script merges them in the order listed by `folders` below.",
+    "description": "REST API for the tourism booking platform.\n\nThis collection is GENERATED. Do NOT edit `docs/postman/tourism-api.json` directly — edit the source files in `docs/postman/src/` and run `pnpm postman:build` instead. See `docs/runbooks/postman-auth.md` for the build workflow.\n\nFolder source files live in `docs/postman/src/folders/` (one file per top-level folder). The build script merges them in the order listed by `folders` below.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {

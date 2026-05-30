@@ -1,6 +1,5 @@
 # Runbook — Uploads (Supabase Storage signed URLs)
 
-> 🇻🇳 Bản tiếng Việt: [`../../vi/runbooks/uploads.md`](../../vi/runbooks/uploads.md).
 
 How the admin FE uploads images/files to Supabase Storage without proxying bytes through this Nest backend.
 
@@ -166,4 +165,4 @@ So `My Hero Shot.JPG` becomes `tours/hero/1717000000000-my-hero-shot.jpg`.
 ## Testing
 
 - **Newman/Postman**: folder `Uploads (Admin)` mints two URLs (tour hero + destination hero). Status assertions allow `200` (signed OK) and `502` (bucket missing in test project) — both are valid CI outcomes since CI doesn't have a real bucket.
-- **Local**: run `pnpm start:dev`, hit `POST /admin/uploads/signed-url` from Postman GUI, then `curl --upload-file ./test.jpg "$uploadUrl"` to verify the URL works end-to-end.
+- **Local**: run `pnpm --filter @tourism/api start:dev`, hit `POST /admin/uploads/signed-url` from Postman GUI, then `curl --upload-file ./test.jpg "$uploadUrl"` to verify the URL works end-to-end.

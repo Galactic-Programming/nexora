@@ -1,8 +1,13 @@
 # tourism-be-api — docs
 
-NestJS + Prisma + Supabase + Stripe backend for the tourism booking platform. This folder is the single source of truth for backend documentation across the 3-repo project (`tourism-be-api`, `tourism-frontend-customer`, `tourism-frontend-admin`).
+NestJS + Prisma + Supabase + Stripe backend for the tourism booking platform.
+This folder is the single source of truth for backend documentation. Inside
+the Turborepo monorepo the backend lives at [`apps/api`](../apps/api); the
+frontends (`apps/web`, `apps/admin`) are not built yet.
 
-> Layout was reorganised on 2026-05-20 from `{topic}/{lang}/` → `{lang}/{topic}/` so opening `docs/` shows the language choice first.
+> Docs are **English-only**. The earlier bilingual `en/` + `vi/` split was
+> dropped on 2026-05-30 — one language, classified by purpose
+> (`reference/` · `runbooks/` · `planning/`).
 
 ## Where to start
 
@@ -10,49 +15,48 @@ Pick the path that matches what you're trying to do:
 
 | You are… | Read in order |
 | --- | --- |
-| **New dev** joining the BE | [`en/reference/architecture.md`](en/reference/architecture.md) → [`en/reference/api-overview.md`](en/reference/api-overview.md) → [`en/reference/erd.md`](en/reference/erd.md) → [`en/runbooks/local-dev.md`](en/runbooks/local-dev.md) |
-| **Operator** running the system | [`en/runbooks/local-dev.md`](en/runbooks/local-dev.md) + any topic-specific runbook in [`en/runbooks/`](en/runbooks/) |
-| **Sprint reviewer / planner** | [`en/planning/roadmap.md`](en/planning/roadmap.md) → [`en/planning/BACKLOG.md`](en/planning/BACKLOG.md) → [`en/planning/sprints/`](en/planning/sprints/) |
-| **FE dev** wiring against the API | [`en/reference/api-overview.md`](en/reference/api-overview.md) + live Swagger at `http://localhost:3000/api/docs` + Postman ([`postman/tourism-api.json`](postman/tourism-api.json)) |
-| **VI reader** | Same paths under [`vi/`](vi/) (translations are parallel for `reference/` + `runbooks/`; `planning/` is EN-only) |
+| **New dev** joining the BE | [reference/architecture.md](reference/architecture.md) → [reference/api-overview.md](reference/api-overview.md) → [reference/erd.md](reference/erd.md) → [runbooks/local-dev.md](runbooks/local-dev.md) |
+| **Operator** running the system | [runbooks/local-dev.md](runbooks/local-dev.md) + the topic-specific runbook you need in [runbooks/](runbooks/) |
+| **Sprint reviewer / planner** | [planning/roadmap.md](planning/roadmap.md) → [planning/BACKLOG.md](planning/BACKLOG.md) → [planning/sprints/](planning/sprints/) |
+| **FE dev** wiring against the API | [reference/api-overview.md](reference/api-overview.md) + [reference/functions.md](reference/functions.md) + live Swagger at `http://localhost:3000/api/docs` + Postman ([postman/tourism-api.json](postman/tourism-api.json)) |
+| **Drawing diagrams** (activity / sequence) | [reference/functions.md](reference/functions.md) — per-function step lists + entity/model/table mapping |
 
 ## Layout
 
-```structure
+```text
 docs/
-├── README.md                  ← you are here (EN-only index)
-├── en/
-│   ├── planning/              cross-repo planning (EN-only, no VI mirror)
-│   │   ├── roadmap.md         cross-repo sprint roadmap (BE + 2 FE repos)
-│   │   ├── BACKLOG.md         deferred items not in any active sprint
-│   │   └── sprints/           per-sprint plans (B4.6, B4.7, …)
-│   ├── reference/             system understanding
-│   │   ├── architecture.md
-│   │   ├── api-overview.md
-│   │   └── erd.md             EN-only — Mermaid diagram, language-neutral
-│   └── runbooks/              operations: email · local-dev · postman-auth · seed · stripe-testing · uploads
-└── vi/
-    ├── reference/             parallel VI translation of EN reference (no erd.md — Mermaid)
-    └── runbooks/              parallel VI translation of EN runbooks
-
-postman/                       generated Postman collection + sources (sibling of docs/)
-├── tourism-api.json           ← import this into Postman / Newman
-├── environments/
-└── src/                       edit these and run `pnpm postman:build`
+├── README.md                  ← you are here (index)
+├── reference/                 system understanding
+│   ├── architecture.md        modules, request lifecycle, auth, DB, envelope
+│   ├── api-overview.md        every endpoint by sprint: access, body, errors
+│   ├── erd.md                 Mermaid ERD + indexes (mirrors schema.prisma)
+│   └── functions.md           function catalog split Customer vs Admin
+│                              (numbered step descriptions, for diagrams)
+├── runbooks/                  operations
+│   ├── local-dev.md           clone → install → env → migrate → run
+│   ├── seed.md                `pnpm db:seed` catalog
+│   ├── postman-auth.md        getting real customer/admin JWTs for Newman
+│   ├── stripe-testing.md      Checkout + webhook loop (Stripe CLI / harness)
+│   ├── uploads.md             Supabase Storage signed-URL flow
+│   └── email.md               Resend transactional email setup
+├── planning/                  cross-repo planning
+│   ├── roadmap.md             sprint roadmap (BE + planned FE)
+│   ├── BACKLOG.md             deferred items not in any active sprint
+│   └── sprints/               per-sprint plans (B4.6, …)
+└── postman/                   generated Postman collection + sources
+    ├── tourism-api.json       ← import into Postman / Newman
+    ├── seed-test-data.mjs     one-shot test-data + paid-booking harness
+    ├── environments/
+    └── src/                   edit these, then run `pnpm postman:build`
 ```
 
-## Bilingual policy
+## Conventions
 
-- **`reference/` + `runbooks/`** — bilingual. Every `en/<topic>/<file>.md` has a `vi/<topic>/<file>.md` counterpart with the same filename. Keep them in parallel when editing.
-- **`planning/`** — EN-only. Cross-repo coordination docs; maintaining parallel VI would double the churn for no extra reader. Lives under `en/planning/`.
-- **`erd.md`** — EN-only. Just a Mermaid diagram, no prose to translate.
-- **`README.md` (this file)** — EN-only for the same reason as `planning/`.
-
-## Related docs in sibling repos
-
-| Repo | Path |
-| --- | --- |
-| `tourism-frontend-customer` | `docs/en/plan.md` + `docs/vi/plan.md` — customer FE sprint plan (C0→C3) |
-| `tourism-frontend-admin` | `docs/en/plan.md` (planned, written after customer FE lands) |
-
-Cross-repo links use textual references (repo-name + path) rather than relative paths, because sibling-repo relative paths break when readers clone repos to different parents.
+- **Source of truth wins.** When a doc disagrees with code, the code
+  (`apps/api/src`, `apps/api/prisma/schema.prisma`) is right — fix the doc.
+- **Postman is part of the contract.** Every new endpoint updates the
+  collection sources under `postman/src/` + `pnpm postman:build`, committed
+  alongside the code.
+- **Commands run from the repo root** unless noted. Backend-only commands use
+  `pnpm --filter @tourism/api <script>` (e.g. `start:dev`, `db:seed`); the
+  backend env file is `apps/api/.env`.

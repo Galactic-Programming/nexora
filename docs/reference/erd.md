@@ -1,6 +1,6 @@
 # Tourism API — Entity Relationship Diagram
 
-> Source of truth: [`prisma/schema.prisma`](../../../prisma/schema.prisma).
+> Source of truth: [`prisma/schema.prisma`](../../apps/api/prisma/schema.prisma).
 > Render with [dbdiagram.io](https://dbdiagram.io) or VS Code Mermaid preview.
 
 ## Mermaid ER
@@ -157,10 +157,10 @@ For every user-facing text on Destination, Tour, and TourItineraryDay we store *
 
 ```bash
 # Local dev (against direct connection)
-pnpm exec prisma migrate dev --name <name>
+pnpm --filter @tourism/api exec prisma migrate dev --name <name>
 
 # Production
-pnpm exec prisma migrate deploy
+pnpm --filter @tourism/api exec prisma migrate deploy
 ```
 
 `prisma.config.ts` reads `DIRECT_URL` (port 5432) for migration commands;

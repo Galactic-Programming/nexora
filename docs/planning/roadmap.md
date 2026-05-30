@@ -131,8 +131,8 @@ Customer FE first, admin FE next. Both repos are siblings of `tourism-be-api`; B
 
 | Phase | Repo | Status | Plan doc |
 | --- | --- | --- | --- |
-| Customer FE | `tourism-frontend-customer/` | 🚧 C0 ✅ + C1.1+C1.2+C1.3+C1.4 ✅ (2026-05-22) — C1.5 next | See `tourism-frontend-customer/docs/en/plan.md` (+ VI parallel) — 4 sprints C0→C3, ~6 weeks |
-| Admin FE | `tourism-frontend-admin/` | ⬜ Not started | `tourism-frontend-admin/docs/en/plan.md` (written after customer FE lands) |
+| Customer FE | `tourism-frontend-customer/` | 🚧 C0 ✅ + C1.1+C1.2+C1.3+C1.4 ✅ (2026-05-22) — C1.5 next | See `tourism-frontend-customer/docs/plan.md` — 4 sprints C0→C3, ~6 weeks |
+| Admin FE | `tourism-frontend-admin/` | ⬜ Not started | `tourism-frontend-admin/docs/plan.md` (written after customer FE lands) |
 
 ---
 
@@ -153,7 +153,7 @@ Triggered during customer FE Sprint C0 when `openapi-typescript-codegen` was wir
 
 ## Sprint B5 — Hardening + Production
 
-> ⏸ **On hold** until customer FE + admin FE both land. Deploying BE alone forces redeploys whenever the FE finds gaps; we'd rather deploy a complete system once. See [`sprints/b4.6-figma-alignment.md`](sprints/b4.6-figma-alignment.md) § "Why pause B5" and `tourism-frontend-customer/docs/en/plan.md`.
+> ⏸ **On hold** until customer FE + admin FE both land. Deploying BE alone forces redeploys whenever the FE finds gaps; we'd rather deploy a complete system once. See [`sprints/b4.6-figma-alignment.md`](sprints/b4.6-figma-alignment.md) § "Why pause B5" and `tourism-frontend-customer/docs/plan.md`.
 
 | # | Sub-feature | Status | Postman | Docs |
 | --- | --- | --- | --- | --- |
@@ -174,5 +174,5 @@ For **every** sub-feature:
 3. Update `docs/postman/tourism-api.json` with new request + example response
 4. Run Postman collection — all pass
 5. Update this roadmap
-6. Update `docs/en/` + `docs/vi/` if architecture or runbooks changed
+6. Update `docs/` if architecture or runbooks changed
 7. Commit `feat(<module>): <sub-feature> + Postman + docs`

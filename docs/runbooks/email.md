@@ -1,6 +1,5 @@
 # Runbook — Transactional email (Resend)
 
-> 🇻🇳 Vietnamese version: [`../../vi/runbooks/email.md`](../../vi/runbooks/email.md).
 
 Covers the two transactional emails the API sends on its own:
 
@@ -21,7 +20,7 @@ Both templates ship EN + VI inline; the locale is read from `user.locale`. Anyth
    RESEND_FROM_EMAIL=Tourism API <onboarding@resend.dev>
    ```
 
-5. Restart `pnpm start:dev`.
+5. Restart `pnpm --filter @tourism/api start:dev`.
 
 ## Happy path — confirmation email
 

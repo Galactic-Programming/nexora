@@ -1,6 +1,5 @@
 # API Overview
 
-> 🇻🇳 Bản tiếng Việt: [`../../vi/reference/api-overview.md`](../../vi/reference/api-overview.md).
 
 Base URL: `${API_PREFIX}` (default `/api/v1`). Swagger UI: `/api/docs` (dev only).
 
@@ -175,13 +174,13 @@ Errors:
 - `400 VALIDATION_ERROR` — DTO rejected the request (bad purpose / filename / contentType)
 - `502 STORAGE_SIGN_FAILED` — Supabase Storage rejected the sign request (bucket missing, project paused, service role key wrong)
 
-Full flow + bucket setup: [`docs/en/runbooks/uploads.md`](../runbooks/uploads.md).
+Full flow + bucket setup: [`docs/runbooks/uploads.md`](../runbooks/uploads.md).
 
 ### Sprint B2.7 — Seed script
 
 Not an HTTP surface — `pnpm db:seed` populates a realistic catalog: 4 destinations, 10 tours (9 published + 1 draft), 2 itinerary days, 30 departures spread at +30 / +75 / +150 days from "today".
 
-Full reference: [`docs/en/runbooks/seed.md`](../runbooks/seed.md).
+Full reference: [`docs/runbooks/seed.md`](../runbooks/seed.md).
 
 ### Sprint B3.1–B3.3 — Bookings (customer-facing)
 
@@ -235,7 +234,7 @@ Errors:
 
 - `STRIPE_WEBHOOK_INVALID` (400) — missing or invalid `Stripe-Signature`.
 
-Full local + production setup: [`docs/en/runbooks/stripe-testing.md`](../runbooks/stripe-testing.md).
+Full local + production setup: [`docs/runbooks/stripe-testing.md`](../runbooks/stripe-testing.md).
 
 ### Sprint B3.5 — Admin refund
 
@@ -271,7 +270,7 @@ Errors:
 - `bookingConfirmation` — fired by the webhook on the PAID transition.
 - `bookingRefunded` — fired by `refundByAdmin` after Stripe refund + DB commit.
 
-Setup + production checklist: [`docs/en/runbooks/email.md`](../runbooks/email.md).
+Setup + production checklist: [`docs/runbooks/email.md`](../runbooks/email.md).
 
 ### Sprint B4.1 — Customer reviews (create)
 

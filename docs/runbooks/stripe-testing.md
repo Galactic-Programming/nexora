@@ -1,6 +1,5 @@
 # Runbook — Stripe testing (Checkout + webhook)
 
-> 🇻🇳 Bản tiếng Việt: [`../../vi/runbooks/stripe-testing.md`](../../vi/runbooks/stripe-testing.md).
 
 How to exercise the full booking → payment → confirmation loop locally with Stripe test mode + the Stripe CLI.
 
@@ -40,14 +39,14 @@ First-time output looks like:
 > secret is whsec_abc123def456... (^C to quit)
 ```
 
-**Copy the `whsec_...` value into `STRIPE_WEBHOOK_SECRET` in `.env`** and restart `pnpm start:dev`. This secret is unique per CLI session — rotate it the same way every time you re-run `stripe listen`. In production you'll use the dashboard-issued secret instead.
+**Copy the `whsec_...` value into `STRIPE_WEBHOOK_SECRET` in `.env`** and restart `pnpm --filter @tourism/api start:dev`. This secret is unique per CLI session — rotate it the same way every time you re-run `stripe listen`. In production you'll use the dashboard-issued secret instead.
 
 ## Happy path — pay a booking
 
 In a second terminal:
 
 ```bash
-pnpm start:dev
+pnpm --filter @tourism/api start:dev
 ```
 
 In Postman:
@@ -137,9 +136,9 @@ Result: first booking PAID + `seats_booked=2`. Second booking REFUNDED, refund v
 
 | Symptom | Likely cause | Fix |
 | --- | --- | --- |
-| `400 STRIPE_WEBHOOK_INVALID: Signature verification failed` | `STRIPE_WEBHOOK_SECRET` doesn't match what `stripe listen` printed | Copy the secret from the CLI banner, restart `pnpm start:dev` |
+| `400 STRIPE_WEBHOOK_INVALID: Signature verification failed` | `STRIPE_WEBHOOK_SECRET` doesn't match what `stripe listen` printed | Copy the secret from the CLI banner, restart `pnpm --filter @tourism/api start:dev` |
 | Backend 500 on webhook | Look at the backend log — usually a Prisma error (DB unreachable, FK violation from an earlier corrupted seed) | Fix root cause; Stripe will retry the event automatically |
-| `stripe listen` shows `connection refused` | Backend isn't running OR wrong port | `pnpm start:dev`, confirm port 3000 |
+| `stripe listen` shows `connection refused` | Backend isn't running OR wrong port | `pnpm --filter @tourism/api start:dev`, confirm port 3000 |
 | Booking stuck PENDING after success | Webhook never arrived (CLI tunnel down? Forwarded URL wrong?) | Check `stripe listen` is still running and the URL matches the deployed prefix |
 | Stripe Dashboard shows the event as 200 OK but booking still PENDING | The webhook returned 200 but `metadata.bookingId` was missing or DB write failed silently. Check the backend log for the warning. | Inspect `payment_events.payload` JSON for the event id; fix metadata wiring if absent |
 

@@ -1,6 +1,5 @@
 # Runbook — Local development
 
-> 🇻🇳 Bản tiếng Việt: [`../../vi/runbooks/local-dev.md`](../../vi/runbooks/local-dev.md).
 
 ## Prerequisites
 
@@ -20,10 +19,10 @@ pnpm install
 ## 2. Environment variables
 
 ```bash
-cp .env.example .env
+cp apps/api/.env.example apps/api/.env
 ```
 
-Fill the placeholders in `.env`. The two most important right now:
+Fill the placeholders in `apps/api/.env`. The two most important right now:
 
 | Variable | Where to find |
 | --- | --- |
@@ -55,8 +54,8 @@ This setup works without buying the IPv4 add-on.
 ## 3. Database migrations
 
 ```bash
-pnpm exec prisma migrate dev --name init
-pnpm exec prisma generate
+pnpm --filter @tourism/api exec prisma migrate dev --name init
+pnpm --filter @tourism/api exec prisma generate
 ```
 
 `prisma.config.ts` automatically reads `DIRECT_URL` for migrations. The runtime `PrismaClient` uses `DATABASE_URL` via the `PrismaPg` adapter.
@@ -64,7 +63,7 @@ pnpm exec prisma generate
 ## 4. Run dev server
 
 ```bash
-pnpm start:dev
+pnpm --filter @tourism/api start:dev
 ```
 
 You should see:
@@ -105,8 +104,8 @@ pnpm format         # prettier --write
 pnpm build          # nest build (type-check + transpile)
 pnpm test           # jest
 pnpm test:cov       # jest + coverage
-pnpm exec prisma studio   # browse the DB visually
-pnpm exec prisma validate # validate schema.prisma
+pnpm --filter @tourism/api exec prisma studio   # browse the DB visually
+pnpm --filter @tourism/api exec prisma validate # validate schema.prisma
 ```
 
 ## Troubleshooting

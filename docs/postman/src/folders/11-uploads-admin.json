@@ -1,6 +1,6 @@
 {
   "name": "Uploads (Admin)",
-  "description": "Mint short-lived signed upload URLs for Supabase Storage. The backend does NOT proxy file bytes — FE uploads directly to the signed URL.\n\n**Pre-conditions:**\n1. Supabase Storage bucket `tourism-assets` exists (see `docs/en/runbooks/uploads.md`).\n2. Backend env has `SUPABASE_SERVICE_ROLE_KEY` set — signing requires the service role.\n\nThe response carries `{ uploadUrl, token, path, bucket }`. FE then calls `supabase.storage.from(bucket).uploadToSignedUrl(path, token, file)`.",
+  "description": "Mint short-lived signed upload URLs for Supabase Storage. The backend does NOT proxy file bytes — FE uploads directly to the signed URL.\n\n**Pre-conditions:**\n1. Supabase Storage bucket `tourism-assets` exists (see `docs/runbooks/uploads.md`).\n2. Backend env has `SUPABASE_SERVICE_ROLE_KEY` set — signing requires the service role.\n\nThe response carries `{ uploadUrl, token, path, bucket }`. FE then calls `supabase.storage.from(bucket).uploadToSignedUrl(path, token, file)`.",
   "item": [
     {
       "name": "POST /admin/uploads/signed-url (tour hero)",
