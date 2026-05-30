@@ -1,127 +1,88 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank">
-    <img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" />
-  </a>
-</p>
+# Tourism Platform
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
+Monorepo (Turborepo + pnpm) for the tourism booking platform.
 
-<p align="center">
-  <a href="https://www.npmjs.com/~nestjscore" target="_blank">
-    <img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" />
-  </a>
+| App | Path | Stack | Status |
+| --- | --- | --- | --- |
+| Backend API | [`apps/api`](apps/api) | NestJS 11 · Prisma 7 · Supabase · Stripe · Resend | ✅ active |
+| Web (customer) | `apps/web` | Next.js · shadcn/ui | 🚧 not built yet |
+| Admin | `apps/admin` | Next.js · shadcn/ui | 🚧 not built yet |
 
-  <a href="https://www.npmjs.com/~nestjscore" target="_blank">
-    <img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" />
-  </a>
+Full documentation lives in [`docs/`](docs/README.md) — start there after setup.
 
-  <a href="https://www.npmjs.com/~nestjscore" target="_blank">
-    <img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" />
-  </a>
+## Prerequisites
 
-  <a href="https://circleci.com/gh/nestjs/nest" target="_blank">
-    <img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" />
-  </a>
+- **Node.js ≥ 22**
+- **pnpm ≥ 10** (`corepack enable` to get the version pinned in `package.json`)
+- A **Supabase** project (free tier is fine)
+- A **Stripe** test account
 
-  <a href="https://discord.gg/G7Qnnhy" target="_blank">
-    <img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/>
-  </a>
+## First-clone setup
 
-  <a href="https://opencollective.com/nest#backer" target="_blank">
-    <img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" />
-  </a>
-
-  <a href="https://opencollective.com/nest#sponsor" target="_blank">
-    <img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" />
-  </a>
-
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank">
-    <img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/>
-  </a>
-
-  <a href="https://opencollective.com/nest#sponsor"  target="_blank">
-    <img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us">
-  </a>
-
-  <a href="https://twitter.com/nestframework" target="_blank">
-    <img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter">
-  </a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
+Run these from the repo root, in order:
 
 ```bash
+# 1. Install dependencies (postinstall runs `prisma generate`)
 pnpm install
+
+# 2. Restore AI agent skills (regenerates .claude/skills symlinks from skills-lock.json)
+pnpm dlx skills install
+
+# 3. Create the backend env file, then fill in the placeholders
+cp apps/api/.env.example apps/api/.env
+
+# 4. Apply database migrations
+pnpm --filter @tourism/api exec prisma migrate dev
+
+# 5. Start the API in watch mode
+pnpm --filter @tourism/api start:dev
 ```
 
-## Compile and run the project
+The API boots at `http://localhost:3000/api/v1` with Swagger UI at
+`http://localhost:3000/api/docs`.
+
+> **Env vars:** the app refuses to start if any required variable is missing
+> (Joi prints the full list). Which value goes where — `DATABASE_URL` vs
+> `DIRECT_URL`, Supabase keys, Stripe, Resend — is documented in
+> [docs/runbooks/local-dev.md](docs/runbooks/local-dev.md#2-environment-variables).
+
+## Common commands
 
 ```bash
-# development
-$ pnpm run start
+pnpm dev            # turbo run dev (all apps in watch mode)
+pnpm build          # turbo run build (type-check + transpile)
+pnpm lint           # turbo run lint
+pnpm typecheck      # turbo run typecheck
+pnpm test           # turbo run test (jest)
 
-# watch mode
-$ pnpm run start:dev
+pnpm postman:seed   # seed test data + a paid-booking harness
+pnpm postman:test   # run the Newman API suite
 
-# production mode
-$ pnpm run start:prod
+# Backend-only scripts use the package filter:
+pnpm --filter @tourism/api test:cov              # jest + coverage
+pnpm --filter @tourism/api exec prisma studio    # browse the DB
 ```
 
-## Run tests
+## AI agent skills
 
-```bash
-# unit tests
-$ pnpm run test
+This repo ships [Agent Skills](https://skills.sh) (Stripe, Supabase, Next.js,
+shadcn/ui) under [`.agents/skills/`](.agents/skills) — shared context that any
+agent (Claude Code, Cursor, Copilot…) auto-loads when working in the relevant
+area. The source of truth is `.agents/` + `skills-lock.json`; the per-agent
+symlink dirs are git-ignored and regenerated by `pnpm dlx skills install`.
 
-# e2e tests
-$ pnpm run test:e2e
+## Documentation
 
-# test coverage
-$ pnpm run test:cov
-```
+| I want to… | Read |
+| --- | --- |
+| Get it running locally | [docs/runbooks/local-dev.md](docs/runbooks/local-dev.md) |
+| Understand the architecture | [docs/reference/architecture.md](docs/reference/architecture.md) |
+| See every endpoint | [docs/reference/api-overview.md](docs/reference/api-overview.md) |
+| See the data model | [docs/reference/erd.md](docs/reference/erd.md) |
+| Know where the project is heading | [docs/planning/roadmap.md](docs/planning/roadmap.md) |
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-pnpm install -g @nestjs/mau
-mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+The full docs index — indexed by role — is in [docs/README.md](docs/README.md).
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+UNLICENSED — private project.
