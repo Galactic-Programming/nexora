@@ -57,19 +57,19 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma client
-        run: pnpm exec prisma generate
+        run: pnpm --filter @tourism/api exec prisma generate
 
       - name: Validate Prisma schema
-        run: pnpm exec prisma validate
+        run: pnpm --filter @tourism/api exec prisma validate
 
       - name: Lint
-        run: pnpm lint
+        run: pnpm turbo run lint
 
       - name: Type-check & build
-        run: pnpm build
+        run: pnpm turbo run typecheck build
 
       - name: Unit tests
-        run: pnpm exec jest --passWithNoTests
+        run: pnpm turbo run test
 
       - name: Validate Postman collection JSON
         run: |

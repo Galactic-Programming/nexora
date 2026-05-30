@@ -1,10 +1,22 @@
-# compiled output
-/dist
-/node_modules
-/build
+# Dependencies
+node_modules/
+.pnp.*
+
+# Build outputs
+dist/
+build/
+.turbo/
+
+# Prisma generated client (regenerated via `prisma generate`)
+**/prisma/generated/
+
+# dotenv environment files — only commit .env.example
+.env
+.env.*
+!.env.example
 
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 pnpm-debug.log*
@@ -12,15 +24,30 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
-# OS
-.DS_Store
+# Tests / coverage
+coverage/
+.nyc_output/
 
-# Tests
-/coverage
-/.nyc_output
+# Postman runtime output (newman reports)
+docs/postman/newman-report.html
+docs/postman/.newman-cache/
+
+# Stripe CLI local state
+.stripe/
+
+# Temp
+.temp/
+.tmp/
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Diagnostic reports
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # IDEs and editors
-/.idea
+.idea/
 .project
 .classpath
 .c9/
@@ -28,42 +55,15 @@ lerna-debug.log*
 .settings/
 *.sublime-workspace
 
-# IDE - VSCode
+# VSCode (keep shared settings)
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
 
-# dotenv environment variable files — only commit .env.example
-.env
-.env.*
-!.env.example
-
-# temp directory
-.temp
-.tmp
-
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Diagnostic reports (https://nodejs.org/api/report.html)
-report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-
-# Prisma generated client (regenerated via `prisma generate` postinstall)
-/prisma/generated
-
-# Postman runtime output (newman reports)
-/docs/postman/newman-report.html
-/docs/postman/.newman-cache
-
-# Stripe CLI local state
-.stripe
-
-# Windows OS junk
+# OS junk
+.DS_Store
 Thumbs.db
 ehthumbs.db
 desktop.ini
