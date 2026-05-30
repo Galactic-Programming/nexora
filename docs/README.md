@@ -9,6 +9,22 @@ frontends (`apps/web`, `apps/admin`) are not built yet.
 > dropped on 2026-05-30 — one language, classified by purpose
 > (`reference/` · `runbooks/` · `planning/`).
 
+## Start here (first clone)
+
+New to the repo? Read in this order — overview → domain → run it → details:
+
+1. **This file** — the docs map + conventions (you're here).
+2. [reference/architecture.md](reference/architecture.md) — big picture: modules, request lifecycle, auth, response envelope, DB strategy.
+3. [reference/erd.md](reference/erd.md) — data model: entities, relations, indexes.
+4. [reference/api-overview.md](reference/api-overview.md) — every endpoint by sprint (access, body, error codes).
+5. [runbooks/local-dev.md](runbooks/local-dev.md) — **get it running**: clone → install → `apps/api/.env` → migrate → run → smoke test.
+6. [reference/functions-customer.md](reference/functions-customer.md) + [reference/functions-admin.md](reference/functions-admin.md) — per-function step lists (behaviour + diagrams).
+7. `postman/tourism-api.json` — import into Postman and poke the live API.
+8. Remaining runbooks ([seed](runbooks/seed.md), [stripe-testing](runbooks/stripe-testing.md), [postman-auth](runbooks/postman-auth.md), [uploads](runbooks/uploads.md), [email](runbooks/email.md)) — read the one for the feature you touch.
+9. [planning/roadmap.md](planning/roadmap.md) + [planning/backlog.md](planning/backlog.md) — where the project is heading (optional context).
+
+The table below is the same thing indexed by role, if you already know what you need.
+
 ## Where to start
 
 Pick the path that matches what you're trying to do:
