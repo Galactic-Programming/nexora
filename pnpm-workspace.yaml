@@ -5,3 +5,12 @@ packages:
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver
+
+# Force patched versions of vulnerable transitive deps (Dependabot moderate).
+# pnpm 10+ reads overrides here, not from package.json "pnpm.overrides".
+overrides:
+  "ws@>=8.0.0 <8.20.1": ">=8.20.1"
+  "postcss@<8.5.10": ">=8.5.10"
+  "@hono/node-server@<1.19.13": ">=1.19.13"
+  "brace-expansion@>=5.0.0 <5.0.6": ">=5.0.6"
+  "qs@>=6.11.1 <=6.15.1": ">=6.15.2"
