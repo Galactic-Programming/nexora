@@ -86,6 +86,18 @@ function TourCard({
 }: TourCardProps) {
   return (
     <Card className={cn('relative max-w-md', className)}>
+      {/* Image must stay the first child so the legacy Card's
+          `has-[>img:first-child]:pt-0` removes the top padding. The overlay
+          badge/button are absolutely positioned, so DOM order does not affect
+          their placement. */}
+      {image ? (
+        <img
+          src={image}
+          alt={title}
+          className="aspect-video w-full object-cover"
+        />
+      ) : null}
+
       {featured ? (
         <Badge variant="gradient" className="absolute top-3 left-3 z-10">
           Featured
@@ -106,14 +118,6 @@ function TourCard({
             className={cn(liked && 'fill-destructive stroke-destructive')}
           />
         </Button>
-      ) : null}
-
-      {image ? (
-        <img
-          src={image}
-          alt={title}
-          className="aspect-video w-full object-cover"
-        />
       ) : null}
 
       <CardHeader>
