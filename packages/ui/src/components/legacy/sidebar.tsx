@@ -7,22 +7,22 @@ import { cva, type VariantProps } from 'class-variance-authority';
 
 import { useIsMobile } from '@tourism/ui/hooks/use-mobile';
 import { cn } from '@tourism/ui/lib/utils';
-import { Button } from '@tourism/ui/components/button';
-import { Input } from '@tourism/ui/components/input';
-import { Separator } from '@tourism/ui/components/separator';
+import { Button } from '@tourism/ui/components/legacy/button';
+import { Input } from '@tourism/ui/components/legacy/input';
+import { Separator } from '@tourism/ui/components/legacy/separator';
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from '@tourism/ui/components/sheet';
-import { Skeleton } from '@tourism/ui/components/skeleton';
+} from '@tourism/ui/components/legacy/sheet';
+import { Skeleton } from '@tourism/ui/components/legacy/skeleton';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@tourism/ui/components/tooltip';
+} from '@tourism/ui/components/legacy/tooltip';
 import { PanelLeftIcon } from 'lucide-react';
 
 const SIDEBAR_COOKIE_NAME = 'sidebar_state';

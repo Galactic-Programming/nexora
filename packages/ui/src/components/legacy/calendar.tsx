@@ -9,7 +9,7 @@ import {
 } from 'react-day-picker';
 
 import { cn } from '@tourism/ui/lib/utils';
-import { Button, buttonVariants } from '@tourism/ui/components/button';
+import { Button, buttonVariants } from '@tourism/ui/components/legacy/button';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,

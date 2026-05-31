@@ -4,7 +4,7 @@ import { useRender } from '@base-ui/react/use-render';
 import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@tourism/ui/lib/utils';
-import { Separator } from '@tourism/ui/components/separator';
+import { Separator } from '@tourism/ui/components/legacy/separator';
 
 function ItemGroup({ className, ...props }: React.ComponentProps<'div'>) {
   return (

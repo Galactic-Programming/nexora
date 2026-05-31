@@ -1,4 +1,4 @@
-import { Button } from "@tourism/ui/components/button";
+import { Button } from "@tourism/ui/components/legacy/button";
 
 export default function Home() {
   return (

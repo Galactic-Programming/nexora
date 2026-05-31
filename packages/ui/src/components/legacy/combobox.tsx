@@ -4,13 +4,13 @@ import * as React from 'react';
 import { Combobox as ComboboxPrimitive } from '@base-ui/react';
 
 import { cn } from '@tourism/ui/lib/utils';
-import { Button } from '@tourism/ui/components/button';
+import { Button } from '@tourism/ui/components/legacy/button';
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from '@tourism/ui/components/input-group';
+} from '@tourism/ui/components/legacy/input-group';
 import { ChevronDownIcon, XIcon, CheckIcon } from 'lucide-react';
 
 const Combobox = ComboboxPrimitive.Root;

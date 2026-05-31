@@ -4,9 +4,9 @@ import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@tourism/ui/lib/utils';
-import { Button } from '@tourism/ui/components/button';
-import { Input } from '@tourism/ui/components/input';
-import { Textarea } from '@tourism/ui/components/textarea';
+import { Button } from '@tourism/ui/components/legacy/button';
+import { Input } from '@tourism/ui/components/legacy/input';
+import { Textarea } from '@tourism/ui/components/legacy/textarea';
 
 function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
   return (

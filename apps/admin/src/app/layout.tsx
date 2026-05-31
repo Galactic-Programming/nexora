@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
-import { TooltipProvider } from '@tourism/ui/components/tooltip';
+import { TooltipProvider } from '@tourism/ui/components/legacy/tooltip';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',

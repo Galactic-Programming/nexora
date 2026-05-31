@@ -10,11 +10,11 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@tourism/ui/components/dialog';
+} from '@tourism/ui/components/legacy/dialog';
 import {
   InputGroup,
   InputGroupAddon,
-} from '@tourism/ui/components/input-group';
+} from '@tourism/ui/components/legacy/input-group';
 import { SearchIcon, CheckIcon } from 'lucide-react';
 
 function Command({

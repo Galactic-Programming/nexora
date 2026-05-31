@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { cn } from '@tourism/ui/lib/utils';
-import { Button } from '@tourism/ui/components/button';
+import { Button } from '@tourism/ui/components/legacy/button';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,

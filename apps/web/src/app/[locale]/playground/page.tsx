@@ -1,12 +1,25 @@
 import { use } from "react";
 import { setRequestLocale } from "next-intl/server";
-import { HeadsetIcon, PackageIcon, RefreshCwIcon } from "lucide-react";
+import {
+  CheckCheckIcon,
+  CircleXIcon,
+  HeadsetIcon,
+  InfoIcon,
+  PackageIcon,
+  RefreshCwIcon,
+  TriangleAlertIcon,
+} from "lucide-react";
 import {
   MediaAccordion,
   MediaAccordionContent,
   MediaAccordionItem,
   MediaAccordionTrigger,
 } from "@tourism/ui/components/custom/accordion-custom";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@tourism/ui/components/custom/alert-custom";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -76,6 +89,44 @@ export default function PlaygroundPage({ params }: Props) {
           </MediaAccordionItem>
         ))}
       </MediaAccordion>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Alert — 4 variants
+        </h2>
+
+        <Alert variant="success">
+          <CheckCheckIcon />
+          <AlertTitle>Account created successfully</AlertTitle>
+          <AlertDescription>
+            You are all set! You can now log in and start exploring.
+          </AlertDescription>
+        </Alert>
+
+        <Alert variant="destructive">
+          <CircleXIcon />
+          <AlertTitle>Payment failed</AlertTitle>
+          <AlertDescription>
+            Your card was declined. Please try a different payment method.
+          </AlertDescription>
+        </Alert>
+
+        <Alert variant="warning">
+          <TriangleAlertIcon />
+          <AlertTitle>Your subscription expires soon</AlertTitle>
+          <AlertDescription>
+            Renew within 3 days to avoid losing access to premium features.
+          </AlertDescription>
+        </Alert>
+
+        <Alert variant="default">
+          <InfoIcon />
+          <AlertTitle>A new version is available</AlertTitle>
+          <AlertDescription>
+            Refresh the page to get the latest updates and improvements.
+          </AlertDescription>
+        </Alert>
+      </section>
     </main>
   );
 }
