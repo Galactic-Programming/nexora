@@ -1,24 +1,25 @@
-import type { Metadata } from "next";
-import { NextIntlClientProvider, hasLocale } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
-import { notFound } from "next/navigation";
-import { Geist, Geist_Mono } from "next/font/google";
-import { routing } from "@/i18n/routing";
-import "../globals.css";
+import type { Metadata } from 'next';
+import { NextIntlClientProvider, hasLocale } from 'next-intl';
+import { setRequestLocale } from 'next-intl/server';
+import { notFound } from 'next/navigation';
+import { Geist, Geist_Mono } from 'next/font/google';
+import { routing } from '@/i18n/routing';
+import '../globals.css';
+import { TooltipProvider } from '@tourism/ui/components/tooltip';
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
-  title: "Tourism Platform",
-  description: "Discover and book curated tours.",
+  title: 'Tourism Platform',
+  description: 'Discover and book curated tours.',
 };
 
 export function generateStaticParams() {
@@ -46,7 +47,9 @@ export default async function LocaleLayout({ children, params }: Props) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          <TooltipProvider>{children}</TooltipProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

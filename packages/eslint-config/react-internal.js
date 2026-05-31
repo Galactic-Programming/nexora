@@ -34,6 +34,9 @@ export const config = [
     rules: {
       ...pluginReactHooks.configs.recommended.rules,
       "react/react-in-jsx-scope": "off",
+      // TypeScript already validates props; the prop-types rule is redundant
+      // and conflicts with inline render components (e.g. react-day-picker slots).
+      "react/prop-types": "off",
     },
   },
 ];
