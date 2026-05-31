@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { routing } from '@/i18n/routing';
 import '../globals.css';
-import { TooltipProvider } from '@tourism/ui/components/tooltip';
+import { TooltipProvider } from '@tourism/ui/components/legacy/tooltip';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',

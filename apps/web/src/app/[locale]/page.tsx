@@ -1,7 +1,7 @@
 import { use } from "react";
 import { useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
-import { Button } from "@tourism/ui/components/button";
+import { Button } from "@tourism/ui/components/legacy/button";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 
 type Props = {
