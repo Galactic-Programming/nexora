@@ -164,7 +164,9 @@ function TourCard({
             {formatPrice(price, currency, locale)}
           </span>
         </div>
-        <Button render={<a href={href} />}>View tour</Button>
+        <Button nativeButton={false} render={<a href={href} />}>
+          View tour
+        </Button>
       </CardFooter>
     </Card>
   );
