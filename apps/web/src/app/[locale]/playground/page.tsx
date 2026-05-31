@@ -1,13 +1,11 @@
 import { use } from "react";
 import { setRequestLocale } from "next-intl/server";
 import {
-  CheckCheckIcon,
-  CircleXIcon,
   HeadsetIcon,
-  InfoIcon,
+  HomeIcon,
   PackageIcon,
   RefreshCwIcon,
-  TriangleAlertIcon,
+  Trash2Icon,
 } from "lucide-react";
 import {
   MediaAccordion,
@@ -16,10 +14,35 @@ import {
   MediaAccordionTrigger,
 } from "@tourism/ui/components/custom/accordion-custom";
 import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@tourism/ui/components/custom/alert-custom";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@tourism/ui/components/custom/alert-dialog-custom";
+import { Button } from "@tourism/ui/components/legacy/button";
+import {
+  AspectRatio,
+  type AspectRatioPreset,
+} from "@tourism/ui/components/custom/aspect-ratio-custom";
+import {
+  Avatar,
+  AvatarBadge,
+  AvatarFallback,
+} from "@tourism/ui/components/custom/avatar-custom";
+import { Badge } from "@tourism/ui/components/custom/badge-custom";
+import { BreadcrumbAuto } from "@tourism/ui/components/custom/breadcrumb-custom";
+import { AlertTriggerDemo } from "@/components/alert-trigger-demo";
+import { ButtonDemo } from "@/components/button-demo";
+import { CalendarDemo } from "@/components/calendar-demo";
+import { TourCardDemo } from "@/components/tour-card-demo";
+
+const AVATAR_STATUSES = ["active", "onboard", "block", "inactive"] as const;
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -92,40 +115,145 @@ export default function PlaygroundPage({ params }: Props) {
 
       <section className="flex flex-col gap-4">
         <h2 className="text-foreground text-2xl font-semibold tracking-tight">
-          Alert — 4 variants
+          Alert — click to trigger
         </h2>
+        <AlertTriggerDemo />
+      </section>
 
-        <Alert variant="success">
-          <CheckCheckIcon />
-          <AlertTitle>Account created successfully</AlertTitle>
-          <AlertDescription>
-            You are all set! You can now log in and start exploring.
-          </AlertDescription>
-        </Alert>
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Alert Dialog — confirm with intent
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          The icon badge tone signals intent (destructive = red) while the
+          action button color reinforces it.
+        </p>
+        <div>
+          <AlertDialog>
+            <AlertDialogTrigger render={<Button variant="destructive" />}>
+              Delete account
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogMedia tone="destructive">
+                  <Trash2Icon />
+                </AlertDialogMedia>
+                <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This permanently deletes your account and removes your data
+                  from our servers. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction variant="destructive">
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </section>
 
-        <Alert variant="destructive">
-          <CircleXIcon />
-          <AlertTitle>Payment failed</AlertTitle>
-          <AlertDescription>
-            Your card was declined. Please try a different payment method.
-          </AlertDescription>
-        </Alert>
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Aspect Ratio — named presets
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          Same image rendered with different frame-ratio presets.
+        </p>
+        <div className="grid grid-cols-3 gap-4">
+          {(["square", "video", "portrait"] as AspectRatioPreset[]).map(
+            (preset) => (
+              <div key={preset} className="flex flex-col gap-2">
+                <AspectRatio ratio={preset} className="overflow-hidden rounded-xl">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- external demo image */}
+                  <img
+                    src="https://cdn.shadcnstudio.com/ss-assets/components/accordion/image-1.jpg?width=520&format=auto"
+                    alt={`${preset} ratio`}
+                    className="size-full object-cover"
+                  />
+                </AspectRatio>
+                <span className="text-muted-foreground text-center text-xs">
+                  {preset}
+                </span>
+              </div>
+            ),
+          )}
+        </div>
+      </section>
 
-        <Alert variant="warning">
-          <TriangleAlertIcon />
-          <AlertTitle>Your subscription expires soon</AlertTitle>
-          <AlertDescription>
-            Renew within 3 days to avoid losing access to premium features.
-          </AlertDescription>
-        </Alert>
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Avatar — status badge
+        </h2>
+        <div className="flex flex-wrap items-center gap-6">
+          {AVATAR_STATUSES.map((status) => (
+            <div key={status} className="flex flex-col items-center gap-2">
+              <Avatar size="lg">
+                <AvatarFallback>{status.slice(0, 2).toUpperCase()}</AvatarFallback>
+                <AvatarBadge status={status} />
+              </Avatar>
+              <span className="text-muted-foreground text-xs">{status}</span>
+            </div>
+          ))}
+        </div>
+      </section>
 
-        <Alert variant="default">
-          <InfoIcon />
-          <AlertTitle>A new version is available</AlertTitle>
-          <AlertDescription>
-            Refresh the page to get the latest updates and improvements.
-          </AlertDescription>
-        </Alert>
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Badge — variants
+        </h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge>Default</Badge>
+          <Badge variant="secondary">Secondary</Badge>
+          <Badge variant="destructive">Destructive</Badge>
+          <Badge variant="outline">Outline</Badge>
+          <Badge variant="gradient">Gradient</Badge>
+          <Badge variant="gradient-outline">Gradient Outline</Badge>
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Breadcrumb — auto + collapse
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          5 items with maxItems=4 → middle items collapse into a dropdown.
+        </p>
+        <BreadcrumbAuto
+          items={[
+            { label: "Home", href: "/", icon: <HomeIcon className="size-4" /> },
+            { label: "Tours", href: "/tours" },
+            { label: "Vietnam", href: "/tours/vietnam" },
+            { label: "Northern", href: "/tours/vietnam/northern" },
+            { label: "Ha Long Bay" },
+          ]}
+        />
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Button — gradient variants + loading
+        </h2>
+        <ButtonDemo />
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Calendar — disablePast (booking)
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          Past dates are locked; today stays selectable.
+        </p>
+        <CalendarDemo />
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Tour Card — data-driven
+        </h2>
+        <TourCardDemo />
       </section>
     </main>
   );
