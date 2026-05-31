@@ -121,7 +121,7 @@ function TourCard({
       ) : null}
 
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
+        <CardTitle className="line-clamp-2 min-h-[3rem]">{title}</CardTitle>
         <CardDescription className="flex flex-wrap items-center gap-1.5">
           {destination ? (
             <Badge variant="outline" className="gap-1">
@@ -156,7 +156,9 @@ function TourCard({
             </div>
           ) : null}
           {summary ? (
-            <p className="line-clamp-2 text-muted-foreground">{summary}</p>
+            <p className="line-clamp-2 min-h-[2.5rem] text-muted-foreground">
+              {summary}
+            </p>
           ) : null}
         </CardContent>
       ) : null}
