@@ -1,0 +1,13 @@
+{
+  "HomePage": {
+    "eyebrow": "Tourism Platform",
+    "title": "Customer Web",
+    "description": "Shared design system from @tourism/ui, localized with next-intl. Running on Next.js 16.",
+    "explore": "Explore tours",
+    "signIn": "Sign in",
+    "learnMore": "Learn more"
+  },
+  "LocaleSwitcher": {
+    "label": "Language"
+  }
+}
