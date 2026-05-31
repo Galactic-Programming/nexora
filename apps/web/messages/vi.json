@@ -1,0 +1,13 @@
+{
+  "HomePage": {
+    "eyebrow": "Nền tảng Du lịch",
+    "title": "Trang Khách hàng",
+    "description": "Hệ thống thiết kế dùng chung từ @tourism/ui, đa ngôn ngữ với next-intl. Chạy trên Next.js 16.",
+    "explore": "Khám phá tour",
+    "signIn": "Đăng nhập",
+    "learnMore": "Tìm hiểu thêm"
+  },
+  "LocaleSwitcher": {
+    "label": "Ngôn ngữ"
+  }
+}
