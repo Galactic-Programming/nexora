@@ -121,12 +121,12 @@ function TourCard({
       ) : null}
 
       <CardHeader>
-        <CardTitle className="line-clamp-2 min-h-[3rem]">{title}</CardTitle>
-        <CardDescription className="flex flex-wrap items-center gap-1.5">
+        <CardTitle className="line-clamp-1 min-h-[1.5rem]">{title}</CardTitle>
+        <CardDescription className="flex max-h-[2.875rem] flex-wrap items-start gap-1.5 overflow-hidden">
           {destination ? (
-            <Badge variant="outline" className="gap-1">
-              <MapPinIcon />
-              {destination}
+            <Badge variant="outline" className="max-w-full gap-1">
+              <MapPinIcon className="shrink-0" />
+              <span className="truncate">{destination}</span>
             </Badge>
           ) : null}
           {durationDays ? (
