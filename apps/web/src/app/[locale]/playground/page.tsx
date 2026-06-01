@@ -37,12 +37,37 @@ import {
 } from "@tourism/ui/components/custom/avatar-custom";
 import { Badge } from "@tourism/ui/components/custom/badge-custom";
 import { BreadcrumbAuto } from "@tourism/ui/components/custom/breadcrumb-custom";
+import { MotionCarousel } from "@tourism/ui/components/custom/motion-carousel";
 import { AlertTriggerDemo } from "@/components/alert-trigger-demo";
+import { ConfettiDemo } from "@/components/confetti-demo";
 import { ButtonDemo } from "@/components/button-demo";
 import { CalendarDemo } from "@/components/calendar-demo";
 import { TourCardDemo } from "@/components/tour-card-demo";
 
 const AVATAR_STATUSES = ["active", "onboard", "block", "inactive"] as const;
+
+const carouselItems = [
+  {
+    image: "https://cdn.shadcnstudio.com/ss-assets/blocks/marketing/gallery/image-1.png",
+    alt: "Silhouettes on a beach",
+  },
+  {
+    image: "https://cdn.shadcnstudio.com/ss-assets/blocks/marketing/gallery/image-2.png",
+    alt: "Snowy mountain peaks",
+  },
+  {
+    image: "https://cdn.shadcnstudio.com/ss-assets/blocks/marketing/gallery/image-3.png",
+    alt: "Rolling green hills",
+  },
+  {
+    image: "https://cdn.shadcnstudio.com/ss-assets/blocks/marketing/gallery/image-4.png",
+    alt: "Sunset landscape",
+  },
+  {
+    image: "https://cdn.shadcnstudio.com/ss-assets/blocks/marketing/gallery/image-7.png",
+    alt: "Coastal cliffs at dusk",
+  },
+];
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -254,6 +279,26 @@ export default function PlaygroundPage({ params }: Props) {
           Tour Card — data-driven
         </h2>
         <TourCardDemo />
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Motion Carousel — animated gallery
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          Active slide scales up; dots morph into a labeled pill.
+        </p>
+        <MotionCarousel items={carouselItems} options={{ loop: true }} />
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Confetti Burst — reusable effect
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          Same primitive on a checkbox and a button.
+        </p>
+        <ConfettiDemo />
       </section>
     </main>
   );
