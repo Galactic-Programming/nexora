@@ -111,16 +111,16 @@ function VerticalPanel() {
       value={current}
       onValueChange={setCurrent}
       orientation="vertical"
-      className="flex gap-8 max-sm:flex-col"
+      className="flex gap-10 max-lg:flex-col max-lg:items-start"
     >
-      <StepperNav className="w-56 shrink-0">
+      <StepperNav className="w-60">
         {steps.map((step, index) => (
           <StepperItem
             key={step.id}
             stepId={step.id}
             className="relative items-start"
           >
-            <StepperTrigger className="items-start gap-2.5 pb-10 last:pb-0">
+            <StepperTrigger className="items-start gap-2.5 pb-15 last:pb-0">
               <StepperIndicator>{step.icon}</StepperIndicator>
               <div className="text-left">
                 <StepperTitle>{step.title}</StepperTitle>
@@ -128,7 +128,7 @@ function VerticalPanel() {
               </div>
             </StepperTrigger>
             {index < steps.length - 1 && (
-              <StepperSeparator className="absolute top-9 left-4 group-data-[orientation=vertical]/stepper-nav:h-10" />
+              <StepperSeparator className="absolute inset-y-0 top-[calc(50%-22px)] left-2 group-data-[orientation=vertical]/stepper-nav:h-15" />
             )}
           </StepperItem>
         ))}
