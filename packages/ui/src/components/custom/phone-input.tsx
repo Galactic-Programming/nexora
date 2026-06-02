@@ -1,80 +1,252 @@
 'use client';
 
-import * as React from 'react';
-import PhoneInputBase, {
-  type Country,
-  type Value,
-} from 'react-phone-number-input';
-import 'react-phone-number-input/style.css';
+import type { ComponentProps } from 'react';
+import { createContext, useContext, useMemo, useState } from 'react';
+
+import * as BasePhoneInput from 'react-phone-number-input';
+import flags from 'react-phone-number-input/flags';
+import { EarthIcon } from 'lucide-react';
 
 import { cn } from '@tourism/ui/lib/utils';
+import { Button } from '@tourism/ui/components/legacy/button';
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxSeparator,
+  ComboboxTrigger,
+  ComboboxValue,
+} from '@tourism/ui/components/legacy/combobox';
+import { Input } from '@tourism/ui/components/legacy/input';
+import { ScrollArea } from '@tourism/ui/components/legacy/scroll-area';
 
 /**
- * PhoneInput — country-aware phone field (react-phone-number-input +
- * libphonenumber). Renders a country selector with flags and stores the value
- * in E.164 format, ideal for international tour customers.
- *
- *   const [phone, setPhone] = useState<string>();
- *   <PhoneInput value={phone} onChange={setPhone} defaultCountry="VN" />
- *
- * The text field reuses the design-system input styling; the country select
- * picks up theme colors via CSS variables.
+ * PhoneInput — country-aware phone field. The country selector is a searchable
+ * Combobox with flags and calling codes; the value is stored in E.164 format.
  */
-const StyledPhoneField = React.forwardRef<
-  HTMLInputElement,
-  React.ComponentProps<'input'>
->(({ className, ...props }, ref) => (
-  <input
-    ref={ref}
-    data-slot="phone-input-field"
-    className={cn(
-      'h-9 w-full min-w-0 rounded-3xl border border-transparent bg-input/50 px-3 py-1 text-base transition-[color,box-shadow,background-color] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40',
-      className,
-    )}
-    {...props}
-  />
-));
-StyledPhoneField.displayName = 'StyledPhoneField';
+type PhoneInputSize = 'sm' | 'default' | 'lg';
 
-interface PhoneInputProps {
-  value?: string;
-  onChange?: (value?: string) => void;
-  defaultCountry?: Country;
-  placeholder?: string;
-  disabled?: boolean;
-  id?: string;
-  className?: string;
-}
+const PhoneInputContext = createContext<{
+  variant: PhoneInputSize;
+  popupClassName?: string;
+  scrollAreaClassName?: string;
+  inputClassName?: string;
+  triggerClassName?: string;
+  readOnly?: boolean;
+}>({
+  variant: 'default',
+  popupClassName: undefined,
+  scrollAreaClassName: undefined,
+  inputClassName: undefined,
+  triggerClassName: undefined,
+  readOnly: false,
+});
 
-function PhoneInput({
-  value,
+type PhoneInputProps = Omit<
+  ComponentProps<'input'>,
+  'onChange' | 'value' | 'ref'
+> &
+  Omit<
+    BasePhoneInput.Props<typeof BasePhoneInput.default>,
+    'onChange' | 'variant' | 'popupClassName' | 'scrollAreaClassName'
+  > & {
+    onChange?: (value: BasePhoneInput.Value) => void;
+    variant?: PhoneInputSize;
+    popupClassName?: string;
+    scrollAreaClassName?: string;
+    inputClassName?: string;
+    triggerClassName?: string;
+  };
+
+const PhoneInput = ({
+  className,
+  variant,
+  popupClassName,
+  scrollAreaClassName,
+  inputClassName,
+  triggerClassName,
   onChange,
-  defaultCountry = 'VN',
+  value,
+  ...props
+}: PhoneInputProps) => {
+  const phoneInputSize = variant || 'default';
+
+  return (
+    <PhoneInputContext.Provider
+      value={{
+        variant: phoneInputSize,
+        popupClassName,
+        scrollAreaClassName,
+        inputClassName,
+        triggerClassName,
+        readOnly: props.readOnly,
+      }}
+    >
+      <BasePhoneInput.default
+        className={cn(
+          'flex',
+          props['aria-invalid'] &&
+            '[&_*[data-slot=combobox-trigger]]:border-destructive [&_*[data-slot=combobox-trigger]]:ring-destructive/50',
+          className,
+        )}
+        flagComponent={FlagComponent}
+        countrySelectComponent={CountrySelect}
+        inputComponent={InputComponent}
+        smartCaret={false}
+        value={value || undefined}
+        onChange={(next) => onChange?.(next || ('' as BasePhoneInput.Value))}
+        {...props}
+      />
+    </PhoneInputContext.Provider>
+  );
+};
+
+const InputComponent = ({
   className,
   ...props
-}: PhoneInputProps) {
+}: ComponentProps<typeof Input>) => {
+  const { variant, inputClassName } = useContext(PhoneInputContext);
+
   return (
-    <PhoneInputBase
-      international
-      defaultCountry={defaultCountry}
-      value={value as Value | undefined}
-      onChange={(next?: Value) => onChange?.(next)}
-      inputComponent={StyledPhoneField}
+    <Input
       className={cn(
-        'flex items-center gap-2 [&_.PhoneInputCountrySelect]:outline-none [&_.PhoneInputCountryIcon]:rounded-sm',
+        'rounded-l-none focus:z-1',
+        variant === 'sm' && 'h-auto! py-0!',
+        variant === 'lg' && 'h-auto!',
+        inputClassName,
         className,
       )}
-      style={
-        {
-          '--PhoneInputCountrySelectArrow-color': 'var(--muted-foreground)',
-          '--PhoneInput-color--focus': 'var(--ring)',
-        } as React.CSSProperties
-      }
       {...props}
     />
   );
-}
+};
+
+type CountryEntry = {
+  label: string;
+  value: BasePhoneInput.Country | undefined;
+};
+
+type CountrySelectProps = {
+  disabled?: boolean;
+  value: BasePhoneInput.Country;
+  options: CountryEntry[];
+  onChange: (country: BasePhoneInput.Country) => void;
+};
+
+const CountrySelect = ({
+  disabled,
+  value: selectedCountry,
+  options: countryList,
+  onChange,
+}: CountrySelectProps) => {
+  const { variant, popupClassName, triggerClassName, readOnly } =
+    useContext(PhoneInputContext);
+  const [searchValue, setSearchValue] = useState('');
+
+  const filteredCountries = useMemo(() => {
+    if (!searchValue) return countryList;
+
+    return countryList.filter(({ label }) =>
+      label.toLowerCase().includes(searchValue.toLowerCase()),
+    );
+  }, [countryList, searchValue]);
+
+  return (
+    <Combobox
+      items={filteredCountries}
+      value={selectedCountry || ''}
+      onValueChange={(country: BasePhoneInput.Country | null) => {
+        if (country) {
+          onChange(country);
+        }
+      }}
+    >
+      <ComboboxTrigger
+        render={
+          <Button
+            variant="outline"
+            size={variant}
+            className={cn(
+              'flex gap-1 rounded-r-none border-e-0 px-2.5 py-0 leading-none hover:bg-transparent focus:z-10 aria-pressed:bg-transparent',
+              disabled && 'dark:disabled:bg-input/80',
+              triggerClassName,
+            )}
+            disabled={disabled || readOnly}
+          >
+            <span className="sr-only">
+              <ComboboxValue />
+            </span>
+            <FlagComponent
+              country={selectedCountry}
+              countryName={selectedCountry}
+            />
+          </Button>
+        }
+      />
+      <ComboboxContent
+        className={cn(
+          'w-xs *:data-[slot=input-group]:bg-transparent',
+          popupClassName,
+        )}
+      >
+        <ComboboxInput
+          placeholder="e.g. United States"
+          value={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
+          showTrigger={false}
+          className="border-input focus-visible:border-border rounded-none border-0 px-0 py-2.5 shadow-none ring-0! outline-none! focus-visible:ring-0 focus-visible:ring-offset-0"
+        />
+        <ComboboxSeparator />
+        <ComboboxEmpty className="px-4 py-2.5 text-sm">
+          No country found.
+        </ComboboxEmpty>
+        <ComboboxList>
+          <div className="relative flex max-h-full">
+            <div className="flex max-h-[min(var(--available-height),24rem)] w-full scroll-pt-2 scroll-pb-2 flex-col overscroll-contain">
+              <ScrollArea className="size-full min-h-0 **:data-[slot=scroll-area-scrollbar]:m-0 [&_[data-slot=scroll-area-viewport]]:h-full [&_[data-slot=scroll-area-viewport]]:overscroll-contain">
+                {filteredCountries.map((item: CountryEntry) =>
+                  item.value ? (
+                    <ComboboxItem
+                      key={item.value}
+                      value={item.value}
+                      className="flex items-center gap-2"
+                    >
+                      <FlagComponent
+                        country={item.value}
+                        countryName={item.label}
+                      />
+                      <span className="flex-1 text-sm">{item.label}</span>
+                      <span className="text-foreground/50 text-sm">
+                        {`+${BasePhoneInput.getCountryCallingCode(item.value)}`}
+                      </span>
+                    </ComboboxItem>
+                  ) : null,
+                )}
+              </ScrollArea>
+            </div>
+          </div>
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
+  );
+};
+
+const FlagComponent = ({ country, countryName }: BasePhoneInput.FlagProps) => {
+  const Flag = flags[country];
+
+  return (
+    <span className="flex h-4 w-4 items-center justify-center [&_svg:not([class*='size-'])]:size-full! [&_svg:not([class*='size-'])]:rounded-[5px]">
+      {Flag ? (
+        <Flag title={countryName} />
+      ) : (
+        <EarthIcon className="size-4 opacity-60" />
+      )}
+    </span>
+  );
+};
 
 export { PhoneInput };
 export type { PhoneInputProps };
-export type { Country } from 'react-phone-number-input';

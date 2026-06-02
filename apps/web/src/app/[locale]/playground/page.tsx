@@ -51,6 +51,7 @@ import {
 import {
   ContextMenu,
   ContextMenuContent,
+  ContextMenuGroup,
   ContextMenuItem,
   ContextMenuLabel,
   ContextMenuSeparator,
@@ -59,6 +60,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -90,6 +92,9 @@ import { TourCardDemo } from "@/components/tour-card-demo";
 import { DataTableDemo } from "@/components/data-table-demo";
 import { DateRangeDemo } from "@/components/date-range-demo";
 import { FormDemo } from "@/components/form-demo";
+import { DescriptionList } from "@tourism/ui/components/custom/description-list";
+import { PhoneDemo } from "@/components/phone-demo";
+import { PaginationDemo } from "@/components/pagination-demo";
 
 const AVATAR_STATUSES = ["active", "onboard", "block", "inactive"] as const;
 
@@ -388,19 +393,21 @@ export default function PlaygroundPage({ params }: Props) {
             render={<Button variant="outline">Row actions</Button>}
           />
           <DropdownMenuContent className="w-48">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem>
-              <PencilIcon />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem variant="success">
-              <CheckIcon />
-              Approve
-            </DropdownMenuItem>
-            <DropdownMenuItem variant="warning">
-              <ClockIcon />
-              Set pending
-            </DropdownMenuItem>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem>
+                <PencilIcon />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem variant="success">
+                <CheckIcon />
+                Approve
+              </DropdownMenuItem>
+              <DropdownMenuItem variant="warning">
+                <ClockIcon />
+                Set pending
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive">
               <Trash2Icon />
@@ -419,19 +426,21 @@ export default function PlaygroundPage({ params }: Props) {
             Right-click here
           </ContextMenuTrigger>
           <ContextMenuContent className="w-48">
-            <ContextMenuLabel>Actions</ContextMenuLabel>
-            <ContextMenuItem>
-              <PencilIcon />
-              Edit
-            </ContextMenuItem>
-            <ContextMenuItem variant="success">
-              <CheckIcon />
-              Approve
-            </ContextMenuItem>
-            <ContextMenuItem variant="warning">
-              <ClockIcon />
-              Set pending
-            </ContextMenuItem>
+            <ContextMenuGroup>
+              <ContextMenuLabel>Actions</ContextMenuLabel>
+              <ContextMenuItem>
+                <PencilIcon />
+                Edit
+              </ContextMenuItem>
+              <ContextMenuItem variant="success">
+                <CheckIcon />
+                Approve
+              </ContextMenuItem>
+              <ContextMenuItem variant="warning">
+                <ClockIcon />
+                Set pending
+              </ContextMenuItem>
+            </ContextMenuGroup>
             <ContextMenuSeparator />
             <ContextMenuItem variant="destructive">
               <Trash2Icon />
@@ -516,6 +525,37 @@ export default function PlaygroundPage({ params }: Props) {
           Form — FormField + password
         </h2>
         <FormDemo />
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Phone Input — country-aware
+        </h2>
+        <PhoneDemo />
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Description List — entity details
+        </h2>
+        <div className="w-full max-w-md">
+          <DescriptionList
+            items={[
+              { label: "Duration", value: "2 days 1 night" },
+              { label: "Group size", value: "Max 20" },
+              { label: "Difficulty", value: "Easy" },
+              { label: "Meeting point", value: "Hanoi Old Quarter" },
+              { label: "Category", value: "Package" },
+            ]}
+          />
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Pagination Control — windowed
+        </h2>
+        <PaginationDemo />
       </section>
     </main>
   );
