@@ -53,7 +53,7 @@ type PhoneInputProps = Omit<
     BasePhoneInput.Props<typeof BasePhoneInput.default>,
     'onChange' | 'variant' | 'popupClassName' | 'scrollAreaClassName'
   > & {
-    onChange?: (value: BasePhoneInput.Value) => void;
+    onChange?: (value: BasePhoneInput.Value | undefined) => void;
     variant?: PhoneInputSize;
     popupClassName?: string;
     scrollAreaClassName?: string;
