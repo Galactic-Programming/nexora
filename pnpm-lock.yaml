@@ -314,6 +314,9 @@ importers:
       '@base-ui/react':
         specifier: ^1.5.0
         version: 1.5.0(@date-fns/tz@1.5.0)(@types/react@19.2.14)(date-fns@4.4.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@stepperize/react':
+        specifier: ^6.1.0
+        version: 6.1.0(react@19.2.4)(typescript@5.9.3)
       '@tanstack/react-table':
         specifier: ^8.21.3
         version: 8.21.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -1787,6 +1790,16 @@ packages:
 
   '@standard-schema/utils@0.3.0':
     resolution: {integrity: sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g==}
+
+  '@stepperize/core@2.1.0':
+    resolution: {integrity: sha512-edzIlkAUDrqan3G7XhY32PvciyQoJtyX3Fz8G1LBgSHIg2rMTBsZk8oz39NxT7XFxqibRXf2rvsH81iwg+Dd6w==}
+    peerDependencies:
+      typescript: '>=5.0.2'
+
+  '@stepperize/react@6.1.0':
+    resolution: {integrity: sha512-ywTt0OQDoBKcdzeBK9V1hTsMAQ+zAoIF/au9fcATspdGWfYr/z+mDGZm2cA2rzMJF79J+fUbjZPb+7Js4PtKBA==}
+    peerDependencies:
+      react: ^17.0.0 || ^18.0.0 || ^19.0.0
 
   '@supabase/auth-js@2.105.3':
     resolution: {integrity: sha512-hMFuzP++mjRfe0/BUq4/e82CXIDgyjUgg0khLN8waol/gzoM1t2iGmhfJSGvQHQ1dr3XqWpP6ThAw4bLHMot5Q==}
@@ -7221,6 +7234,17 @@ snapshots:
   '@standard-schema/spec@1.1.0': {}
 
   '@standard-schema/utils@0.3.0': {}
+
+  '@stepperize/core@2.1.0(typescript@5.9.3)':
+    dependencies:
+      typescript: 5.9.3
+
+  '@stepperize/react@6.1.0(react@19.2.4)(typescript@5.9.3)':
+    dependencies:
+      '@stepperize/core': 2.1.0(typescript@5.9.3)
+      react: 19.2.4
+    transitivePeerDependencies:
+      - typescript
 
   '@supabase/auth-js@2.105.3':
     dependencies:

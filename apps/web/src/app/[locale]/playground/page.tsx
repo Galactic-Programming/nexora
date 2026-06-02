@@ -1,5 +1,5 @@
-import { use } from "react";
-import { setRequestLocale } from "next-intl/server";
+import { use } from 'react';
+import { setRequestLocale } from 'next-intl/server';
 import {
   CheckCheckIcon,
   CheckIcon,
@@ -11,13 +11,13 @@ import {
   PencilIcon,
   RefreshCwIcon,
   Trash2Icon,
-} from "lucide-react";
+} from 'lucide-react';
 import {
   MediaAccordion,
   MediaAccordionContent,
   MediaAccordionItem,
   MediaAccordionTrigger,
-} from "@tourism/ui/components/custom/accordion-custom";
+} from '@tourism/ui/components/custom/accordion-custom';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,25 +29,25 @@ import {
   AlertDialogMedia,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@tourism/ui/components/custom/alert-dialog-custom";
-import { Button } from "@tourism/ui/components/legacy/button";
+} from '@tourism/ui/components/custom/alert-dialog-custom';
+import { Button } from '@tourism/ui/components/legacy/button';
 import {
   AspectRatio,
   type AspectRatioPreset,
-} from "@tourism/ui/components/custom/aspect-ratio-custom";
+} from '@tourism/ui/components/custom/aspect-ratio-custom';
 import {
   Avatar,
   AvatarBadge,
   AvatarFallback,
-} from "@tourism/ui/components/custom/avatar-custom";
-import { Badge } from "@tourism/ui/components/custom/badge-custom";
-import { BreadcrumbAuto } from "@tourism/ui/components/custom/breadcrumb-custom";
-import { MotionCarousel } from "@tourism/ui/components/custom/motion-carousel";
+} from '@tourism/ui/components/custom/avatar-custom';
+import { Badge } from '@tourism/ui/components/custom/badge-custom';
+import { BreadcrumbAuto } from '@tourism/ui/components/custom/breadcrumb-custom';
+import { MotionCarousel } from '@tourism/ui/components/custom/motion-carousel';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@tourism/ui/components/custom/collapsible-custom";
+} from '@tourism/ui/components/custom/collapsible-custom';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -56,7 +56,7 @@ import {
   ContextMenuLabel,
   ContextMenuSeparator,
   ContextMenuTrigger,
-} from "@tourism/ui/components/custom/context-menu-custom";
+} from '@tourism/ui/components/custom/context-menu-custom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -65,7 +65,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@tourism/ui/components/custom/dropdown-menu-custom";
+} from '@tourism/ui/components/custom/dropdown-menu-custom';
 import {
   Dialog,
   DialogClose,
@@ -76,48 +76,57 @@ import {
   DialogMedia,
   DialogTitle,
   DialogTrigger,
-} from "@tourism/ui/components/custom/dialog-custom";
-import { Stagger } from "@tourism/ui/components/custom/stagger";
+} from '@tourism/ui/components/custom/dialog-custom';
+import { Stagger } from '@tourism/ui/components/custom/stagger';
 import {
   Field,
   FieldDescription,
   FieldLabel,
-} from "@tourism/ui/components/custom/field-custom";
-import { Input } from "@tourism/ui/components/legacy/input";
-import { AlertTriggerDemo } from "@/components/alert-trigger-demo";
-import { ConfettiDemo } from "@/components/confetti-demo";
-import { ButtonDemo } from "@/components/button-demo";
-import { CalendarDemo } from "@/components/calendar-demo";
-import { TourCardDemo } from "@/components/tour-card-demo";
-import { DataTableDemo } from "@/components/data-table-demo";
-import { DateRangeDemo } from "@/components/date-range-demo";
-import { FormDemo } from "@/components/form-demo";
-import { DescriptionList } from "@tourism/ui/components/custom/description-list";
-import { PhoneDemo } from "@/components/phone-demo";
-import { PaginationDemo } from "@/components/pagination-demo";
+} from '@tourism/ui/components/custom/field-custom';
+import { Input } from '@tourism/ui/components/legacy/input';
+import { AlertTriggerDemo } from '@/components/alert-trigger-demo';
+import { ConfettiDemo } from '@/components/confetti-demo';
+import { ButtonDemo } from '@/components/button-demo';
+import { CalendarDemo } from '@/components/calendar-demo';
+import { TourCardDemo } from '@/components/tour-card-demo';
+import { DataTableDemo } from '@/components/data-table-demo';
+import { DateRangeDemo } from '@/components/date-range-demo';
+import { FormDemo } from '@/components/form-demo';
+import { DescriptionList } from '@tourism/ui/components/custom/description-list';
+import { PhoneDemo } from '@/components/phone-demo';
+import { PaginationDemo } from '@/components/pagination-demo';
+import { StepperDemo } from '@/components/stepper-demo';
+import { RatingDemo } from '@/components/rating-demo';
+import { SeparatorLabel } from '@tourism/ui/components/custom/separator-custom';
+import { ShimmerSkeleton } from '@tourism/ui/components/custom/shimmer-skeleton';
 
-const AVATAR_STATUSES = ["active", "onboard", "block", "inactive"] as const;
+const AVATAR_STATUSES = ['active', 'onboard', 'block', 'inactive'] as const;
 
 const carouselItems = [
   {
-    image: "https://cdn.shadcnstudio.com/ss-assets/blocks/marketing/gallery/image-1.png",
-    alt: "Silhouettes on a beach",
+    image:
+      'https://cdn.shadcnstudio.com/ss-assets/blocks/marketing/gallery/image-1.png',
+    alt: 'Silhouettes on a beach',
   },
   {
-    image: "https://cdn.shadcnstudio.com/ss-assets/blocks/marketing/gallery/image-2.png",
-    alt: "Snowy mountain peaks",
+    image:
+      'https://cdn.shadcnstudio.com/ss-assets/blocks/marketing/gallery/image-2.png',
+    alt: 'Snowy mountain peaks',
   },
   {
-    image: "https://cdn.shadcnstudio.com/ss-assets/blocks/marketing/gallery/image-3.png",
-    alt: "Rolling green hills",
+    image:
+      'https://cdn.shadcnstudio.com/ss-assets/blocks/marketing/gallery/image-3.png',
+    alt: 'Rolling green hills',
   },
   {
-    image: "https://cdn.shadcnstudio.com/ss-assets/blocks/marketing/gallery/image-4.png",
-    alt: "Sunset landscape",
+    image:
+      'https://cdn.shadcnstudio.com/ss-assets/blocks/marketing/gallery/image-4.png',
+    alt: 'Sunset landscape',
   },
   {
-    image: "https://cdn.shadcnstudio.com/ss-assets/blocks/marketing/gallery/image-7.png",
-    alt: "Coastal cliffs at dusk",
+    image:
+      'https://cdn.shadcnstudio.com/ss-assets/blocks/marketing/gallery/image-7.png',
+    alt: 'Coastal cliffs at dusk',
   },
 ];
 
@@ -127,34 +136,34 @@ type Props = {
 
 const items = [
   {
-    value: "item-1",
+    value: 'item-1',
     icon: <PackageIcon />,
-    title: "How do I track my order?",
-    subtitle: "Shipping & Delivery",
+    title: 'How do I track my order?',
+    subtitle: 'Shipping & Delivery',
     content:
-      "You can track your order by logging into your account and visiting the \"Orders\" section. You'll receive tracking information via email once your order ships.",
+      'You can track your order by logging into your account and visiting the "Orders" section. You\'ll receive tracking information via email once your order ships.',
     media:
-      "https://cdn.shadcnstudio.com/ss-assets/components/accordion/image-1.jpg?width=520&format=auto",
+      'https://cdn.shadcnstudio.com/ss-assets/components/accordion/image-1.jpg?width=520&format=auto',
   },
   {
-    value: "item-2",
+    value: 'item-2',
     icon: <RefreshCwIcon />,
-    title: "What is your return policy?",
-    subtitle: "Returns & Refunds",
+    title: 'What is your return policy?',
+    subtitle: 'Returns & Refunds',
     content:
-      "We offer a 30-day return policy for most items. Products must be unused and in their original packaging.",
+      'We offer a 30-day return policy for most items. Products must be unused and in their original packaging.',
     media:
-      "https://cdn.shadcnstudio.com/ss-assets/components/accordion/image-2.jpg?width=520&format=auto",
+      'https://cdn.shadcnstudio.com/ss-assets/components/accordion/image-2.jpg?width=520&format=auto',
   },
   {
-    value: "item-3",
+    value: 'item-3',
     icon: <HeadsetIcon />,
-    title: "How can I contact customer support?",
-    subtitle: "Help & Support",
+    title: 'How can I contact customer support?',
+    subtitle: 'Help & Support',
     content:
-      "Our customer support team is available 24/7 via live chat, email at support@example.com, or phone at 1-800-123-4567.",
+      'Our customer support team is available 24/7 via live chat, email at support@example.com, or phone at 1-800-123-4567.',
     media:
-      "https://cdn.shadcnstudio.com/ss-assets/components/accordion/image-3.jpg?width=520&format=auto",
+      'https://cdn.shadcnstudio.com/ss-assets/components/accordion/image-3.jpg?width=520&format=auto',
   },
 ];
 
@@ -177,7 +186,7 @@ export default function PlaygroundPage({ params }: Props) {
         </p>
       </header>
 
-      <MediaAccordion multiple={false} defaultValue={["item-1"]}>
+      <MediaAccordion multiple={false} defaultValue={['item-1']}>
         {items.map((item) => (
           <MediaAccordionItem key={item.value} value={item.value}>
             <MediaAccordionTrigger icon={item.icon} subtitle={item.subtitle}>
@@ -240,10 +249,13 @@ export default function PlaygroundPage({ params }: Props) {
           Same image rendered with different frame-ratio presets.
         </p>
         <div className="grid grid-cols-3 gap-4">
-          {(["square", "video", "portrait"] as AspectRatioPreset[]).map(
+          {(['square', 'video', 'portrait'] as AspectRatioPreset[]).map(
             (preset) => (
               <div key={preset} className="flex flex-col gap-2">
-                <AspectRatio ratio={preset} className="overflow-hidden rounded-xl">
+                <AspectRatio
+                  ratio={preset}
+                  className="overflow-hidden rounded-xl"
+                >
                   {/* eslint-disable-next-line @next/next/no-img-element -- external demo image */}
                   <img
                     src="https://cdn.shadcnstudio.com/ss-assets/components/accordion/image-1.jpg?width=520&format=auto"
@@ -268,7 +280,9 @@ export default function PlaygroundPage({ params }: Props) {
           {AVATAR_STATUSES.map((status) => (
             <div key={status} className="flex flex-col items-center gap-2">
               <Avatar size="lg">
-                <AvatarFallback>{status.slice(0, 2).toUpperCase()}</AvatarFallback>
+                <AvatarFallback>
+                  {status.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
                 <AvatarBadge status={status} />
               </Avatar>
               <span className="text-muted-foreground text-xs">{status}</span>
@@ -300,11 +314,11 @@ export default function PlaygroundPage({ params }: Props) {
         </p>
         <BreadcrumbAuto
           items={[
-            { label: "Home", href: "/", icon: <HomeIcon className="size-4" /> },
-            { label: "Tours", href: "/tours" },
-            { label: "Vietnam", href: "/tours/vietnam" },
-            { label: "Northern", href: "/tours/vietnam/northern" },
-            { label: "Ha Long Bay" },
+            { label: 'Home', href: '/', icon: <HomeIcon className="size-4" /> },
+            { label: 'Tours', href: '/tours' },
+            { label: 'Vietnam', href: '/tours/vietnam' },
+            { label: 'Northern', href: '/tours/vietnam/northern' },
+            { label: 'Ha Long Bay' },
           ]}
         />
       </section>
@@ -455,7 +469,9 @@ export default function PlaygroundPage({ params }: Props) {
           Dialog — media header
         </h2>
         <Dialog>
-          <DialogTrigger render={<Button variant="outline">Open dialog</Button>} />
+          <DialogTrigger
+            render={<Button variant="outline">Open dialog</Button>}
+          />
           <DialogContent>
             <DialogHeader className="items-center text-center">
               <DialogMedia tone="success">
@@ -467,7 +483,9 @@ export default function PlaygroundPage({ params }: Props) {
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <DialogClose render={<Button className="w-full">Continue</Button>} />
+              <DialogClose
+                render={<Button className="w-full">Continue</Button>}
+              />
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -495,7 +513,9 @@ export default function PlaygroundPage({ params }: Props) {
               Email
             </FieldLabel>
             <Input id="pg-email" type="email" placeholder="you@example.com" />
-            <FieldDescription>We&apos;ll never share your email.</FieldDescription>
+            <FieldDescription>
+              We&apos;ll never share your email.
+            </FieldDescription>
           </Field>
           <Field>
             <FieldLabel htmlFor="pg-phone" hint="Optional field">
@@ -541,11 +561,11 @@ export default function PlaygroundPage({ params }: Props) {
         <div className="w-full max-w-md">
           <DescriptionList
             items={[
-              { label: "Duration", value: "2 days 1 night" },
-              { label: "Group size", value: "Max 20" },
-              { label: "Difficulty", value: "Easy" },
-              { label: "Meeting point", value: "Hanoi Old Quarter" },
-              { label: "Category", value: "Package" },
+              { label: 'Duration', value: '2 days 1 night' },
+              { label: 'Group size', value: 'Max 20' },
+              { label: 'Difficulty', value: 'Easy' },
+              { label: 'Meeting point', value: 'Hanoi Old Quarter' },
+              { label: 'Category', value: 'Package' },
             ]}
           />
         </div>
@@ -556,6 +576,58 @@ export default function PlaygroundPage({ params }: Props) {
           Pagination Control — windowed
         </h2>
         <PaginationDemo />
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Stepper — composable multi-step
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          One composable component. Both layouts (numbered horizontal, vertical
+          icon + description + side panel) compose the same parts. Keyboard:
+          arrows / Home / End move focus, Enter / Space selects.
+        </p>
+        <StepperDemo />
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Rating — input & display
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          Controlled, half-star precision, and read-only display (Review.rating
+          1–5).
+        </p>
+        <RatingDemo />
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Separator Label — line · content · line
+        </h2>
+        <div className="flex flex-col gap-6">
+          <SeparatorLabel>OR</SeparatorLabel>
+          <SeparatorLabel variant="dashed">
+            <Badge variant="secondary">New</Badge>
+          </SeparatorLabel>
+          <SeparatorLabel variant="dotted">Continue with</SeparatorLabel>
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Shimmer Skeleton — loading placeholder
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          Sweeping shimmer; falls back to a static pulse under reduced-motion.
+        </p>
+        <div className="flex w-full max-w-sm items-center gap-4">
+          <ShimmerSkeleton className="size-12 rounded-full" />
+          <div className="flex flex-1 flex-col gap-2">
+            <ShimmerSkeleton className="h-4 w-3/4" />
+            <ShimmerSkeleton className="h-4 w-1/2" />
+          </div>
+        </div>
       </section>
     </main>
   );
