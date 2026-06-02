@@ -178,6 +178,9 @@ function RatingItem({
         style={{ width: partialPointWidth }}
         {...props}
       >
+        {!readOnly ? (
+          <span className="sr-only">{`${point} ${point === 1 ? 'star' : 'stars'}`}</span>
+        ) : null}
         {!isPartialPoint && !shouldShowFilled && icons.emptyIcon}
         {shouldShowFilled && icons.fullIcon}
       </Comp>
