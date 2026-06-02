@@ -29,7 +29,6 @@ function ShimmerSkeleton({ className, ...props }: ShimmerSkeletonProps) {
       />
     );
   }
-  }
 
   return (
     <motion.div
