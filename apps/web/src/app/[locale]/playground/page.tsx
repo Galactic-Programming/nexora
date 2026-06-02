@@ -1,9 +1,14 @@
 import { use } from "react";
 import { setRequestLocale } from "next-intl/server";
 import {
+  CheckCheckIcon,
+  CheckIcon,
+  ChevronsUpDownIcon,
+  ClockIcon,
   HeadsetIcon,
   HomeIcon,
   PackageIcon,
+  PencilIcon,
   RefreshCwIcon,
   Trash2Icon,
 } from "lucide-react";
@@ -38,11 +43,53 @@ import {
 import { Badge } from "@tourism/ui/components/custom/badge-custom";
 import { BreadcrumbAuto } from "@tourism/ui/components/custom/breadcrumb-custom";
 import { MotionCarousel } from "@tourism/ui/components/custom/motion-carousel";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@tourism/ui/components/custom/collapsible-custom";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuLabel,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@tourism/ui/components/custom/context-menu-custom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@tourism/ui/components/custom/dropdown-menu-custom";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogMedia,
+  DialogTitle,
+  DialogTrigger,
+} from "@tourism/ui/components/custom/dialog-custom";
+import { Stagger } from "@tourism/ui/components/custom/stagger";
+import {
+  Field,
+  FieldDescription,
+  FieldLabel,
+} from "@tourism/ui/components/custom/field-custom";
+import { Input } from "@tourism/ui/components/legacy/input";
 import { AlertTriggerDemo } from "@/components/alert-trigger-demo";
 import { ConfettiDemo } from "@/components/confetti-demo";
 import { ButtonDemo } from "@/components/button-demo";
 import { CalendarDemo } from "@/components/calendar-demo";
 import { TourCardDemo } from "@/components/tour-card-demo";
+import { DataTableDemo } from "@/components/data-table-demo";
+import { DateRangeDemo } from "@/components/date-range-demo";
+import { FormDemo } from "@/components/form-demo";
 
 const AVATAR_STATUSES = ["active", "onboard", "block", "inactive"] as const;
 
@@ -299,6 +346,176 @@ export default function PlaygroundPage({ params }: Props) {
           Same primitive on a checkbox and a button.
         </p>
         <ConfettiDemo />
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Collapsible — animated content
+        </h2>
+        <Collapsible className="w-full max-w-sm">
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-sm font-medium">
+              @tourism starred 3 repositories
+            </span>
+            <CollapsibleTrigger
+              render={
+                <Button variant="ghost" size="icon-sm">
+                  <ChevronsUpDownIcon />
+                </Button>
+              }
+            />
+          </div>
+          <div className="mt-2 rounded-md border px-4 py-2 font-mono text-sm">
+            @tourism/ui
+          </div>
+          <CollapsibleContent className="mt-2 flex flex-col gap-2">
+            <div className="rounded-md border px-4 py-2 font-mono text-sm">
+              @tourism/web
+            </div>
+            <div className="rounded-md border px-4 py-2 font-mono text-sm">
+              @tourism/admin
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Dropdown Menu — semantic variants
+        </h2>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={<Button variant="outline">Row actions</Button>}
+          />
+          <DropdownMenuContent className="w-48">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem>
+              <PencilIcon />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem variant="success">
+              <CheckIcon />
+              Approve
+            </DropdownMenuItem>
+            <DropdownMenuItem variant="warning">
+              <ClockIcon />
+              Set pending
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive">
+              <Trash2Icon />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Context Menu — right-click actions
+        </h2>
+        <ContextMenu>
+          <ContextMenuTrigger className="text-muted-foreground flex h-24 w-full max-w-sm items-center justify-center rounded-2xl border border-dashed text-sm">
+            Right-click here
+          </ContextMenuTrigger>
+          <ContextMenuContent className="w-48">
+            <ContextMenuLabel>Actions</ContextMenuLabel>
+            <ContextMenuItem>
+              <PencilIcon />
+              Edit
+            </ContextMenuItem>
+            <ContextMenuItem variant="success">
+              <CheckIcon />
+              Approve
+            </ContextMenuItem>
+            <ContextMenuItem variant="warning">
+              <ClockIcon />
+              Set pending
+            </ContextMenuItem>
+            <ContextMenuSeparator />
+            <ContextMenuItem variant="destructive">
+              <Trash2Icon />
+              Delete
+            </ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Dialog — media header
+        </h2>
+        <Dialog>
+          <DialogTrigger render={<Button variant="outline">Open dialog</Button>} />
+          <DialogContent>
+            <DialogHeader className="items-center text-center">
+              <DialogMedia tone="success">
+                <CheckCheckIcon />
+              </DialogMedia>
+              <DialogTitle>Account verified!</DialogTitle>
+              <DialogDescription>
+                Your email has been verified successfully.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <DialogClose render={<Button className="w-full">Continue</Button>} />
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Stagger — sequential reveal
+        </h2>
+        <Stagger className="flex w-full max-w-sm flex-col gap-2">
+          <div className="rounded-lg border px-4 py-2 text-sm">First item</div>
+          <div className="rounded-lg border px-4 py-2 text-sm">Second item</div>
+          <div className="rounded-lg border px-4 py-2 text-sm">Third item</div>
+          <div className="rounded-lg border px-4 py-2 text-sm">Fourth item</div>
+        </Stagger>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Field Label — required & hint
+        </h2>
+        <div className="w-full max-w-xs space-y-4">
+          <Field>
+            <FieldLabel htmlFor="pg-email" required>
+              Email
+            </FieldLabel>
+            <Input id="pg-email" type="email" placeholder="you@example.com" />
+            <FieldDescription>We&apos;ll never share your email.</FieldDescription>
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="pg-phone" hint="Optional field">
+              Phone
+            </FieldLabel>
+            <Input id="pg-phone" placeholder="+1 ..." />
+          </Field>
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Date Range Picker
+        </h2>
+        <DateRangeDemo />
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Data Table — sort / paginate (admin)
+        </h2>
+        <DataTableDemo />
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-foreground text-2xl font-semibold tracking-tight">
+          Form — FormField + password
+        </h2>
+        <FormDemo />
       </section>
     </main>
   );
