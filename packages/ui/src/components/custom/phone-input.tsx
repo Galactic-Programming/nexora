@@ -147,17 +147,20 @@ const CountrySelect = ({
   const [searchValue, setSearchValue] = useState('');
 
   const filteredCountries = useMemo(() => {
-    if (!searchValue) return countryList;
-
-    return countryList.filter(({ label }) =>
-      label.toLowerCase().includes(searchValue.toLowerCase()),
+    const base = countryList.filter(
+      (c): c is { label: string; value: BasePhoneInput.Country } => !!c.value,
     );
+
+    if (!searchValue) return base;
+
+    const q = searchValue.toLowerCase();
+    return base.filter(({ label }) => label.toLowerCase().includes(q));
   }, [countryList, searchValue]);
 
   return (
     <Combobox
       items={filteredCountries}
-      value={selectedCountry || ''}
+      value={selectedCountry ?? ''}
       onValueChange={(country: BasePhoneInput.Country | null) => {
         if (country) {
           onChange(country);
