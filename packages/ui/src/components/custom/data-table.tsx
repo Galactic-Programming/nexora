@@ -180,3 +180,4 @@ function DataTable<TData, TValue>({
 
 export { DataTable };
 export type { DataTableProps };
+export type { ColumnDef } from '@tanstack/react-table';

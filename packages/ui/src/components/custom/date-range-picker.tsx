@@ -88,3 +88,4 @@ function DateRangePicker({
 
 export { DateRangePicker };
 export type { DateRangePickerProps };
+export type { DateRange } from 'react-day-picker';
