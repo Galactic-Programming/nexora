@@ -172,7 +172,7 @@ export default function PlaygroundPage({ params }: Props) {
   setRequestLocale(locale);
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 p-8">
+    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 p-8">
       <header className="flex flex-col gap-1">
         <span className="text-muted-foreground text-sm tracking-widest uppercase">
           Playground
