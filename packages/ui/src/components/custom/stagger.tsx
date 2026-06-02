@@ -77,11 +77,16 @@ function Stagger({
       animate="show"
       variants={container}
     >
-      {React.Children.map(children, (child, index) => (
-        <motion.div key={index} variants={item}>
-          {child}
-        </motion.div>
-      ))}
+      {React.Children.map(children, (child, index) => {
+        const key =
+          React.isValidElement(child) && child.key != null ? child.key : index;
+
+        return (
+          <motion.div key={key} variants={item}>
+            {child}
+          </motion.div>
+        );
+      })}
     </motion.div>
   );
 }
