@@ -23,8 +23,12 @@ function ShimmerSkeleton({ className, ...props }: ShimmerSkeletonProps) {
         data-slot="shimmer-skeleton"
         className={cn('animate-pulse rounded-md bg-muted', className)}
         {...props}
+        initial={false}
+        animate={undefined}
+        transition={undefined}
       />
     );
+  }
   }
 
   return (
