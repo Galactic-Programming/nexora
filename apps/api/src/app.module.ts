@@ -24,6 +24,7 @@ import { DeparturesModule } from './modules/departures/departures.module';
 import { DestinationsModule } from './modules/destinations/destinations.module';
 import { EmailModule } from './modules/email/email.module';
 import { HealthModule } from './modules/health/health.module';
+import { MediaModule } from './modules/media/media.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { ToursModule } from './modules/tours/tours.module';
@@ -110,6 +111,7 @@ import { UsersModule } from './modules/users/users.module';
       ],
     }),
     PrismaModule,
+    MediaModule,
     EmailModule,
     HealthModule,
     AuthModule,

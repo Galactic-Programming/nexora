@@ -17,7 +17,9 @@ import {
   MaxLength,
   Min,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
+import { MediaInputDto } from '../../media/dto/media.dto';
 
 /**
  * Request body for `POST /admin/tours`.
@@ -210,4 +212,18 @@ export class CreateTourDto {
   @IsString({ each: true })
   @MaxLength(200, { each: true })
   excluded?: string[];
+
+  /**
+   * Full desired media set (Cloudinary). Replace-all semantics: whatever the
+   * FE sends here becomes the tour's complete media set. Persisted to the
+   * `media_assets` table via `MediaService` (legacy `heroImage`/`gallery`
+   * remain until Phase 4). Capped at 30 items.
+   */
+  @ApiPropertyOptional({ type: [MediaInputDto] })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(30)
+  @ValidateNested({ each: true })
+  @Type(() => MediaInputDto)
+  media?: MediaInputDto[];
 }

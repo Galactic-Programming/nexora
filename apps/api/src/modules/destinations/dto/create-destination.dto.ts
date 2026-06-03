@@ -1,5 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
+  IsArray,
   IsBoolean,
   IsOptional,
   IsString,
@@ -7,7 +10,9 @@ import {
   Matches,
   MaxLength,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
+import { MediaInputDto } from '../../media/dto/media.dto';
 
 /**
  * Request body for `POST /admin/destinations`.
@@ -98,4 +103,17 @@ export class CreateDestinationDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  /**
+   * Full desired media set (Cloudinary). Replace-all semantics, persisted to
+   * `media_assets` via `MediaService` (legacy `heroImage` remains until
+   * Phase 4). Capped at 10 items — destinations are lighter than tours.
+   */
+  @ApiPropertyOptional({ type: [MediaInputDto] })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(10)
+  @ValidateNested({ each: true })
+  @Type(() => MediaInputDto)
+  media?: MediaInputDto[];
 }

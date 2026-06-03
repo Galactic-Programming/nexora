@@ -5,8 +5,9 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma, Tour } from '@prisma/client';
+import { MediaOwnerType, Prisma, Tour } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { MediaService } from '../media/media.service';
 import { CreateTourDto } from './dto/create-tour.dto';
 import { ListToursQueryDto } from './dto/list-tours-query.dto';
 import { UpdateTourDto } from './dto/update-tour.dto';
@@ -63,7 +64,10 @@ export interface PaginatedTours {
 export class ToursService {
   private readonly logger = new Logger(ToursService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly media: MediaService,
+  ) {}
 
   // ────────────────────────────────────────────────────────────────────────
   // Public reads
@@ -126,9 +130,13 @@ export class ToursService {
       ...t,
       ...(stats.get(t.id) ?? emptyStats()),
     }));
+    const itemsWithMedia = await this.media.attachToOwners(
+      MediaOwnerType.TOUR,
+      itemsWithStats,
+    );
 
     return {
-      items: itemsWithStats,
+      items: itemsWithMedia,
       meta: {
         page,
         pageSize,
@@ -165,7 +173,10 @@ export class ToursService {
       });
     }
     const stats = await this.computeStats([tour.id]);
-    return { ...tour, ...(stats.get(tour.id) ?? emptyStats()) };
+    return this.media.attachToOwner(MediaOwnerType.TOUR, {
+      ...tour,
+      ...(stats.get(tour.id) ?? emptyStats()),
+    });
   }
 
   // ────────────────────────────────────────────────────────────────────────
@@ -189,7 +200,7 @@ export class ToursService {
         message: `Tour "${slug}" not found`,
       });
     }
-    return tour;
+    return this.media.attachToOwner(MediaOwnerType.TOUR, tour);
   }
 
   // ────────────────────────────────────────────────────────────────────────
@@ -220,12 +231,23 @@ export class ToursService {
   async create(body: CreateTourDto): Promise<Tour> {
     await this.assertDestinationExists(body.destinationId);
     try {
-      const tour = await this.prisma.tour.create({
-        data: this.mapCreatePayload(body),
-        include: { destination: true },
+      const tour = await this.prisma.$transaction(async (tx) => {
+        const created = await tx.tour.create({
+          data: this.mapCreatePayload(body),
+          include: { destination: true },
+        });
+        if (body.media) {
+          await this.media.syncAssets(
+            tx,
+            MediaOwnerType.TOUR,
+            created.id,
+            body.media,
+          );
+        }
+        return created;
       });
       this.logger.log(`Created tour ${tour.slug} (id=${tour.id})`);
-      return tour;
+      return this.media.attachToOwner(MediaOwnerType.TOUR, tour);
     } catch (err) {
       if (this.isUniqueConstraintError(err)) {
         throw new ConflictException({
@@ -254,13 +276,24 @@ export class ToursService {
       await this.assertDestinationExists(body.destinationId);
     }
     try {
-      const updated = await this.prisma.tour.update({
-        where: { slug },
-        data: this.mapUpdatePayload(body),
-        include: { destination: true },
+      const updated = await this.prisma.$transaction(async (tx) => {
+        const row = await tx.tour.update({
+          where: { slug },
+          data: this.mapUpdatePayload(body),
+          include: { destination: true },
+        });
+        if (body.media) {
+          await this.media.syncAssets(
+            tx,
+            MediaOwnerType.TOUR,
+            row.id,
+            body.media,
+          );
+        }
+        return row;
       });
       this.logger.log(`Updated tour ${updated.slug} (id=${updated.id})`);
-      return updated;
+      return this.media.attachToOwner(MediaOwnerType.TOUR, updated);
     } catch (err) {
       if (this.isUniqueConstraintError(err)) {
         throw new ConflictException({
@@ -286,7 +319,10 @@ export class ToursService {
   async remove(slug: string): Promise<Tour> {
     const tour = await this.findBySlug(slug);
     try {
-      await this.prisma.tour.delete({ where: { slug } });
+      await this.prisma.$transaction(async (tx) => {
+        await this.media.deleteForOwner(tx, MediaOwnerType.TOUR, tour.id);
+        await tx.tour.delete({ where: { slug } });
+      });
       this.logger.log(`Deleted tour ${tour.slug} (id=${tour.id})`);
       return tour;
     } catch (err) {

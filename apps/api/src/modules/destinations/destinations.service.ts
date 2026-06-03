@@ -4,8 +4,9 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { Destination, Prisma } from '@prisma/client';
+import { Destination, MediaOwnerType, Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { MediaService } from '../media/media.service';
 import { CreateDestinationDto } from './dto/create-destination.dto';
 import { ListDestinationsQueryDto } from './dto/list-destinations-query.dto';
 import { UpdateDestinationDto } from './dto/update-destination.dto';
@@ -42,7 +43,10 @@ export interface PaginatedDestinations {
 export class DestinationsService {
   private readonly logger = new Logger(DestinationsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly media: MediaService,
+  ) {}
 
   // ────────────────────────────────────────────────────────────────────────
   // Public read paths
@@ -80,7 +84,7 @@ export class DestinationsService {
         message: `Destination "${slug}" not found`,
       });
     }
-    return destination;
+    return this.media.attachToOwner(MediaOwnerType.DESTINATION, destination);
   }
 
   // ────────────────────────────────────────────────────────────────────────
@@ -114,7 +118,7 @@ export class DestinationsService {
         message: `Destination "${slug}" not found`,
       });
     }
-    return destination;
+    return this.media.attachToOwner(MediaOwnerType.DESTINATION, destination);
   }
 
   /**
@@ -130,13 +134,24 @@ export class DestinationsService {
    */
   async create(body: CreateDestinationDto): Promise<Destination> {
     try {
-      const destination = await this.prisma.destination.create({
-        data: this.mapCreatePayload(body),
+      const destination = await this.prisma.$transaction(async (tx) => {
+        const created = await tx.destination.create({
+          data: this.mapCreatePayload(body),
+        });
+        if (body.media) {
+          await this.media.syncAssets(
+            tx,
+            MediaOwnerType.DESTINATION,
+            created.id,
+            body.media,
+          );
+        }
+        return created;
       });
       this.logger.log(
         `Created destination ${destination.slug} (id=${destination.id})`,
       );
-      return destination;
+      return this.media.attachToOwner(MediaOwnerType.DESTINATION, destination);
     } catch (err) {
       if (this.isUniqueConstraintError(err)) {
         throw new ConflictException({
@@ -164,11 +179,24 @@ export class DestinationsService {
     // Surface a clean 404 BEFORE attempting the update, otherwise Prisma
     // would throw P2025 which we'd have to translate identically anyway.
     await this.findBySlug(slug);
+    const { media, ...fields } = body;
     try {
-      return await this.prisma.destination.update({
-        where: { slug },
-        data: body,
+      const updated = await this.prisma.$transaction(async (tx) => {
+        const row = await tx.destination.update({
+          where: { slug },
+          data: fields,
+        });
+        if (media) {
+          await this.media.syncAssets(
+            tx,
+            MediaOwnerType.DESTINATION,
+            row.id,
+            media,
+          );
+        }
+        return row;
       });
+      return this.media.attachToOwner(MediaOwnerType.DESTINATION, updated);
     } catch (err) {
       if (this.isUniqueConstraintError(err)) {
         throw new ConflictException({
@@ -194,9 +222,16 @@ export class DestinationsService {
    * @throws ConflictException — destination still has tours.
    */
   async remove(slug: string): Promise<Destination> {
-    await this.findBySlug(slug);
+    const existing = await this.findBySlug(slug);
     try {
-      const deleted = await this.prisma.destination.delete({ where: { slug } });
+      const deleted = await this.prisma.$transaction(async (tx) => {
+        await this.media.deleteForOwner(
+          tx,
+          MediaOwnerType.DESTINATION,
+          existing.id,
+        );
+        return tx.destination.delete({ where: { slug } });
+      });
       this.logger.log(`Deleted destination ${deleted.slug} (id=${deleted.id})`);
       return deleted;
     } catch (err) {
@@ -257,8 +292,13 @@ export class DestinationsService {
       this.prisma.destination.count({ where }),
     ]);
 
-    return {
+    const itemsWithMedia = await this.media.attachToOwners(
+      MediaOwnerType.DESTINATION,
       items,
+    );
+
+    return {
+      items: itemsWithMedia,
       meta: {
         page,
         pageSize,

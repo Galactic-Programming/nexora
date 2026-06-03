@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { DestinationDto } from '../../destinations/dto/destination.dto';
+import { MediaItemDto } from '../../media/dto/media.dto';
 import { ItineraryDayDto } from './itinerary-day.dto';
 
 const TOUR_CATEGORIES = [
@@ -78,6 +79,12 @@ export class TourDto {
 
   @ApiProperty({ nullable: true, type: String })
   meetingPoint!: string | null;
+
+  @ApiProperty({
+    type: () => [MediaItemDto],
+    description: 'Cloudinary-backed media (hero/gallery/video).',
+  })
+  media!: MediaItemDto[];
 
   @ApiProperty({ format: 'date-time' })
   createdAt!: string;

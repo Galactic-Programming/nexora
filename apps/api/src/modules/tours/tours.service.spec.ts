@@ -60,8 +60,30 @@ type TourCreateCall = {
   };
 };
 
-function makePrisma(overrides: Partial<Record<string, jest.Mock>> = {}) {
+/**
+ * Stub of `MediaService`. `attachToOwners`/`attachToOwner` return the rows
+ * unchanged (with an empty `media` array) so read-path assertions still see
+ * the original tour fields. `syncAssets`/`deleteForOwner` are spies.
+ */
+function makeMedia() {
   return {
+    syncAssets: jest.fn().mockResolvedValue(undefined),
+    deleteForOwner: jest.fn().mockResolvedValue(undefined),
+    attachToOwners: jest.fn(
+      async (_t: unknown, items: Array<Record<string, unknown>>) =>
+        items.map((i) => ({ ...i, media: [] })),
+    ),
+    attachToOwner: jest.fn(
+      async (_t: unknown, item: Record<string, unknown>) => ({
+        ...item,
+        media: [],
+      }),
+    ),
+  };
+}
+
+function makePrisma(overrides: Partial<Record<string, jest.Mock>> = {}) {
+  const client: Record<string, unknown> = {
     tour: {
       create: overrides.tourCreate ?? jest.fn(),
       update: overrides.tourUpdate ?? jest.fn(),
@@ -82,13 +104,18 @@ function makePrisma(overrides: Partial<Record<string, jest.Mock>> = {}) {
       // computeStats sums seatsBooked across departures for `peopleGoing`.
       groupBy: overrides.departureGroupBy ?? jest.fn().mockResolvedValue([]),
     },
-    // `$transaction` accepts an array of Prisma promises and resolves to an
-    // array. In these tests the mocked Prisma client returns plain values
-    // (not real PrismaPromise objects), so we resolve them directly.
-    $transaction:
-      overrides.transaction ??
-      jest.fn(async (ops: unknown[]) => Promise.all(ops as Promise<unknown>[])),
   };
+  // `$transaction` supports BOTH forms: an array of Prisma promises (reads),
+  // and an interactive callback `fn(tx)` (writes). The callback receives the
+  // same mock client so `tx.tour.*` assertions still hold.
+  client.$transaction =
+    overrides.transaction ??
+    jest.fn(async (arg: unknown) =>
+      typeof arg === 'function'
+        ? (arg as (tx: unknown) => unknown)(client)
+        : Promise.all(arg as Promise<unknown>[]),
+    );
+  return client;
 }
 
 function p2002(): Prisma.PrismaClientKnownRequestError {
@@ -114,7 +141,7 @@ describe('ToursService', () => {
         destinationFindUnique: destFind,
         tourCreate,
       });
-      const svc = new ToursService(prisma as never);
+      const svc = new ToursService(prisma as never, makeMedia() as never);
 
       await expect(svc.create(baseCreateDto)).rejects.toMatchObject({
         response: { code: 'INVALID_DESTINATION' },
@@ -129,7 +156,7 @@ describe('ToursService', () => {
         destinationFindUnique: destFind,
         tourCreate,
       });
-      const svc = new ToursService(prisma as never);
+      const svc = new ToursService(prisma as never, makeMedia() as never);
 
       await svc.create({ ...baseCreateDto, currency: 'usd' });
 
@@ -149,7 +176,7 @@ describe('ToursService', () => {
         destinationFindUnique: destFind,
         tourCreate,
       });
-      const svc = new ToursService(prisma as never);
+      const svc = new ToursService(prisma as never, makeMedia() as never);
 
       await expect(svc.create(baseCreateDto)).rejects.toBeInstanceOf(
         ConflictException,
@@ -165,7 +192,7 @@ describe('ToursService', () => {
       const tourFindUnique = jest.fn().mockResolvedValue(null);
       const tourUpdate = jest.fn();
       const prisma = makePrisma({ tourFindUnique, tourUpdate });
-      const svc = new ToursService(prisma as never);
+      const svc = new ToursService(prisma as never, makeMedia() as never);
 
       await expect(
         svc.update('missing', { titleEn: 'x' }),
@@ -182,7 +209,7 @@ describe('ToursService', () => {
         destinationFindUnique: destFind,
         tourUpdate,
       });
-      const svc = new ToursService(prisma as never);
+      const svc = new ToursService(prisma as never, makeMedia() as never);
 
       await expect(
         svc.update('hoi-an-walking', { destinationId: 'd-bad' }),
@@ -196,7 +223,7 @@ describe('ToursService', () => {
       const tourFindUnique = jest.fn().mockResolvedValue(sampleTour);
       const tourDelete = jest.fn().mockRejectedValue(p2003());
       const prisma = makePrisma({ tourFindUnique, tourDelete });
-      const svc = new ToursService(prisma as never);
+      const svc = new ToursService(prisma as never, makeMedia() as never);
 
       await expect(svc.remove('hoi-an-walking')).rejects.toMatchObject({
         response: { code: 'TOUR_HAS_BOOKINGS' },
@@ -214,7 +241,7 @@ describe('ToursService', () => {
         tourFindMany,
         tourCount,
       });
-      const svc = new ToursService(prisma as never);
+      const svc = new ToursService(prisma as never, makeMedia() as never);
 
       const result = await svc.findPublishedList({ destination: 'ghost' });
 
@@ -234,7 +261,7 @@ describe('ToursService', () => {
         tourFindMany,
         tourCount,
       });
-      const svc = new ToursService(prisma as never);
+      const svc = new ToursService(prisma as never, makeMedia() as never);
 
       await svc.findPublishedList({
         destination: 'hoi-an',
@@ -277,7 +304,7 @@ describe('ToursService', () => {
       const tourFindMany = jest.fn().mockResolvedValue([sampleTour]);
       const tourCount = jest.fn().mockResolvedValue(45);
       const prisma = makePrisma({ tourFindMany, tourCount });
-      const svc = new ToursService(prisma as never);
+      const svc = new ToursService(prisma as never, makeMedia() as never);
 
       const result = await svc.findPublishedList({ pageSize: 20 });
 
@@ -305,7 +332,7 @@ describe('ToursService', () => {
         reviewGroupBy,
         departureGroupBy,
       });
-      const svc = new ToursService(prisma as never);
+      const svc = new ToursService(prisma as never, makeMedia() as never);
 
       const result = await svc.findPublishedList({});
 
@@ -333,7 +360,7 @@ describe('ToursService', () => {
         reviewGroupBy,
         departureGroupBy,
       });
-      const svc = new ToursService(prisma as never);
+      const svc = new ToursService(prisma as never, makeMedia() as never);
 
       const result = await svc.findPublishedList({});
 
@@ -351,7 +378,7 @@ describe('ToursService', () => {
         isPublished: true,
       });
       const prisma = makePrisma({ tourFindFirst });
-      const svc = new ToursService(prisma as never);
+      const svc = new ToursService(prisma as never, makeMedia() as never);
 
       const result = await svc.findPublishedBySlug('hoi-an-walking');
 
@@ -369,7 +396,7 @@ describe('ToursService', () => {
     it('throws TOUR_NOT_FOUND when slug missing or unpublished', async () => {
       const tourFindFirst = jest.fn().mockResolvedValue(null);
       const prisma = makePrisma({ tourFindFirst });
-      const svc = new ToursService(prisma as never);
+      const svc = new ToursService(prisma as never, makeMedia() as never);
 
       await expect(
         svc.findPublishedBySlug('draft-slug'),
@@ -395,7 +422,7 @@ describe('ToursService', () => {
         reviewGroupBy,
         departureGroupBy,
       });
-      const svc = new ToursService(prisma as never);
+      const svc = new ToursService(prisma as never, makeMedia() as never);
 
       const result = await svc.findPublishedBySlug('hoi-an-walking');
 
