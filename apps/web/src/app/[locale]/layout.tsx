@@ -6,6 +6,9 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { routing } from '@/i18n/routing';
 import '../globals.css';
 import { TooltipProvider } from '@tourism/ui/components/legacy/tooltip';
+import { QueryProvider } from '@/providers/query-provider';
+import { SiteHeader } from '@/components/layout/site-header';
+import { SiteFooter } from '@/components/layout/site-footer';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -48,7 +51,13 @@ export default async function LocaleLayout({ children, params }: Props) {
     >
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider>
-          <TooltipProvider>{children}</TooltipProvider>
+          <QueryProvider>
+            <TooltipProvider>
+              <SiteHeader />
+              <div className="flex-1">{children}</div>
+              <SiteFooter />
+            </TooltipProvider>
+          </QueryProvider>
         </NextIntlClientProvider>
       </body>
     </html>
