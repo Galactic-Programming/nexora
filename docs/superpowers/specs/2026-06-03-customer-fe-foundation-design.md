@@ -39,7 +39,7 @@ that fetches featured tours from the backend, proving the data flow works end-to
 
 ## 2. Architecture & Directory Layout (`apps/web/src/`)
 
-```
+```text
 lib/
   env.ts                 # validate env with zod, fail-fast at boot
   api/
