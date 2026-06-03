@@ -103,20 +103,9 @@ were removed in the Cloudinary migration. See [`docs/runbooks/uploads.md`](../ru
 | GET | `/tours` | 🌐 | Paginated list of `isPublished = true` tours. Filters + sort below. |
 | GET | `/tours/:slug` | 🌐 | Single published tour with destination joined. 404 conflates "missing" with "unpublished" so draft slugs are not probeable. |
 
-Filters (all optional, AND-combined):
+Filters (optional, AND-combined): `destination` (slug; unresolved → empty, not 404), `category` (`DAY|PACKAGE|CUSTOM`), `minPrice`/`maxPrice` (inclusive on `basePrice`), `duration` (exact days), `featured` (bool), `q` (case-insensitive substring over `titleEn/Vi`, `summaryEn/Vi`).
 
-- `destination` — destination slug (kebab-case). Slug that does not resolve → empty result (not 404).
-- `category` — `DAY` | `PACKAGE` | `CUSTOM`
-- `minPrice` / `maxPrice` — inclusive bounds on `basePrice`
-- `duration` — exact day count
-- `featured` — boolean, useful for home-page hero
-- `q` — free-text substring search (case-insensitive) over `titleEn`, `titleVi`, `summaryEn`, `summaryVi`
-
-Sort whitelist: `createdAt` (default) | `basePrice` | `durationDays` | `titleEn`. `sortOrder`: `asc` | `desc`.
-
-Pagination: `page` (default 1), `pageSize` (default 20, max 100). Response includes `meta: { page, pageSize, total, totalPages }`.
-
-Drafts never leak: both endpoints pin `isPublished: true` server-side regardless of caller.
+Sort: `createdAt` (default) | `basePrice` | `durationDays` | `titleEn` × `sortOrder` `asc|desc`. Pagination: `page` (1), `pageSize` (20, max 100) → `meta: { page, pageSize, total, totalPages }`. Drafts never leak — both endpoints pin `isPublished: true` server-side.
 
 ### Sprint B2.4 — Tours itinerary (Admin nested CRUD)
 
