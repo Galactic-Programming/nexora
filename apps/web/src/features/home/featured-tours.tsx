@@ -31,6 +31,8 @@ export async function FeaturedTours({ emptyLabel }: { emptyLabel: string }) {
   const { data } = await api.GET("/api/v1/tours", {
     params: { query: { featured: true, pageSize: 6 } },
   });
+  // openapi-fetch infers `data` as the paginated wrapper type, but the client's
+  // envelope-unwrap middleware returns the bare item array at runtime — hence the bridge cast.
   const tours = (data ?? []) as unknown as ApiTour[];
   return <FeaturedToursList tours={tours} locale={locale} emptyLabel={emptyLabel} />;
 }
