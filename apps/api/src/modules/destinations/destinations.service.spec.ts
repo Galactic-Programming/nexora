@@ -19,7 +19,6 @@ const sampleRow: Destination = {
   nameVi: 'Hội An',
   country: 'Vietnam',
   region: 'Central',
-  heroImage: null,
   descriptionEn: null,
   descriptionVi: null,
   isActive: true,
@@ -64,14 +63,11 @@ function makeMedia() {
     syncAssets: jest.fn().mockResolvedValue(undefined),
     deleteForOwner: jest.fn().mockResolvedValue(undefined),
     attachToOwners: jest.fn(
-      async (_t: unknown, items: Array<Record<string, unknown>>) =>
-        items.map((i) => ({ ...i, media: [] })),
+      (_t: unknown, items: Array<Record<string, unknown>>) =>
+        Promise.resolve(items.map((i) => ({ ...i, media: [] }))),
     ),
-    attachToOwner: jest.fn(
-      async (_t: unknown, item: Record<string, unknown>) => ({
-        ...item,
-        media: [],
-      }),
+    attachToOwner: jest.fn((_t: unknown, item: Record<string, unknown>) =>
+      Promise.resolve({ ...item, media: [] }),
     ),
   };
 }
@@ -92,10 +88,12 @@ function makePrisma(overrides: Partial<Record<string, jest.Mock>> = {}) {
   // (create/update/remove writes). The callback gets the same mock client.
   client.$transaction =
     overrides.$transaction ??
-    jest.fn(async (arg: unknown) =>
-      typeof arg === 'function'
-        ? (arg as (tx: unknown) => unknown)(client)
-        : Promise.all(arg as Promise<unknown>[]),
+    jest.fn((arg: unknown) =>
+      Promise.resolve(
+        typeof arg === 'function'
+          ? (arg as (tx: unknown) => unknown)(client)
+          : Promise.all(arg as Promise<unknown>[]),
+      ),
     );
   return client;
 }
@@ -119,7 +117,10 @@ describe('DestinationsService', () => {
     it('persists the row and applies country + isActive defaults', async () => {
       const created = jest.fn().mockResolvedValue(sampleRow);
       const prisma = makePrisma({ create: created });
-      const svc = new DestinationsService(prisma as never, makeMedia() as never);
+      const svc = new DestinationsService(
+        prisma as never,
+        makeMedia() as never,
+      );
 
       await svc.create(baseCreateDto);
 
@@ -134,7 +135,10 @@ describe('DestinationsService', () => {
     it('translates Prisma P2002 into ConflictException with stable code', async () => {
       const created = jest.fn().mockRejectedValue(p2002());
       const prisma = makePrisma({ create: created });
-      const svc = new DestinationsService(prisma as never, makeMedia() as never);
+      const svc = new DestinationsService(
+        prisma as never,
+        makeMedia() as never,
+      );
 
       await expect(svc.create(baseCreateDto)).rejects.toBeInstanceOf(
         ConflictException,
@@ -147,7 +151,10 @@ describe('DestinationsService', () => {
       const findUnique = jest.fn().mockResolvedValue(null);
       const update = jest.fn();
       const prisma = makePrisma({ findUnique, update });
-      const svc = new DestinationsService(prisma as never, makeMedia() as never);
+      const svc = new DestinationsService(
+        prisma as never,
+        makeMedia() as never,
+      );
 
       await expect(
         svc.update('missing', { nameEn: 'x' }),
@@ -159,7 +166,10 @@ describe('DestinationsService', () => {
       const findUnique = jest.fn().mockResolvedValue(sampleRow);
       const update = jest.fn().mockRejectedValue(p2002());
       const prisma = makePrisma({ findUnique, update });
-      const svc = new DestinationsService(prisma as never, makeMedia() as never);
+      const svc = new DestinationsService(
+        prisma as never,
+        makeMedia() as never,
+      );
 
       await expect(
         svc.update('hoi-an', { slug: 'taken' }),
@@ -172,7 +182,10 @@ describe('DestinationsService', () => {
       const findUnique = jest.fn().mockResolvedValue(sampleRow);
       const del = jest.fn().mockRejectedValue(p2003());
       const prisma = makePrisma({ findUnique, delete: del });
-      const svc = new DestinationsService(prisma as never, makeMedia() as never);
+      const svc = new DestinationsService(
+        prisma as never,
+        makeMedia() as never,
+      );
 
       await expect(svc.remove('hoi-an')).rejects.toMatchObject({
         response: { code: 'DESTINATION_HAS_TOURS' },
@@ -184,7 +197,10 @@ describe('DestinationsService', () => {
     it('hides inactive rows via isActive=true filter', async () => {
       const findFirst = jest.fn().mockResolvedValue(null);
       const prisma = makePrisma({ findFirst });
-      const svc = new DestinationsService(prisma as never, makeMedia() as never);
+      const svc = new DestinationsService(
+        prisma as never,
+        makeMedia() as never,
+      );
 
       await expect(svc.findPublicBySlug('draft')).rejects.toBeInstanceOf(
         NotFoundException,
@@ -203,7 +219,10 @@ describe('DestinationsService', () => {
       const findMany = jest.fn();
       const count = jest.fn();
       const prisma = makePrisma({ findMany, count, $transaction: tx });
-      const svc = new DestinationsService(prisma as never, makeMedia() as never);
+      const svc = new DestinationsService(
+        prisma as never,
+        makeMedia() as never,
+      );
 
       const result: ListResult = await svc.findPublicList({
         page: 1,

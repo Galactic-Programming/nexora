@@ -50,13 +50,6 @@ export const envValidationSchema = Joi.object({
   SUPABASE_JWT_SECRET: Joi.string().allow('').optional(),
   // Comma-separated allowlist; empty default means "no admins" until configured.
   ADMIN_EMAILS: Joi.string().default(''),
-  // Storage bucket name used by `/admin/uploads/signed-url`. The bucket must
-  // exist in Supabase Storage with the right policies — see the uploads
-  // runbook. Default matches the convention used in the runbook.
-  // LEGACY: superseded by Cloudinary (see docs/planning/cloudinary-media-migration.md).
-  // Removed in Phase 4 once media moves off Supabase Storage.
-  SUPABASE_STORAGE_BUCKET: Joi.string().default('tourism-assets'),
-
   // ── Cloudinary (photos + clips) ─────────────────────────────────────────────
   // Replaces Supabase Storage for media. `apiSecret` is used server-side to
   // sign upload requests (`/admin/uploads/signed-url`) — never exposed to the FE.

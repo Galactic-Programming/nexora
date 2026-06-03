@@ -65,12 +65,6 @@ export class TourDto {
   @ApiProperty()
   isFeatured!: boolean;
 
-  @ApiProperty({ nullable: true, type: String, format: 'uri' })
-  heroImage!: string | null;
-
-  @ApiProperty({ type: [String], example: ['https://cdn/img-1.jpg'] })
-  gallery!: string[];
-
   @ApiProperty({ type: [String], example: ['Hotel', 'Breakfast'] })
   included!: string[];
 

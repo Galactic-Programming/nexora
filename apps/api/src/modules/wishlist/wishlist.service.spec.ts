@@ -24,10 +24,21 @@ function makePrisma(opts: {
   };
 }
 
+/** Stub of MediaService — attach passes tours through with empty media. */
+function makeMedia() {
+  return {
+    attachToOwners: jest.fn(
+      (_t: unknown, items: Array<Record<string, unknown>>) =>
+        Promise.resolve(items.map((i) => ({ ...i, media: [] }))),
+    ),
+  };
+}
+
 describe('WishlistService.add', () => {
   it('throws TOUR_NOT_FOUND when tour is missing or unpublished', async () => {
     const svc = new WishlistService(
       makePrisma({ tourFindFirst: jest.fn().mockResolvedValue(null) }) as never,
+      makeMedia() as never,
     );
     await expect(
       svc.add('u-1', '11111111-1111-1111-1111-111111111111'),
@@ -43,6 +54,7 @@ describe('WishlistService.add', () => {
         tourFindFirst: jest.fn().mockResolvedValue({ id: 't-1' }),
         upsert,
       }) as never,
+      makeMedia() as never,
     );
 
     await svc.add('u-1', 't-1');
@@ -61,7 +73,10 @@ describe('WishlistService.add', () => {
 describe('WishlistService.remove', () => {
   it('uses deleteMany so missing rows do not throw (idempotent)', async () => {
     const deleteMany = jest.fn().mockResolvedValue({ count: 0 });
-    const svc = new WishlistService(makePrisma({ deleteMany }) as never);
+    const svc = new WishlistService(
+      makePrisma({ deleteMany }) as never,
+      makeMedia() as never,
+    );
     await expect(svc.remove('u-1', 't-1')).resolves.toBeUndefined();
     type DelCall = { where: { userId: string; tourId: string } };
     const calls = deleteMany.mock.calls as unknown as DelCall[][];
@@ -79,7 +94,10 @@ describe('WishlistService.findMineWithTour', () => {
         tour: { id: 't-1', slug: 'hoi-an', titleEn: 'Hoi An' },
       },
     ]);
-    const svc = new WishlistService(makePrisma({ findMany }) as never);
+    const svc = new WishlistService(
+      makePrisma({ findMany }) as never,
+      makeMedia() as never,
+    );
 
     const result = await svc.findMineWithTour('u-1');
 

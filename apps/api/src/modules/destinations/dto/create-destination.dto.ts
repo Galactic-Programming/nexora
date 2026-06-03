@@ -24,7 +24,7 @@ import { MediaInputDto } from '../../media/dto/media.dto';
  * Bilingual fields (`*_en` / `*_vi`) are required — every Destination must
  * exist in both languages on day one. This avoids a half-translated catalog.
  *
- * Optional editorial fields (`region`, `heroImage`, `description*`) can be
+ * Optional editorial fields (`region`, `description*`, `media[]`) can be
  * added in a follow-up `PATCH`.
  */
 export class CreateDestinationDto {
@@ -70,19 +70,6 @@ export class CreateDestinationDto {
   @MaxLength(80)
   region?: string;
 
-  /**
-   * Storage path or absolute URL. The signed-URL upload flow (Sprint B2.6)
-   * will return a path that admins paste here.
-   */
-  @ApiPropertyOptional({
-    example: 'destinations/hoi-an/hero.jpg',
-    maxLength: 500,
-  })
-  @IsOptional()
-  @IsString()
-  @MaxLength(500)
-  heroImage?: string;
-
   @ApiPropertyOptional({ example: 'Ancient port town in Central Vietnam.' })
   @IsOptional()
   @IsString()
@@ -106,8 +93,8 @@ export class CreateDestinationDto {
 
   /**
    * Full desired media set (Cloudinary). Replace-all semantics, persisted to
-   * `media_assets` via `MediaService` (legacy `heroImage` remains until
-   * Phase 4). Capped at 10 items — destinations are lighter than tours.
+   * `media_assets` via `MediaService`. Capped at 10 items — destinations are
+   * lighter than tours.
    */
   @ApiPropertyOptional({ type: [MediaInputDto] })
   @IsOptional()

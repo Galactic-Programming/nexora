@@ -89,7 +89,6 @@ model Destination {
   nameVi         String   @map("name_vi")
   country        String   @default("Vietnam")
   region         String?
-  heroImage      String?  @map("hero_image")
   descriptionEn  String?  @map("description_en")
   descriptionVi  String?  @map("description_vi")
   isActive       Boolean  @default(true) @map("is_active")
@@ -122,8 +121,6 @@ model Tour {
   difficulty      String?
   isPublished     Boolean       @default(false) @map("is_published")
   isFeatured      Boolean       @default(false) @map("is_featured")
-  heroImage       String?       @map("hero_image")
-  gallery         String[]      @default([])
   included        Json          @default("[]")
   excluded        Json          @default("[]")
   meetingPoint    String?       @map("meeting_point")

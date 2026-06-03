@@ -29,7 +29,7 @@ import { MediaInputDto } from '../../media/dto/media.dto';
  *  - Logistics       — durationDays, maxGroupSize, meetingPoint
  *  - Pricing         — basePrice, currency
  *  - Classification  — category, difficulty, isPublished, isFeatured
- *  - Media + content — heroImage, gallery, included[], excluded[]
+ *  - Media + content — media[], included[], excluded[]
  *
  * Bilingual rule: `titleEn` + `titleVi` are both required (no half-translated
  * tours). `summary*` is optional in BOTH languages — set neither, or both.
@@ -167,25 +167,6 @@ export class CreateTourDto {
 
   // ── Media + content ───────────────────────────────────────────────────────
 
-  @ApiPropertyOptional({ example: 'tours/hoi-an/hero.jpg', maxLength: 500 })
-  @IsOptional()
-  @IsString()
-  @MaxLength(500)
-  heroImage?: string;
-
-  /**
-   * Storage paths (or absolute URLs). Capped at 20 to keep payloads sane.
-   */
-  @ApiPropertyOptional({
-    type: [String],
-    example: ['tours/hoi-an/g1.jpg', 'tours/hoi-an/g2.jpg'],
-  })
-  @IsOptional()
-  @IsArray()
-  @ArrayMaxSize(20)
-  @IsString({ each: true })
-  gallery?: string[];
-
   /**
    * Free-form bullet points (e.g. "Local guide", "Lunch", "Insurance").
    * Stored as JSON in Postgres so we don't need a side table; capped at
@@ -216,8 +197,7 @@ export class CreateTourDto {
   /**
    * Full desired media set (Cloudinary). Replace-all semantics: whatever the
    * FE sends here becomes the tour's complete media set. Persisted to the
-   * `media_assets` table via `MediaService` (legacy `heroImage`/`gallery`
-   * remain until Phase 4). Capped at 30 items.
+   * `media_assets` table via `MediaService`. Capped at 30 items.
    */
   @ApiPropertyOptional({ type: [MediaInputDto] })
   @IsOptional()

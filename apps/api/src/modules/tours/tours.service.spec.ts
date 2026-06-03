@@ -31,8 +31,6 @@ const sampleTour: Tour = {
   difficulty: null,
   isPublished: false,
   isFeatured: false,
-  heroImage: null,
-  gallery: [],
   included: [],
   excluded: [],
   meetingPoint: null,
@@ -56,7 +54,6 @@ type TourCreateCall = {
     currency: string;
     isPublished: boolean;
     isFeatured: boolean;
-    gallery: unknown[];
   };
 };
 
@@ -70,14 +67,11 @@ function makeMedia() {
     syncAssets: jest.fn().mockResolvedValue(undefined),
     deleteForOwner: jest.fn().mockResolvedValue(undefined),
     attachToOwners: jest.fn(
-      async (_t: unknown, items: Array<Record<string, unknown>>) =>
-        items.map((i) => ({ ...i, media: [] })),
+      (_t: unknown, items: Array<Record<string, unknown>>) =>
+        Promise.resolve(items.map((i) => ({ ...i, media: [] }))),
     ),
-    attachToOwner: jest.fn(
-      async (_t: unknown, item: Record<string, unknown>) => ({
-        ...item,
-        media: [],
-      }),
+    attachToOwner: jest.fn((_t: unknown, item: Record<string, unknown>) =>
+      Promise.resolve({ ...item, media: [] }),
     ),
   };
 }
@@ -110,10 +104,12 @@ function makePrisma(overrides: Partial<Record<string, jest.Mock>> = {}) {
   // same mock client so `tx.tour.*` assertions still hold.
   client.$transaction =
     overrides.transaction ??
-    jest.fn(async (arg: unknown) =>
-      typeof arg === 'function'
-        ? (arg as (tx: unknown) => unknown)(client)
-        : Promise.all(arg as Promise<unknown>[]),
+    jest.fn((arg: unknown) =>
+      Promise.resolve(
+        typeof arg === 'function'
+          ? (arg as (tx: unknown) => unknown)(client)
+          : Promise.all(arg as Promise<unknown>[]),
+      ),
     );
   return client;
 }
@@ -166,7 +162,6 @@ describe('ToursService', () => {
       expect(arg.data.currency).toBe('USD'); // uppercased
       expect(arg.data.isPublished).toBe(false); // default draft
       expect(arg.data.isFeatured).toBe(false);
-      expect(arg.data.gallery).toEqual([]);
     });
 
     it('translates Prisma P2002 into ConflictException TOUR_SLUG_EXISTS', async () => {

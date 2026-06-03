@@ -20,9 +20,6 @@ export class DestinationDto {
   @ApiProperty({ nullable: true, type: String })
   region!: string | null;
 
-  @ApiProperty({ nullable: true, type: String, format: 'uri' })
-  heroImage!: string | null;
-
   @ApiProperty({ nullable: true, type: String })
   descriptionEn!: string | null;
 

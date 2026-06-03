@@ -482,19 +482,22 @@ async function main(): Promise<void> {
   console.log(`[seed] upserting ${DESTINATIONS.length} destinations...`);
   const destinationIdBySlug = new Map<string, string>();
   for (const d of DESTINATIONS) {
+    // `heroImage` is intentionally NOT persisted — media now lives in the
+    // `media_assets` table (Cloudinary). The seed objects still carry the old
+    // stock URLs for reference only; real media is uploaded by admins.
+    const destFields = {
+      slug: d.slug,
+      nameEn: d.nameEn,
+      nameVi: d.nameVi,
+      country: d.country,
+      region: d.region,
+      descriptionEn: d.descriptionEn,
+      descriptionVi: d.descriptionVi,
+    };
     const row = await prisma.destination.upsert({
       where: { slug: d.slug },
-      create: { ...d, isActive: true },
-      update: {
-        nameEn: d.nameEn,
-        nameVi: d.nameVi,
-        country: d.country,
-        region: d.region,
-        heroImage: d.heroImage,
-        descriptionEn: d.descriptionEn,
-        descriptionVi: d.descriptionVi,
-        isActive: true,
-      },
+      create: { ...destFields, isActive: true },
+      update: { ...destFields, isActive: true },
     });
     destinationIdBySlug.set(d.slug, row.id);
   }
@@ -524,8 +527,6 @@ async function main(): Promise<void> {
       difficulty: t.difficulty,
       isPublished: t.isPublished,
       isFeatured: t.isFeatured,
-      heroImage: t.heroImage,
-      gallery: t.gallery,
       included: t.included,
       excluded: t.excluded,
       meetingPoint: t.meetingPoint,

@@ -322,7 +322,6 @@ export class DestinationsService {
       nameVi: body.nameVi,
       country: body.country ?? 'Vietnam',
       region: body.region,
-      heroImage: body.heroImage,
       descriptionEn: body.descriptionEn,
       descriptionVi: body.descriptionVi,
       isActive: body.isActive ?? true,

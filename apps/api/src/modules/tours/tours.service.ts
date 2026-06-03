@@ -221,7 +221,7 @@ export class ToursService {
    * explicit):
    *  - `currency` → 'USD' (uppercased)
    *  - `category` → DAY
-   *  - `gallery / included / excluded` → empty arrays
+   *  - `included / excluded` → empty arrays
    *  - `isPublished / isFeatured` → false (drafts by default — admin can
    *    choose to publish on creation)
    *
@@ -440,8 +440,6 @@ export class ToursService {
       difficulty: body.difficulty,
       isPublished: body.isPublished ?? false,
       isFeatured: body.isFeatured ?? false,
-      heroImage: body.heroImage,
-      gallery: body.gallery ?? [],
       included: body.included ?? [],
       excluded: body.excluded ?? [],
       meetingPoint: body.meetingPoint,
@@ -477,8 +475,6 @@ export class ToursService {
     if (body.difficulty !== undefined) data.difficulty = body.difficulty;
     if (body.isPublished !== undefined) data.isPublished = body.isPublished;
     if (body.isFeatured !== undefined) data.isFeatured = body.isFeatured;
-    if (body.heroImage !== undefined) data.heroImage = body.heroImage;
-    if (body.gallery !== undefined) data.gallery = body.gallery;
     if (body.included !== undefined) data.included = body.included;
     if (body.excluded !== undefined) data.excluded = body.excluded;
     if (body.meetingPoint !== undefined) data.meetingPoint = body.meetingPoint;
