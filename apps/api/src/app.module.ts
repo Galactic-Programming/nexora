@@ -5,6 +5,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import {
   appConfig,
+  cloudinaryConfig,
   emailConfig,
   envValidationSchema,
   stripeConfig,
@@ -70,6 +71,7 @@ import { UsersModule } from './modules/users/users.module';
       load: [
         appConfig,
         supabaseConfig,
+        cloudinaryConfig,
         stripeConfig,
         emailConfig,
         throttlerConfig,

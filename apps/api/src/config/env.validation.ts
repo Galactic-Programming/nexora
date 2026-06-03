@@ -53,7 +53,18 @@ export const envValidationSchema = Joi.object({
   // Storage bucket name used by `/admin/uploads/signed-url`. The bucket must
   // exist in Supabase Storage with the right policies — see the uploads
   // runbook. Default matches the convention used in the runbook.
+  // LEGACY: superseded by Cloudinary (see docs/planning/cloudinary-media-migration.md).
+  // Removed in Phase 4 once media moves off Supabase Storage.
   SUPABASE_STORAGE_BUCKET: Joi.string().default('tourism-assets'),
+
+  // ── Cloudinary (photos + clips) ─────────────────────────────────────────────
+  // Replaces Supabase Storage for media. `apiSecret` is used server-side to
+  // sign upload requests (`/admin/uploads/signed-url`) — never exposed to the FE.
+  CLOUDINARY_CLOUD_NAME: Joi.string().required(),
+  CLOUDINARY_API_KEY: Joi.string().required(),
+  CLOUDINARY_API_SECRET: Joi.string().required(),
+  // Root folder under which all assets land (e.g. `tourism/tours/hero`).
+  CLOUDINARY_UPLOAD_FOLDER: Joi.string().default('tourism'),
 
   // ── Stripe (test or live) ──────────────────────────────────────────────────
   STRIPE_SECRET_KEY: Joi.string().required(),
