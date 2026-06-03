@@ -27,6 +27,12 @@ export async function updateSupabaseSession(
       },
     },
   );
-  await supabase.auth.getUser();
+  // A refresh failure (transient Supabase outage, expired refresh token) must
+  // not crash the whole middleware chain and take down every page load.
+  try {
+    await supabase.auth.getUser();
+  } catch {
+    // Non-fatal: continue with the response as-is.
+  }
   return response;
 }
