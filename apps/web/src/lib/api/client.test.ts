@@ -1,4 +1,3 @@
-// @vitest-environment node
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { unwrapEnvelope } from "./client";
 import { ApiError } from "./errors";
@@ -34,8 +33,12 @@ describe("unwrapEnvelope", () => {
   });
 
   it("passes through non-JSON responses untouched", async () => {
-    const res = new Response("ok", { status: 204 });
+    const res = new Response("ok", {
+      status: 200,
+      headers: { "content-type": "text/plain" },
+    });
     const out = await unwrapEnvelope(res);
-    expect(out.status).toBe(204);
+    expect(out.status).toBe(200);
+    expect(await out.text()).toBe("ok");
   });
 });
