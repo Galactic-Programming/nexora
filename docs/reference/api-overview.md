@@ -33,6 +33,7 @@ All responses use:
 | `DESTINATION_HAS_TOURS` | 409 | Cannot delete a destination that has tours |
 | `TOUR_SLUG_EXISTS` | 409 | Tour slug is already in use |
 | `TOUR_HAS_BOOKINGS` | 409 | Cannot delete a tour that has bookings |
+| `MEDIA_FORMAT_REJECTED` | 400 | Upload file type doesn't match the purpose's resource type (image/video) |
 | `TOO_MANY_REQUESTS` | 429 | Throttler kicked in |
 | `INTERNAL_SERVER_ERROR` | 500 | Unhandled |
 
@@ -87,6 +88,13 @@ Slug rule: `^[a-z0-9]+(?:-[a-z0-9]+)*$` (kebab-case, 2–80 chars).
 | DELETE | `/admin/tours/:slug` | 🛡 | Hard delete. 409 `TOUR_HAS_BOOKINGS` when bookings reference the tour. |
 
 Tour slug rule: same kebab-case as destinations but max 120 chars.
+
+**Media (Cloudinary):** Tours and Destinations accept an optional `media[]` on
+create/update — the **full** desired set (replace-all per owner) of
+`{ publicId, type, role, width?, height?, durationSec?, posterId?, sortOrder? }`.
+Every read returns a built `media[]` of `{ url, type, role, posterUrl?, … }`
+(delivery URLs derived from `publicId`). The old `heroImage`/`gallery` fields
+were removed in the Cloudinary migration. See [`docs/runbooks/uploads.md`](../runbooks/uploads.md).
 
 ### Sprint B2.3 — Tours (Public catalog)
 
@@ -151,29 +159,33 @@ Error codes:
 - `SEATS_TOTAL_BELOW_BOOKED` (400) — update would drop capacity below seats already sold
 - `DEPARTURE_HAS_BOOKINGS` (409) — delete refused because seats are sold (or P2003 race fallback)
 
-### Sprint B2.6 — Uploads (Signed URL admin)
+### Sprint B2.6 — Uploads (Cloudinary signed admin)
 
 | Method | Path | Access | Description |
 | --- | --- | --- | --- |
-| POST | `/admin/uploads/signed-url` | 🛡 | Mint a Supabase Storage signed upload URL. FE then PUTs the file directly to Supabase — Nest never touches the bytes. |
+| POST | `/admin/uploads/signed-url` | 🛡 | Compute a Cloudinary upload **signature**. FE then POSTs the file directly to Cloudinary — Nest never touches the bytes. |
 
-Request body: `{ purpose, filename, contentType? }`. `purpose` enum maps to a folder under the bucket:
+Request body: `{ purpose, filename, contentType? }`. `purpose` maps to a Cloudinary folder + resource type:
 
-| Purpose | Folder |
-| --- | --- |
-| `TOUR_HERO` | `tours/hero/` |
-| `TOUR_GALLERY` | `tours/gallery/` |
-| `DESTINATION_HERO` | `destinations/hero/` |
-| `USER_AVATAR` | `users/avatars/` |
+| Purpose | Folder | Resource |
+| --- | --- | --- |
+| `TOUR_HERO` | `tourism/tours/hero` | image |
+| `TOUR_GALLERY` | `tourism/tours/gallery` | image |
+| `TOUR_VIDEO` | `tourism/tours/video` | video |
+| `DESTINATION_HERO` | `tourism/destinations/hero` | image |
+| `DESTINATION_VIDEO` | `tourism/destinations/video` | video |
+| `USER_AVATAR` | `tourism/users/avatars` | image |
 
-Response: `{ uploadUrl, token, path, bucket }`. Path follows `<folder>/<unix-ms>-<sanitized-stem>.<ext>` to guarantee uniqueness.
+Response: `{ signature, timestamp, apiKey, cloudName, folder, publicId, resourceType, uploadUrl }`. The signature covers `{ folder, public_id, timestamp }`; `public_id` is `<unix-ms>-<sanitized-stem>` (no extension — Cloudinary appends the format).
+
+After uploading, the FE persists the result on the parent resource via its `media[]` payload (see Tours/Destinations below) — there is no separate confirm endpoint.
 
 Errors:
 
 - `400 VALIDATION_ERROR` — DTO rejected the request (bad purpose / filename / contentType)
-- `502 STORAGE_SIGN_FAILED` — Supabase Storage rejected the sign request (bucket missing, project paused, service role key wrong)
+- `400 MEDIA_FORMAT_REJECTED` — extension/contentType doesn't match the purpose's resource type
 
-Full flow + bucket setup: [`docs/runbooks/uploads.md`](../runbooks/uploads.md).
+Full flow + Cloudinary setup: [`docs/runbooks/uploads.md`](../runbooks/uploads.md).
 
 ### Sprint B2.7 — Seed script
 
@@ -324,7 +336,7 @@ Errors:
 | DELETE | `/wishlist/:tourId` | 🔒 customer | Remove a tour. Idempotent. |
 | GET | `/wishlist/me` | 🔒 customer | Caller's list newest-first, with tour preview joined. |
 
-Schema: composite-PK `(userId, tourId)`. The marketing preview joined into `GET /me` includes slug, both titles, summaries, hero image, basePrice, currency, and durationDays — enough for a card without a second fetch.
+Schema: composite-PK `(userId, tourId)`. The marketing preview joined into `GET /me` includes slug, both titles, summaries, basePrice, currency, durationDays, and a Cloudinary `media[]` array (for the card hero) — enough for a card without a second fetch.
 
 Errors:
 
