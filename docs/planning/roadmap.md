@@ -127,12 +127,14 @@ Schema + service tweaks so the FE customer template can wire 1:1 to the Figma de
 
 ## Frontend phase (after BE B0–B4.6)
 
-Customer FE first, admin FE next. Both repos are siblings of `tourism-be-api`; BE-first sprint discipline stays in effect (no mid-sprint schema changes — gaps go to BACKLOG).
+Customer FE first, admin FE next. Both live inside this Turborepo as `apps/web` (customer) and `apps/admin` (admin); BE-first sprint discipline stays in effect (no mid-sprint schema changes — gaps go to BACKLOG).
 
-| Phase | Repo | Status | Plan doc |
+> **Status correction (2026-06-03):** an earlier standalone customer FE (separate `tourism-frontend-customer` repo, which had reached ~C1.4) was **discarded** when the project consolidated into this Turborepo. `apps/web` and `apps/admin` are both **empty templates — no FE work has been done.** The prior C0–C1.4 progress does **not** carry over and any earlier "in progress" status here was stale.
+
+| Phase | App | Status | Plan doc |
 | --- | --- | --- | --- |
-| Customer FE | `tourism-frontend-customer/` | 🚧 C0 ✅ + C1.1+C1.2+C1.3+C1.4 ✅ (2026-05-22) — C1.5 next | See `tourism-frontend-customer/docs/plan.md` — 4 sprints C0→C3, ~6 weeks |
-| Admin FE | `tourism-frontend-admin/` | ⬜ Not started | `tourism-frontend-admin/docs/plan.md` (written after customer FE lands) |
+| Customer FE | `apps/web` | ⬜ Not started (empty template) | TBD |
+| Admin FE | `apps/admin` | ⬜ Not started (empty template) | TBD |
 
 ---
 
@@ -147,13 +149,13 @@ Triggered during customer FE Sprint C0 when `openapi-typescript-codegen` was wir
 | B4.7.3 | Wire `@ApiOkResponse` / `@ApiCreatedResponse` / `@ApiNoContentResponse` on all 12 customer-facing + admin controllers (25 endpoints total) | ✅ | n/a | api-overview |
 | B4.7.4 | Verify: BE `pnpm test` 87/87 pass + `tsc --noEmit` clean | ✅ | n/a | n/a |
 | B4.7.5 | Add `postinstall: prisma generate` to `package.json` (avoids TS2305 after `pnpm install`) | ✅ | n/a | runbooks/local-dev |
-| B4.7.6 | Regenerate FE API client → 31 typed models (was 15) | ✅ | n/a | FE plan |
+| B4.7.6 | Regenerate FE API client → 31 typed models (was 15) | ⬜ | n/a | FE — done previously in the discarded `tourism-frontend-customer` repo; must be redone when `apps/web` is built. BE-side DTO coverage (B4.7.1–B4.7.5) stands and is verified. |
 
 ---
 
 ## Sprint B5 — Hardening + Production
 
-> ⏸ **On hold** until customer FE + admin FE both land. Deploying BE alone forces redeploys whenever the FE finds gaps; we'd rather deploy a complete system once. See [`sprints/b4.6-figma-alignment.md`](sprints/b4.6-figma-alignment.md) § "Why pause B5" and `tourism-frontend-customer/docs/plan.md`.
+> ⏸ **On hold** until customer FE + admin FE both land. Deploying BE alone forces redeploys whenever the FE finds gaps; we'd rather deploy a complete system once. See [`sprints/b4.6-figma-alignment.md`](sprints/b4.6-figma-alignment.md) § "Why pause B5". (FE now lives in `apps/web` + `apps/admin` — both empty templates, not started.)
 
 | # | Sub-feature | Status | Postman | Docs |
 | --- | --- | --- | --- | --- |

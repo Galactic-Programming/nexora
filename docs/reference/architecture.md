@@ -14,7 +14,7 @@
                     Supabase JWKS (verify JWT)
 ```
 
-- 3 separate repos: `tourism-be-api` (this), `tourism-frontend-customer`, `tourism-frontend-admin`.
+- Single Turborepo monorepo: `apps/api` (this NestJS service), `apps/web` (customer FE), `apps/admin` (admin FE). The two FE apps are currently empty templates — no FE work done yet.
 - Backend is a single NestJS 11 service. No microservices for the graduation scope.
 - Supabase Auth handles login on the frontend; this API verifies the JWT and mirrors users into a local `users` table.
 
