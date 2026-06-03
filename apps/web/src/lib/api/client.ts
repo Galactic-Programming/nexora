@@ -22,12 +22,16 @@ export async function unwrapEnvelope(response: Response): Promise<Response> {
   if (body.error) {
     throw new ApiError(body.error.code, body.error.message, response.status);
   }
+  // `meta` (pagination) is intentionally NOT forwarded here. Callers that need
+  // it (list endpoints) will gain a dedicated helper when pagination is built.
   return new Response(JSON.stringify(body.data), {
     status: response.status,
     headers: { "content-type": "application/json" },
   });
 }
 
+// Stateless singleton — safe to share across every client. If this ever needs
+// per-client state, move it into createApiClient instead.
 const envelopeMiddleware: Middleware = {
   async onResponse({ response }) {
     return unwrapEnvelope(response);
@@ -35,8 +39,8 @@ const envelopeMiddleware: Middleware = {
 };
 
 /**
- * Server-side client. Pass an Authorization header per-call for authed routes
- * (later phases); public routes need no token.
+ * Typed API client. Use from Server Components or Route Handlers; pass an
+ * access token for authed routes (later phases), omit it for public routes.
  */
 export function createApiClient(accessToken?: string) {
   const client = createClient<paths>({
