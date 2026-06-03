@@ -46,9 +46,10 @@ describe('MediaService', () => {
       expect(deleteMany).toHaveBeenCalledWith({
         where: { ownerType: 'TOUR', ownerId: 't-1' },
       });
-      const createArg = createMany.mock.calls[0][0] as {
-        data: Array<{ sortOrder: number; ownerId: string; role: string }>;
-      };
+      const createCalls = createMany.mock.calls as unknown as Array<
+        [{ data: Array<{ sortOrder: number; ownerId: string; role: string }> }]
+      >;
+      const createArg = createCalls[0][0];
       expect(createArg.data).toHaveLength(2);
       // Falls back to array index for sortOrder when omitted.
       expect(createArg.data[0].sortOrder).toBe(0);

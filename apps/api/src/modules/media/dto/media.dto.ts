@@ -87,7 +87,11 @@ export class MediaInputDto {
   @MaxLength(300)
   posterId?: string;
 
-  @ApiPropertyOptional({ example: 0, description: 'Display order.', minimum: 0 })
+  @ApiPropertyOptional({
+    example: 0,
+    description: 'Display order.',
+    minimum: 0,
+  })
   @IsOptional()
   @IsInt()
   @Min(0)
