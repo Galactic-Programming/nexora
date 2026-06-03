@@ -12,7 +12,9 @@ export type Env = z.infer<typeof envSchema>;
 export function parseEnv(source: Record<string, string | undefined>): Env {
   const result = envSchema.safeParse(source);
   if (!result.success) {
-    const fields = result.error.issues.map((i) => i.path.join(".")).join(", ");
+    const fields = result.error.issues
+      .map((i) => `${i.path.join(".")} (${i.message})`)
+      .join(", ");
     throw new Error(`Invalid or missing environment variables: ${fields}`);
   }
   return result.data;

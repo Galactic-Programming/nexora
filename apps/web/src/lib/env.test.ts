@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseEnv } from "./env";
+import { parseEnv, type Env } from "./env";
 
 const valid = {
   NEXT_PUBLIC_API_BASE_URL: "http://localhost:3000/api/v1",
@@ -9,7 +9,9 @@ const valid = {
 
 describe("parseEnv", () => {
   it("returns typed env when all vars are present and valid", () => {
-    expect(parseEnv(valid)).toEqual(valid);
+    const result: Env = parseEnv(valid);
+    expect(result).toEqual(valid);
+    expect(result.NEXT_PUBLIC_API_BASE_URL).toBe(valid.NEXT_PUBLIC_API_BASE_URL);
   });
 
   it("throws listing the missing variable names", () => {
