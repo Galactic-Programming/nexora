@@ -53,7 +53,7 @@ docs/
 │   ├── seed.md                `pnpm db:seed` catalog
 │   ├── postman-auth.md        getting real customer/admin JWTs for Newman
 │   ├── stripe-testing.md      Checkout + webhook loop (Stripe CLI / harness)
-│   ├── uploads.md             Supabase Storage signed-URL flow
+│   ├── uploads.md             Cloudinary signed-upload flow (photos + clips)
 │   └── email.md               Resend transactional email setup
 ├── planning/                  cross-repo planning
 │   ├── roadmap.md             sprint roadmap (BE + planned FE)

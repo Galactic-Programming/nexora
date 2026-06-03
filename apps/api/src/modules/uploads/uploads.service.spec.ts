@@ -1,7 +1,25 @@
-import { BadGatewayException, Logger } from '@nestjs/common';
+import { BadRequestException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UploadPurpose } from './dto/create-signed-upload-url.dto';
-import { UploadsService } from './uploads.service';
+import { ResourceType, UploadsService } from './uploads.service';
+
+// Mock the Cloudinary SDK — unit tests never hit the network or do real crypto.
+jest.mock('cloudinary', () => ({
+  v2: {
+    config: jest.fn(),
+    utils: {
+      api_sign_request: jest.fn(() => 'fake-signature'),
+    },
+  },
+}));
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { v2: cloudinary } = require('cloudinary') as {
+  v2: {
+    config: jest.Mock;
+    utils: { api_sign_request: jest.Mock };
+  };
+};
 
 beforeAll(() => {
   jest.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
@@ -11,136 +29,197 @@ afterAll(() => {
   jest.restoreAllMocks();
 });
 
-/**
- * Builds a fake `SupabaseClient` whose `.storage.from(...).createSignedUploadUrl(...)`
- * returns whatever the test wants. We never hit Supabase from unit tests.
- */
-function fakeSupabase(createSignedUploadUrl: jest.Mock): {
-  storage: { from: jest.Mock };
-} {
-  return {
-    storage: {
-      from: jest.fn(() => ({ createSignedUploadUrl })),
-    },
-  };
-}
+const CONFIG_VALUES: Record<string, string> = {
+  'cloudinary.cloudName': 'demo-cloud',
+  'cloudinary.apiKey': 'demo-key',
+  'cloudinary.apiSecret': 'demo-secret',
+  'cloudinary.uploadFolder': 'tourism',
+};
 
-function makeConfig(
-  values: Record<string, string> = {
-    'supabase.url': 'https://test.supabase.co',
-    'supabase.serviceRoleKey': 'svc-role-key',
-    'supabase.storageBucket': 'tourism-assets',
-  },
-): ConfigService {
+function makeConfig(): ConfigService {
   return {
     getOrThrow: jest.fn((key: string) => {
-      const v = values[key];
+      const v = CONFIG_VALUES[key];
       if (v === undefined) throw new Error(`missing config: ${key}`);
       return v;
     }),
   } as unknown as ConfigService;
 }
 
-/**
- * Bypasses `onModuleInit` (which constructs a real Supabase client) by
- * injecting the fake directly. Lets us test path derivation + error
- * mapping without touching the network.
- */
-function buildSvc(createSignedUploadUrl: jest.Mock) {
+/** Builds a fully-initialised service (runs onModuleInit against the mock). */
+function buildSvc(): UploadsService {
   const svc = new UploadsService(makeConfig());
-  Object.assign(svc as unknown as Record<string, unknown>, {
-    supabase: fakeSupabase(createSignedUploadUrl),
-    bucket: 'tourism-assets',
-  });
+  svc.onModuleInit();
   return svc;
 }
 
-/** Cast `mock.calls` to a typed `[string]` argv so we can index safely. */
-function firstPathArg(spy: jest.Mock): string {
-  const calls = spy.mock.calls as unknown as [string][];
-  return calls[0][0];
+/** Runs `fn`, returning the thrown error (or fails if nothing was thrown). */
+function captureError(fn: () => unknown): unknown {
+  try {
+    fn();
+  } catch (e) {
+    return e;
+  }
+  throw new Error('expected function to throw, but it did not');
+}
+
+/** Typed accessor for the params passed to the mocked api_sign_request. */
+function signedParams(): Record<string, unknown> {
+  const calls = cloudinary.utils.api_sign_request.mock.calls as unknown as [
+    Record<string, unknown>,
+    string,
+  ][];
+  return calls[calls.length - 1][0];
 }
 
 describe('UploadsService', () => {
-  describe('createSignedUploadUrl', () => {
-    it('routes TOUR_HERO into the tours/hero folder with timestamp prefix', async () => {
-      const createSignedUploadUrl = jest.fn().mockResolvedValue({
-        data: { signedUrl: 'https://signed', token: 'tok', path: 'ignored' },
-        error: null,
-      });
-      const svc = buildSvc(createSignedUploadUrl);
+  beforeEach(() => {
+    cloudinary.utils.api_sign_request.mockClear();
+    cloudinary.config.mockClear();
+  });
 
-      const result = await svc.createSignedUploadUrl({
+  describe('createSignedUploadParams', () => {
+    it('configures the Cloudinary SDK on init', () => {
+      buildSvc();
+      expect(cloudinary.config).toHaveBeenCalledWith(
+        expect.objectContaining({
+          cloud_name: 'demo-cloud',
+          api_key: 'demo-key',
+          api_secret: 'demo-secret',
+          secure: true,
+        }),
+      );
+    });
+
+    it('routes TOUR_HERO into tours/hero with an image resource type and ext-less public_id', () => {
+      const svc = buildSvc();
+
+      const result = svc.createSignedUploadParams({
         purpose: UploadPurpose.TOUR_HERO,
         filename: 'My Hero Shot.JPG',
       });
 
-      const pathArg = firstPathArg(createSignedUploadUrl);
-      expect(pathArg).toMatch(/^tours\/hero\/\d+-my-hero-shot\.jpg$/);
-      expect(result.bucket).toBe('tourism-assets');
-      expect(result.uploadUrl).toBe('https://signed');
-      expect(result.token).toBe('tok');
+      expect(result.folder).toBe('tourism/tours/hero');
+      expect(result.resourceType).toBe('image');
+      expect(result.publicId).toMatch(/^\d+-my-hero-shot$/);
+      expect(result.publicId).not.toContain('.jpg');
+      expect(result.signature).toBe('fake-signature');
+      expect(result.apiKey).toBe('demo-key');
+      expect(result.cloudName).toBe('demo-cloud');
+      expect(result.uploadUrl).toBe(
+        'https://api.cloudinary.com/v1_1/demo-cloud/image/upload',
+      );
     });
 
-    it('maps every purpose to its declared folder', async () => {
-      const expectations: Array<[UploadPurpose, RegExp]> = [
-        [UploadPurpose.TOUR_GALLERY, /^tours\/gallery\//],
-        [UploadPurpose.DESTINATION_HERO, /^destinations\/hero\//],
-        [UploadPurpose.USER_AVATAR, /^users\/avatars\//],
+    it('signs exactly { folder, public_id, timestamp }', () => {
+      const svc = buildSvc();
+
+      svc.createSignedUploadParams({
+        purpose: UploadPurpose.TOUR_GALLERY,
+        filename: 'shot.png',
+      });
+
+      const params = signedParams();
+      expect(Object.keys(params).sort()).toEqual([
+        'folder',
+        'public_id',
+        'timestamp',
+      ]);
+      expect(params.folder).toBe('tourism/tours/gallery');
+      expect(typeof params.timestamp).toBe('number');
+    });
+
+    it('maps each purpose to its folder and resource type', () => {
+      const svc = buildSvc();
+      const cases: Array<[UploadPurpose, string, ResourceType, string]> = [
+        [UploadPurpose.TOUR_GALLERY, 'tourism/tours/gallery', 'image', 'a.png'],
+        [UploadPurpose.TOUR_VIDEO, 'tourism/tours/video', 'video', 'a.mp4'],
+        [
+          UploadPurpose.DESTINATION_HERO,
+          'tourism/destinations/hero',
+          'image',
+          'a.webp',
+        ],
+        [
+          UploadPurpose.DESTINATION_VIDEO,
+          'tourism/destinations/video',
+          'video',
+          'a.webm',
+        ],
+        [UploadPurpose.USER_AVATAR, 'tourism/users/avatars', 'image', 'a.png'],
       ];
 
-      for (const [purpose, folderRe] of expectations) {
-        const spy = jest.fn().mockResolvedValue({
-          data: { signedUrl: 'u', token: 't', path: 'p' },
-          error: null,
-        });
-        const svc = buildSvc(spy);
-        await svc.createSignedUploadUrl({ purpose, filename: 'x.png' });
-
-        expect(firstPathArg(spy)).toMatch(folderRe);
+      for (const [purpose, folder, resourceType, filename] of cases) {
+        const result = svc.createSignedUploadParams({ purpose, filename });
+        expect(result.folder).toBe(folder);
+        expect(result.resourceType).toBe(resourceType);
       }
     });
 
-    it('strips path-traversal attempts and collapses unsafe chars in the stem', async () => {
-      const createSignedUploadUrl = jest.fn().mockResolvedValue({
-        data: { signedUrl: 'u', token: 't', path: 'p' },
-        error: null,
-      });
-      const svc = buildSvc(createSignedUploadUrl);
+    it('rejects a video file submitted for an image purpose (400)', () => {
+      const svc = buildSvc();
 
-      // Bypass DTO regex (the controller already enforces it) — exercise the
-      // service's own defence-in-depth sanitization.
-      await svc.createSignedUploadUrl({
+      expect(() =>
+        svc.createSignedUploadParams({
+          purpose: UploadPurpose.TOUR_HERO,
+          filename: 'clip.mp4',
+        }),
+      ).toThrow(BadRequestException);
+    });
+
+    it('rejects an image file submitted for a video purpose (400)', () => {
+      const svc = buildSvc();
+
+      expect(() =>
+        svc.createSignedUploadParams({
+          purpose: UploadPurpose.TOUR_VIDEO,
+          filename: 'poster.jpg',
+        }),
+      ).toThrow(BadRequestException);
+    });
+
+    it('rejects a disallowed extension with MEDIA_FORMAT_REJECTED', () => {
+      const svc = buildSvc();
+
+      const err = captureError(() =>
+        svc.createSignedUploadParams({
+          purpose: UploadPurpose.TOUR_GALLERY,
+          filename: 'malware.exe',
+        }),
+      );
+      expect(err).toBeInstanceOf(BadRequestException);
+      expect((err as BadRequestException).getResponse()).toMatchObject({
+        code: 'MEDIA_FORMAT_REJECTED',
+      });
+    });
+
+    it('rejects a contentType whose major type disagrees with the purpose', () => {
+      const svc = buildSvc();
+
+      const err = captureError(() =>
+        svc.createSignedUploadParams({
+          purpose: UploadPurpose.TOUR_HERO,
+          filename: 'photo.png',
+          contentType: 'video/mp4',
+        }),
+      );
+      expect(err).toBeInstanceOf(BadRequestException);
+      expect((err as BadRequestException).getResponse()).toMatchObject({
+        code: 'MEDIA_FORMAT_REJECTED',
+      });
+    });
+
+    it('strips path-traversal attempts when deriving the public_id', () => {
+      const svc = buildSvc();
+
+      const result = svc.createSignedUploadParams({
         purpose: UploadPurpose.TOUR_GALLERY,
         filename: '../../../etc/passwd.PNG',
       });
 
-      const pathArg = firstPathArg(createSignedUploadUrl);
-      expect(pathArg).not.toContain('..');
-      expect(pathArg).not.toContain('/etc/');
-      // Final segment should be `<ts>-passwd.png`.
-      expect(pathArg).toMatch(/^tours\/gallery\/\d+-passwd\.png$/);
-    });
-
-    it('wraps Supabase Storage errors as 502 STORAGE_SIGN_FAILED', async () => {
-      const createSignedUploadUrl = jest.fn().mockResolvedValue({
-        data: null,
-        error: { message: 'bucket not found' },
-      });
-      const svc = buildSvc(createSignedUploadUrl);
-
-      await expect(
-        svc.createSignedUploadUrl({
-          purpose: UploadPurpose.TOUR_HERO,
-          filename: 'a.jpg',
-        }),
-      ).rejects.toBeInstanceOf(BadGatewayException);
-      await expect(
-        svc.createSignedUploadUrl({
-          purpose: UploadPurpose.TOUR_HERO,
-          filename: 'a.jpg',
-        }),
-      ).rejects.toMatchObject({ response: { code: 'STORAGE_SIGN_FAILED' } });
+      expect(result.publicId).not.toContain('..');
+      expect(result.publicId).not.toContain('/');
+      expect(result.publicId).toMatch(/^\d+-passwd$/);
     });
   });
 });

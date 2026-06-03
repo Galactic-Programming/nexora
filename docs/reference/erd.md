@@ -38,7 +38,6 @@ erDiagram
         string name_vi
         string country
         string region
-        string hero_image
         text description_en
         text description_vi
         bool is_active
@@ -60,8 +59,6 @@ erDiagram
         string difficulty
         bool is_published
         bool is_featured
-        string hero_image
-        string_array gallery
         jsonb included
         jsonb excluded
         string meeting_point
@@ -133,7 +130,29 @@ erDiagram
         jsonb payload
         timestamp processed_at
     }
+
+    MediaAsset {
+        uuid id PK
+        string public_id "Cloudinary public_id"
+        enum type "IMAGE|VIDEO"
+        enum owner_type "TOUR|DESTINATION|USER"
+        uuid owner_id "polymorphic — no hard FK"
+        string role "hero|gallery|avatar"
+        string format
+        int width
+        int height
+        float duration_sec
+        string poster_id
+        int bytes
+        int sort_order
+    }
 ```
+
+> **`MediaAsset` is polymorphic** (`owner_type` + `owner_id`) and has **no
+> DB-level FK** to its owner — it is therefore not drawn with a relation edge
+> above. Referential integrity + orphan cleanup are enforced in `MediaService`
+> inside the same transaction that mutates the owner. Photos/clips live in
+> Cloudinary; we store `public_id` and build delivery URLs at read time.
 
 ## Indexes (critical)
 
@@ -148,6 +167,7 @@ erDiagram
 | `bookings` | `(stripe_session_id)` UNIQUE | Webhook lookup |
 | `reviews` | `(tour_id, is_approved)` | Show approved reviews |
 | `payment_events` | `(stripe_event_id)` UNIQUE | Webhook idempotency |
+| `media_assets` | `(owner_type, owner_id, role)` | Batch-load an owner's media |
 
 ## Bilingual content strategy
 
@@ -165,3 +185,8 @@ pnpm --filter @tourism/api exec prisma migrate deploy
 
 `prisma.config.ts` reads `DIRECT_URL` (port 5432) for migration commands;
 runtime `PrismaClient` reads `DATABASE_URL` (Supabase pooler, port 6543).
+
+> `migrate dev` refuses to run in a non-interactive shell when a change is
+> data-lossy (e.g. dropping a populated column). In that case author the
+> `migrations/<ts>_<name>/migration.sql` by hand and apply it with
+> `migrate deploy`.

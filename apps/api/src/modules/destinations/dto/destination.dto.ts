@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { MediaItemDto } from '../../media/dto/media.dto';
 
 export class DestinationDto {
   @ApiProperty({ format: 'uuid' })
@@ -19,9 +20,6 @@ export class DestinationDto {
   @ApiProperty({ nullable: true, type: String })
   region!: string | null;
 
-  @ApiProperty({ nullable: true, type: String, format: 'uri' })
-  heroImage!: string | null;
-
   @ApiProperty({ nullable: true, type: String })
   descriptionEn!: string | null;
 
@@ -30,6 +28,12 @@ export class DestinationDto {
 
   @ApiProperty()
   isActive!: boolean;
+
+  @ApiProperty({
+    type: () => [MediaItemDto],
+    description: 'Cloudinary-backed media (hero/gallery/video).',
+  })
+  media!: MediaItemDto[];
 
   @ApiProperty({ format: 'date-time' })
   createdAt!: string;

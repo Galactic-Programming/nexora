@@ -1,6 +1,6 @@
 {
   "name": "Uploads (Admin)",
-  "description": "Mint short-lived signed upload URLs for Supabase Storage. The backend does NOT proxy file bytes — FE uploads directly to the signed URL.\n\n**Pre-conditions:**\n1. Supabase Storage bucket `tourism-assets` exists (see `docs/runbooks/uploads.md`).\n2. Backend env has `SUPABASE_SERVICE_ROLE_KEY` set — signing requires the service role.\n\nThe response carries `{ uploadUrl, token, path, bucket }`. FE then calls `supabase.storage.from(bucket).uploadToSignedUrl(path, token, file)`.",
+  "description": "Compute Cloudinary upload signatures. The backend does NOT proxy file bytes — the FE POSTs the file directly to Cloudinary using the returned signature, then persists the resulting `publicId` via the resource's `media[]` payload.\n\n**Pre-conditions:**\n1. Backend env has `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` set.\n\nThe response carries `{ signature, timestamp, apiKey, cloudName, folder, publicId, resourceType, uploadUrl }`. See `docs/runbooks/uploads.md`.",
   "item": [
     {
       "name": "POST /admin/uploads/signed-url (tour hero)",
@@ -16,7 +16,7 @@
           "host": ["{{baseUrl}}"],
           "path": ["admin", "uploads", "signed-url"]
         },
-        "description": "Returns 200 + envelope (no resource is persisted yet — this just reserves a path).\n\n**purpose enum:** `TOUR_HERO | TOUR_GALLERY | DESTINATION_HERO | USER_AVATAR`. Each maps to a fixed folder under the bucket (see runbook for the layout)."
+        "description": "Returns 200 + the signed params envelope (no resource is persisted yet).\n\n**purpose enum:** `TOUR_HERO | TOUR_GALLERY | TOUR_VIDEO | DESTINATION_HERO | DESTINATION_VIDEO | USER_AVATAR`. Each maps to a fixed Cloudinary folder + resource type (see runbook)."
       },
       "response": [
         {
@@ -30,10 +30,10 @@
           "code": 200,
           "_postman_previewlanguage": "json",
           "header": [{ "key": "Content-Type", "value": "application/json" }],
-          "body": "{\n  \"data\": {\n    \"uploadUrl\": \"https://PROJECT_REF.supabase.co/storage/v1/object/upload/sign/tourism-assets/tours/hero/1717000000000-hoi-an-hero.jpg?token=...\",\n    \"token\": \"eyJ...\",\n    \"path\": \"tours/hero/1717000000000-hoi-an-hero.jpg\",\n    \"bucket\": \"tourism-assets\"\n  },\n  \"error\": null\n}"
+          "body": "{\n  \"data\": {\n    \"signature\": \"abc123...\",\n    \"timestamp\": 1717000000,\n    \"apiKey\": \"311813554951811\",\n    \"cloudName\": \"dbkgeehow\",\n    \"folder\": \"tourism/tours/hero\",\n    \"publicId\": \"1717000000000-hoi-an-hero\",\n    \"resourceType\": \"image\",\n    \"uploadUrl\": \"https://api.cloudinary.com/v1_1/dbkgeehow/image/upload\"\n  },\n  \"error\": null\n}"
         },
         {
-          "name": "400 Bad Request (invalid filename)",
+          "name": "400 MEDIA_FORMAT_REJECTED (video file for image purpose)",
           "originalRequest": {
             "method": "POST",
             "header": [],
@@ -43,20 +43,7 @@
           "code": 400,
           "_postman_previewlanguage": "json",
           "header": [{ "key": "Content-Type", "value": "application/json" }],
-          "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"VALIDATION_ERROR\", \"message\": \"filename must contain only letters, digits, hyphen, underscore, dot, and end with a 1-8 char extension\" }\n}"
-        },
-        {
-          "name": "502 STORAGE_SIGN_FAILED",
-          "originalRequest": {
-            "method": "POST",
-            "header": [],
-            "url": { "raw": "{{baseUrl}}/admin/uploads/signed-url", "host": ["{{baseUrl}}"], "path": ["admin", "uploads", "signed-url"] }
-          },
-          "status": "Bad Gateway",
-          "code": 502,
-          "_postman_previewlanguage": "json",
-          "header": [{ "key": "Content-Type", "value": "application/json" }],
-          "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"STORAGE_SIGN_FAILED\", \"message\": \"Could not generate a signed upload URL. Try again.\" }\n}"
+          "body": "{\n  \"data\": null,\n  \"error\": { \"code\": \"MEDIA_FORMAT_REJECTED\", \"message\": \"File type \\\".mp4\\\" is not allowed for a image upload.\" }\n}"
         }
       ],
       "event": [
@@ -65,40 +52,39 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test('status is 200 or 502', () => pm.expect([200, 502]).to.include(pm.response.code));",
+              "pm.test('status is 200', () => pm.expect(pm.response.code).to.eql(200));",
               "const body = pm.response.json();",
-              "if (pm.response.code === 200) {",
-              "  pm.test('returns signed URL envelope', () => {",
-              "    pm.expect(body.data.uploadUrl).to.be.a('string');",
-              "    pm.expect(body.data.token).to.be.a('string');",
-              "    pm.expect(body.data.bucket).to.eql('tourism-assets');",
-              "  });",
-              "  pm.test('path is under tours/hero folder', () => {",
-              "    pm.expect(body.data.path).to.match(/^tours\\/hero\\/\\d+-/);",
-              "  });",
-              "} else {",
-              "  pm.test('error code is STORAGE_SIGN_FAILED', () => pm.expect(body.error.code).to.eql('STORAGE_SIGN_FAILED'));",
-              "}"
+              "pm.test('returns signed params envelope', () => {",
+              "  pm.expect(body.data.signature).to.be.a('string');",
+              "  pm.expect(body.data.apiKey).to.be.a('string');",
+              "  pm.expect(body.data.cloudName).to.be.a('string');",
+              "  pm.expect(body.data.uploadUrl).to.be.a('string');",
+              "});",
+              "pm.test('image hero -> tours/hero folder + image resource', () => {",
+              "  pm.expect(body.data.folder).to.match(/tours\\/hero$/);",
+              "  pm.expect(body.data.resourceType).to.eql('image');",
+              "  pm.expect(body.data.publicId).to.match(/^\\d+-/);",
+              "});"
             ]
           }
         }
       ]
     },
     {
-      "name": "POST /admin/uploads/signed-url (destination hero)",
+      "name": "POST /admin/uploads/signed-url (tour video)",
       "request": {
         "method": "POST",
         "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"purpose\": \"DESTINATION_HERO\",\n  \"filename\": \"sapa-terraces.webp\",\n  \"contentType\": \"image/webp\"\n}"
+          "raw": "{\n  \"purpose\": \"TOUR_VIDEO\",\n  \"filename\": \"sapa-teaser.mp4\",\n  \"contentType\": \"video/mp4\"\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/admin/uploads/signed-url",
           "host": ["{{baseUrl}}"],
           "path": ["admin", "uploads", "signed-url"]
         },
-        "description": "Demonstrates a different `purpose` routing into a different folder (`destinations/hero/...`)."
+        "description": "Demonstrates a video purpose routing into `tourism/tours/video` with `resourceType = video`."
       },
       "event": [
         {
@@ -108,8 +94,10 @@
             "exec": [
               "if (pm.response.code === 200) {",
               "  const body = pm.response.json();",
-              "  pm.test('path is under destinations/hero folder', () => {",
-              "    pm.expect(body.data.path).to.match(/^destinations\\/hero\\/\\d+-/);",
+              "  pm.test('video purpose -> tours/video folder + video resource', () => {",
+              "    pm.expect(body.data.folder).to.match(/tours\\/video$/);",
+              "    pm.expect(body.data.resourceType).to.eql('video');",
+              "    pm.expect(body.data.uploadUrl).to.match(/\\/video\\/upload$/);",
               "  });",
               "}"
             ]

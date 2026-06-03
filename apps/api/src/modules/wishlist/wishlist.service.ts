@@ -1,6 +1,8 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { Tour, Wishlist } from '@prisma/client';
+import { MediaOwnerType, Tour, Wishlist } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { MediaService } from '../media/media.service';
+import { MediaItemDto } from '../media/dto/media.dto';
 
 /**
  * Customer wishlist surface (Sprint B4.4).
@@ -12,14 +14,17 @@ import { PrismaService } from '../../prisma/prisma.service';
  *
  * Hot path: `findMineWithTour` joins the tour row so the FE renders the
  * wishlist page without a second fetch per item. We pull only the
- * marketing-relevant fields (slug, titles, hero, base price, currency,
- * duration) — never the full row.
+ * marketing-relevant fields (slug, titles, base price, currency, duration)
+ * plus Cloudinary `media` — never the full row.
  */
 @Injectable()
 export class WishlistService {
   private readonly logger = new Logger(WishlistService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly media: MediaService,
+  ) {}
 
   /**
    * Upserts the (userId, tourId) row. Validates the tour exists and is
@@ -63,7 +68,9 @@ export class WishlistService {
    */
   async findMineWithTour(
     customerUserId: string,
-  ): Promise<Array<Wishlist & { tour: Partial<Tour> }>> {
+  ): Promise<
+    Array<Wishlist & { tour: Partial<Tour> & { media: MediaItemDto[] } }>
+  > {
     const rows = await this.prisma.wishlist.findMany({
       where: { userId: customerUserId },
       orderBy: { createdAt: 'desc' },
@@ -77,7 +84,6 @@ export class WishlistService {
             titleVi: true,
             summaryEn: true,
             summaryVi: true,
-            heroImage: true,
             basePrice: true,
             currency: true,
             durationDays: true,
@@ -87,6 +93,19 @@ export class WishlistService {
         },
       },
     });
-    return rows;
+
+    // Attach Cloudinary media so the wishlist preview can render the hero
+    // image (replaces the dropped `tour.heroImage` column). One batched query.
+    const tours = rows.map((r) => r.tour);
+    const toursWithMedia = await this.media.attachToOwners(
+      MediaOwnerType.TOUR,
+      tours,
+    );
+    const mediaById = new Map(toursWithMedia.map((t) => [t.id, t.media]));
+
+    return rows.map((r) => ({
+      ...r,
+      tour: { ...r.tour, media: mediaById.get(r.tour.id) ?? [] },
+    }));
   }
 }

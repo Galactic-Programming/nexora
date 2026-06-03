@@ -4,9 +4,8 @@
 // Reviews folders, which need real PAID bookings) WITHOUT a browser or the
 // Stripe CLI. It:
 //   1. Ensures two email-confirmed Supabase Auth users (customer + admin).
-//   2. Ensures the `tourism-assets` storage bucket exists.
-//   3. Creates a dedicated high-capacity OPEN departure on the seed tour.
-//   4. Creates two PAID bookings by POSTing a self-signed Stripe webhook
+//   2. Creates a dedicated high-capacity OPEN departure on the seed tour.
+//   3. Creates two PAID bookings by POSTing a self-signed Stripe webhook
 //      (the exact HMAC-SHA256 scheme Stripe uses, keyed by
 //      STRIPE_WEBHOOK_SECRET — so signature verification passes for real):
 //        • refundBookingId  — paid with a REAL confirmed PaymentIntent so
@@ -14,8 +13,11 @@
 //                             succeeds.
 //        • reviewBookingCode — paid with a synthetic payment_intent (reviews
 //                             don't touch Stripe).
-//   5. Writes a gitignored Postman environment at .tmp/postman.env.json with
+//   4. Writes a gitignored Postman environment at .tmp/postman.env.json with
 //      every value the collection needs.
+//
+// Media uploads use Cloudinary (signed, local crypto) — no storage bucket
+// is needed for the Uploads folder.
 //
 // Usage (from repo root):  node docs/postman/seed-test-data.mjs
 // Then:  pnpm dlx newman@6 run docs/postman/tourism-api.json -e .tmp/postman.env.json
@@ -76,17 +78,9 @@ async function upsertUser(email, password) {
   if (!r.ok) throw new Error(`upsert ${email} ${r.status} ${await r.text()}`);
   return { id: ex ? ex.id : (await r.json()).id, action: ex ? 'updated' : 'created' };
 }
-async function ensureBucket(id) {
-  const r = await fetch(`${SUPA}/storage/v1/bucket`, { method: 'POST', headers: adminHdr, body: JSON.stringify({ id, name: id, public: false }) });
-  if (r.ok) return 'created';
-  const t = await r.text();
-  if (r.status === 409 || /already exists|Duplicate/i.test(t)) return 'exists';
-  throw new Error(`bucket ${r.status} ${t}`);
-}
 const cust = await upsertUser(CUSTOMER_EMAIL, custPw);
 const adm = await upsertUser(ADMIN_EMAIL, admPw);
-const bucket = await ensureBucket('tourism-assets');
-console.log(`users: customer=${cust.action} admin=${adm.action} | bucket=${bucket}`);
+console.log(`users: customer=${cust.action} admin=${adm.action}`);
 
 // ── API sign-in + sync ───────────────────────────────────────────────────────
 async function signin(email, password) {
