@@ -8,7 +8,8 @@ import {
 import { UserRole } from '@prisma/client';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CreateSignedUploadUrlDto } from './dto/create-signed-upload-url.dto';
-import { SignedUploadUrl, UploadsService } from './uploads.service';
+import { UploadsService } from './uploads.service';
+import type { SignedUploadParams } from './uploads.service';
 
 /**
  * Admin-only surface for issuing signed upload URLs.
@@ -27,36 +28,32 @@ export class AdminUploadsController {
   constructor(private readonly uploadsService: UploadsService) {}
 
   /**
-   * `POST /admin/uploads/signed-url` — mint a short-lived signed URL.
+   * `POST /admin/uploads/signed-url` — compute a Cloudinary upload signature.
    *
-   * Returns 200 (instead of 201) because this endpoint creates a
-   * **pending** upload slot, not a persisted resource — there's nothing
-   * to address with `Location:` until the FE actually completes the PUT.
+   * Returns 200 (instead of 201) because this endpoint creates a **pending**
+   * upload slot, not a persisted resource — there's nothing to address with
+   * `Location:` until the FE actually completes the upload to Cloudinary (and
+   * later persists the resulting `publicId` via the resource's media payload).
    *
-   * Response body shape (`SignedUploadUrl`):
-   *  - `uploadUrl` — full signed PUT URL
-   *  - `token`     — Supabase SDK requires this for `uploadToSignedUrl`
-   *  - `path`      — final object path in the bucket
-   *  - `bucket`    — bucket name for FE convenience
+   * Response body shape (`SignedUploadParams`):
+   *  - `signature`    — HMAC over the signed params
+   *  - `timestamp`    — Unix seconds (signed); FE echoes verbatim
+   *  - `apiKey` / `cloudName` — public Cloudinary identifiers
+   *  - `folder` / `publicId`  — signed target location
+   *  - `resourceType` — `image` | `video`
+   *  - `uploadUrl`    — full Cloudinary upload endpoint to POST the file to
    *
    * Errors:
-   *  - 400 — DTO validation (bad purpose / filename / contentType)
-   *  - 502 `STORAGE_SIGN_FAILED` — Supabase Storage returned an error
+   *  - 400 — DTO validation, or `MEDIA_FORMAT_REJECTED` (format vs resource type)
    */
   @Post('signed-url')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Admin: mint a Supabase Storage signed upload URL',
+    summary: 'Admin: compute a Cloudinary signed upload',
   })
-  @ApiResponse({ status: 200, description: 'Signed URL envelope' })
-  @ApiResponse({ status: 400, description: 'Invalid request body' })
-  @ApiResponse({
-    status: 502,
-    description: 'Supabase Storage upstream failure',
-  })
-  createSignedUrl(
-    @Body() body: CreateSignedUploadUrlDto,
-  ): Promise<SignedUploadUrl> {
-    return this.uploadsService.createSignedUploadUrl(body);
+  @ApiResponse({ status: 200, description: 'Signed upload params envelope' })
+  @ApiResponse({ status: 400, description: 'Invalid request body or format' })
+  createSignedUrl(@Body() body: CreateSignedUploadUrlDto): SignedUploadParams {
+    return this.uploadsService.createSignedUploadParams(body);
   }
 }

@@ -8,36 +8,38 @@ import {
 } from 'class-validator';
 
 /**
- * Catalog of allowed upload purposes. Maps 1:1 to a folder under the
- * Supabase Storage bucket so the bucket layout is predictable and
- * policies can be scoped per folder.
+ * Catalog of allowed upload purposes. Maps 1:1 to a Cloudinary folder so the
+ * asset layout is predictable. Each purpose also implies a Cloudinary
+ * `resource_type` (image vs video) — see `UploadsService.resourceTypeForPurpose`.
  *
  * Adding a new purpose means:
  *  1. Add the enum case here.
  *  2. Map it in `UploadsService.folderForPurpose`.
- *  3. Confirm Storage bucket policy allows writes under the new folder.
+ *  3. Map its resource type in `UploadsService.resourceTypeForPurpose`.
  */
 export enum UploadPurpose {
   TOUR_HERO = 'TOUR_HERO',
   TOUR_GALLERY = 'TOUR_GALLERY',
+  TOUR_VIDEO = 'TOUR_VIDEO',
   DESTINATION_HERO = 'DESTINATION_HERO',
+  DESTINATION_VIDEO = 'DESTINATION_VIDEO',
   USER_AVATAR = 'USER_AVATAR',
 }
 
 /**
  * Request body for `POST /admin/uploads/signed-url`.
  *
- * The endpoint does NOT proxy the file. It returns a short-lived signed
- * URL that the FE uploads directly to Supabase Storage — this avoids
- * routing large multipart bodies through the Nest process and keeps
- * upload latency tied to the client's distance from Supabase's edge,
- * not the backend's region.
+ * The endpoint does NOT proxy the file. It returns a Cloudinary upload
+ * signature that the FE uses to POST the file directly to Cloudinary — this
+ * avoids routing large multipart bodies (especially video) through the Nest
+ * process and keeps upload latency tied to the client's distance from
+ * Cloudinary's edge, not the backend's region.
  *
  * The backend's job here is to:
- *  1. Validate purpose + filename
- *  2. Derive a safe storage path (sanitize filename, prepend folder)
- *  3. Mint the signed URL using the Supabase service role key
- *  4. Return `{ uploadUrl, path, token, expiresAt }` to the FE
+ *  1. Validate purpose + filename + format-vs-resource-type
+ *  2. Derive a Cloudinary folder + public_id (sanitized, timestamped)
+ *  3. Compute the upload signature using the Cloudinary api_secret
+ *  4. Return the signed params envelope to the FE (see `SignedUploadParams`)
  */
 export class CreateSignedUploadUrlDto {
   @ApiProperty({
