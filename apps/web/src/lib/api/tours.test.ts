@@ -27,7 +27,7 @@ describe("listTours", () => {
   });
 
   it("sends only defined query params", async () => {
-    const spy = vi.fn(async () =>
+    const spy = vi.fn(async (_url: string | URL | Request) =>
       new Response(JSON.stringify({ data: [], error: null, meta: { page: 1, pageSize: 9, total: 0, totalPages: 0 } }), {
         status: 200,
         headers: { "content-type": "application/json" },
@@ -35,7 +35,7 @@ describe("listTours", () => {
     );
     vi.stubGlobal("fetch", spy);
     await listTours({ page: 2, pageSize: 9, q: "lantern", sortBy: "basePrice", sortOrder: "asc" });
-    const url = String(spy.mock.calls[0][0]);
+    const url = String(spy.mock.calls[0]?.[0]);
     expect(url).toContain("/api/v1/tours?");
     expect(url).toContain("page=2");
     expect(url).toContain("q=lantern");
