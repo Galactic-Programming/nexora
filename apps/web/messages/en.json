@@ -33,5 +33,22 @@
   },
   "LocaleSwitcher": {
     "label": "Language"
+  },
+  "ToursArchive": {
+    "eyebrow": "Search tour",
+    "title": "Travel With Us",
+    "resultsCount": "{count} tours",
+    "empty": "No tours match your search.",
+    "sortDate": "Date",
+    "sortPriceAsc": "Price Low to High",
+    "sortPriceDesc": "Price High to Low",
+    "sortName": "Name (A-Z)",
+    "filterTitle": "Plan Your Trip",
+    "searchPlaceholder": "Search tours",
+    "minPrice": "Min price",
+    "maxPrice": "Max price",
+    "apply": "Filter",
+    "clear": "Clear",
+    "paginationAria": "Tours pagination"
   }
 }

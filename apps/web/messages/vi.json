@@ -33,5 +33,22 @@
   },
   "LocaleSwitcher": {
     "label": "Ngôn ngữ"
+  },
+  "ToursArchive": {
+    "eyebrow": "Tìm tour",
+    "title": "Du lịch cùng chúng tôi",
+    "resultsCount": "{count} tour",
+    "empty": "Không có tour nào phù hợp.",
+    "sortDate": "Mới nhất",
+    "sortPriceAsc": "Giá thấp đến cao",
+    "sortPriceDesc": "Giá cao đến thấp",
+    "sortName": "Tên (A-Z)",
+    "filterTitle": "Lên kế hoạch chuyến đi",
+    "searchPlaceholder": "Tìm tour",
+    "minPrice": "Giá tối thiểu",
+    "maxPrice": "Giá tối đa",
+    "apply": "Lọc",
+    "clear": "Xóa lọc",
+    "paginationAria": "Phân trang tour"
   }
 }
