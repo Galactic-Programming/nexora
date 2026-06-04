@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@tourism/ui/components/custom/button-custom";
@@ -25,6 +25,10 @@ export function TourFilterSidebar({ labels }: { labels: Labels }) {
   const [min, setMin] = useState(current.minPrice?.toString() ?? "");
   const [max, setMax] = useState(current.maxPrice?.toString() ?? "");
 
+  useEffect(() => { setQ(current.q ?? ""); }, [current.q]);
+  useEffect(() => { setMin(current.minPrice?.toString() ?? ""); }, [current.minPrice]);
+  useEffect(() => { setMax(current.maxPrice?.toString() ?? ""); }, [current.maxPrice]);
+
   function apply() {
     const next = serializeToursQuery({
       ...current,
@@ -36,7 +40,9 @@ export function TourFilterSidebar({ labels }: { labels: Labels }) {
     router.push(`${pathname}?${next.toString()}`);
   }
   function clear() {
-    setQ(""); setMin(""); setMax("");
+    setQ("");
+    setMin("");
+    setMax("");
     const next = serializeToursQuery({ page: 1, pageSize: current.pageSize, sortBy: current.sortBy, sortOrder: current.sortOrder });
     router.push(`${pathname}?${next.toString()}`);
   }
@@ -49,12 +55,15 @@ export function TourFilterSidebar({ labels }: { labels: Labels }) {
         onChange={(e) => setQ(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && apply()}
         placeholder={labels.searchPlaceholder}
+        aria-label={labels.searchPlaceholder}
         className="border-border mb-3 w-full rounded-md border bg-background px-3 py-2 text-sm"
       />
       <div className="mb-4 flex gap-2">
         <input inputMode="numeric" value={min} onChange={(e) => setMin(e.target.value)} placeholder={labels.minPrice}
+          aria-label={labels.minPrice}
           className="border-border w-full rounded-md border bg-background px-3 py-2 text-sm" />
         <input inputMode="numeric" value={max} onChange={(e) => setMax(e.target.value)} placeholder={labels.maxPrice}
+          aria-label={labels.maxPrice}
           className="border-border w-full rounded-md border bg-background px-3 py-2 text-sm" />
       </div>
       <div className="flex gap-2">

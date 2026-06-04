@@ -23,7 +23,7 @@ export function TourSortBar({ options }: { options: Option[] }) {
         const active = current.sortBy === o.sortBy && current.sortOrder === o.sortOrder;
         return (
           <button
-            key={o.label}
+            key={`${o.sortBy}-${o.sortOrder}`}
             type="button"
             onClick={() => select(o)}
             aria-pressed={active}

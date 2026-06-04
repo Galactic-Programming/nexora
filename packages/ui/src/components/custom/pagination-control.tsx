@@ -85,7 +85,7 @@ function PaginationControl({
     disabled ? 'pointer-events-none opacity-50' : undefined;
 
   return (
-    <Pagination className={className} aria-label={ariaLabel}>
+    <Pagination className={className} aria-label={ariaLabel ?? "pagination"}>
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
