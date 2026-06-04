@@ -28,6 +28,7 @@ interface PaginationControlProps {
   getHref?: (page: number) => string;
   siblingCount?: number;
   className?: string;
+  'aria-label'?: string;
 }
 
 /** Page items to render, inserting 'ellipsis' for gaps wider than one page. */
@@ -66,6 +67,7 @@ function PaginationControl({
   getHref,
   siblingCount = 1,
   className,
+  'aria-label': ariaLabel,
 }: PaginationControlProps) {
   if (pageCount <= 1) return null;
 
@@ -83,7 +85,7 @@ function PaginationControl({
     disabled ? 'pointer-events-none opacity-50' : undefined;
 
   return (
-    <Pagination className={className}>
+    <Pagination className={className} aria-label={ariaLabel}>
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
