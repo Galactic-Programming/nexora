@@ -35,11 +35,11 @@
     "label": "Language"
   },
   "ToursArchive": {
-    "eyebrow": "Search tour",
+    "eyebrow": "Search tours",
     "title": "Travel With Us",
     "resultsCount": "{count} tours",
     "empty": "No tours match your search.",
-    "sortDate": "Date",
+    "sortDate": "Newest",
     "sortPriceAsc": "Price Low to High",
     "sortPriceDesc": "Price High to Low",
     "sortName": "Name (A-Z)",
