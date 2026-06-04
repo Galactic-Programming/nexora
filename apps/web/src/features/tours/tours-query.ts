@@ -30,11 +30,11 @@ export function parseToursQuery(sp: RawParams): ToursQuery {
 /** Serialize a query back to URLSearchParams, omitting defaults/empty. */
 export function serializeToursQuery(q: Partial<ToursQuery>): URLSearchParams {
   const sp = new URLSearchParams();
-  if (q.page && q.page > 1) sp.set("page", String(q.page));
-  if (q.q) sp.set("q", q.q);
+  if (q.page !== undefined && q.page > 1) sp.set("page", String(q.page));
+  if (q.q?.trim()) sp.set("q", q.q.trim());
   if (q.minPrice !== undefined) sp.set("minPrice", String(q.minPrice));
   if (q.maxPrice !== undefined) sp.set("maxPrice", String(q.maxPrice));
-  if (q.sortBy && q.sortBy !== "createdAt") sp.set("sortBy", q.sortBy);
-  if (q.sortOrder && q.sortOrder !== "desc") sp.set("sortOrder", q.sortOrder);
+  if (q.sortBy !== undefined && q.sortBy !== "createdAt") sp.set("sortBy", q.sortBy);
+  if (q.sortOrder !== undefined && q.sortOrder !== "desc") sp.set("sortOrder", q.sortOrder);
   return sp;
 }
