@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Be_Vietnam_Pro, Fraunces, Geist_Mono } from 'next/font/google';
 import { routing } from '@/i18n/routing';
 import '../globals.css';
 import { TooltipProvider } from '@tourism/ui/components/legacy/tooltip';
@@ -10,11 +10,22 @@ import { QueryProvider } from '@/providers/query-provider';
 import { SiteHeader } from '@/components/layout/site-header';
 import { SiteFooter } from '@/components/layout/site-footer';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
+// Body / UI font — Be Vietnam Pro has first-class Vietnamese diacritics.
+const bodyFont = Be_Vietnam_Pro({
+  variable: '--font-body',
+  subsets: ['latin', 'vietnamese'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
 });
 
+// Display / heading font — Fraunces is a warm editorial serif (Vietnamese subset).
+const displayFont = Fraunces({
+  variable: '--font-display',
+  subsets: ['latin', 'vietnamese'],
+  display: 'swap',
+});
+
+// Kept for code / numeric mono usage only.
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
@@ -47,7 +58,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   return (
     <html
       lang={locale}
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${bodyFont.variable} ${displayFont.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider>
