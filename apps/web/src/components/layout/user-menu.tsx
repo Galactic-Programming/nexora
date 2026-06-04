@@ -13,7 +13,7 @@ export async function UserMenu() {
 
   if (!user) {
     return (
-      <Button render={<Link href="/sign-in" />}>
+      <Button nativeButton={false} render={<Link href="/sign-in" />}>
         {t("signIn")}
       </Button>
     );
