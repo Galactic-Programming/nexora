@@ -136,7 +136,10 @@ Customer FE is split into four sequential sub-projects, each on its own feature 
 | Phase | App | Status | Plan doc |
 | --- | --- | --- | --- |
 | Customer FE — A. Foundation | `apps/web` | ✅ Done on `feat/customer-fe-foundation` (data layer: openapi-fetch client + envelope unwrap + typed env; Supabase SSR wiring; layout shell; Home with real featured tours; Vitest suite) | [specs/2026-06-03-customer-fe-foundation-design.md](../superpowers/specs/2026-06-03-customer-fe-foundation-design.md), [plans/2026-06-03-customer-fe-foundation.md](../superpowers/plans/2026-06-03-customer-fe-foundation.md) |
-| Customer FE — B. Browse | `apps/web` | ⬜ Not started | TBD |
+| Customer FE — B. Browse | `apps/web` | 🔶 In progress — split into B1 Packages Archive → B2 Package Detail → B3 Destinations | see B1 below |
+| Customer FE — B1. Packages Archive | `apps/web` | ✅ Done on `feat/customer-fe-browse-archive` (RSC `/tours` list: URL filters/sort/pagination, `listTours` w/ meta, reuse TourCard+PaginationControl, EN/VI). Note: tour cards render imageless until tours are seeded with Cloudinary `media`. | [specs/2026-06-04-customer-fe-browse-archive-design.md](../superpowers/specs/2026-06-04-customer-fe-browse-archive-design.md), [plans/2026-06-04-customer-fe-browse-archive.md](../superpowers/plans/2026-06-04-customer-fe-browse-archive.md) |
+| Customer FE — B2. Package Detail | `apps/web` | ⬜ Not started | TBD |
+| Customer FE — B3. Destinations | `apps/web` | ⬜ Not started | TBD |
 | Customer FE — C. Auth & Account | `apps/web` | ⬜ Not started | TBD |
 | Customer FE — D. Booking & Review | `apps/web` | ⬜ Not started | TBD |
 | Admin FE | `apps/admin` | ⬜ Not started (empty template) | TBD |
