@@ -94,6 +94,7 @@ lib/api/
 ```
 
 Modify:
+
 - `apps/web/next.config.ts` — add `images.remotePatterns` for `res.cloudinary.com`.
 - `apps/web/messages/en.json`, `vi.json` — `ToursArchive` namespace.
 - `apps/web/src/components/layout/main-nav.tsx` / `mobile-nav.tsx` — the `/tours` link already
