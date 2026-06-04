@@ -27,7 +27,30 @@
 
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { DepartureStatus, PrismaClient, TourCategory } from '@prisma/client';
+import {
+  DepartureStatus,
+  MediaOwnerType,
+  MediaType,
+  PrismaClient,
+  TourCategory,
+} from '@prisma/client';
+
+// Cloudinary built-in sample images (present in every cloud) used to give
+// seeded tours real hero/gallery media so the FE renders images out of the box.
+// In production, admin-uploaded media replaces these.
+const TOUR_HERO_SAMPLES = [
+  'samples/landscapes/nature-mountains',
+  'samples/landscapes/beach-boat',
+  'samples/landscapes/girl-urban-view',
+  'samples/balloons',
+];
+const TOUR_GALLERY_SAMPLES = [
+  'samples/landscapes/architecture-signs',
+  'samples/food/spices',
+  'samples/food/pot-mussels',
+  'samples/coffee',
+  'samples/people/kitchen-bar',
+];
 
 /**
  * Prisma 7 requires a driver adapter (or another option block) — bare
@@ -562,6 +585,46 @@ async function main(): Promise<void> {
         });
       }
     }
+
+    // Media — give each tour real Cloudinary images (1 hero + 2 gallery) from
+    // the built-in sample set so FE cards/galleries render. Idempotent: clear
+    // this tour's media, then recreate (no natural unique key on media_assets).
+    const mediaIdx = TOURS.indexOf(t);
+    await prisma.mediaAsset.deleteMany({
+      where: { ownerType: MediaOwnerType.TOUR, ownerId: row.id },
+    });
+    await prisma.mediaAsset.createMany({
+      data: [
+        {
+          publicId: TOUR_HERO_SAMPLES[mediaIdx % TOUR_HERO_SAMPLES.length],
+          type: MediaType.IMAGE,
+          ownerType: MediaOwnerType.TOUR,
+          ownerId: row.id,
+          role: 'hero',
+          format: 'jpg',
+          sortOrder: 0,
+        },
+        {
+          publicId: TOUR_GALLERY_SAMPLES[mediaIdx % TOUR_GALLERY_SAMPLES.length],
+          type: MediaType.IMAGE,
+          ownerType: MediaOwnerType.TOUR,
+          ownerId: row.id,
+          role: 'gallery',
+          format: 'jpg',
+          sortOrder: 1,
+        },
+        {
+          publicId:
+            TOUR_GALLERY_SAMPLES[(mediaIdx + 2) % TOUR_GALLERY_SAMPLES.length],
+          type: MediaType.IMAGE,
+          ownerType: MediaOwnerType.TOUR,
+          ownerId: row.id,
+          role: 'gallery',
+          format: 'jpg',
+          sortOrder: 2,
+        },
+      ],
+    });
   }
 
   // 3. Departures — reset + recreate for seeded tours.
