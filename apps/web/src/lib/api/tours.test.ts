@@ -41,6 +41,8 @@ describe("listTours", () => {
     expect(url).toContain("q=lantern");
     expect(url).toContain("sortBy=basePrice");
     expect(url).not.toContain("minPrice");
+    expect(url).toContain("pageSize=9");
+    expect(url).toContain("sortOrder=asc");
   });
 
   it("throws ApiError when the envelope carries an error", async () => {
@@ -51,5 +53,12 @@ describe("listTours", () => {
       status: 400,
     });
     await expect(listTours({ page: 1, pageSize: 9, sortBy: "createdAt", sortOrder: "desc" })).rejects.toBeInstanceOf(ApiError);
+  });
+
+  it("throws ApiError on a non-ok response without an error envelope", async () => {
+    mockFetch({ data: null, error: null }, 502);
+    await expect(
+      listTours({ page: 1, pageSize: 9, sortBy: "createdAt", sortOrder: "desc" }),
+    ).rejects.toMatchObject({ name: "ApiError", status: 502 });
   });
 });

@@ -41,12 +41,28 @@ export async function listTours(
 
   const url = `${env.NEXT_PUBLIC_API_BASE_URL}/api/v1/tours?${params.toString()}`;
   const res = await fetch(url, { headers: { Accept: "application/json" } });
-  const body = (await res.json()) as ListEnvelope;
+
+  let body: ListEnvelope;
+  try {
+    body = (await res.json()) as ListEnvelope;
+  } catch {
+    throw new ApiError("HTTP_ERROR", `Unexpected non-JSON response (${res.status})`, res.status);
+  }
   if (body.error) {
     throw new ApiError(body.error.code, body.error.message, res.status);
   }
+  if (!res.ok) {
+    throw new ApiError("HTTP_ERROR", `Unexpected response (${res.status})`, res.status);
+  }
+
+  const tours = body.data ?? [];
   return {
-    tours: body.data ?? [],
-    meta: body.meta ?? { page: query.page, pageSize: query.pageSize, total: 0, totalPages: 0 },
+    tours,
+    meta: body.meta ?? {
+      page: query.page,
+      pageSize: query.pageSize,
+      total: tours.length,
+      totalPages: tours.length ? 1 : 0,
+    },
   };
 }
