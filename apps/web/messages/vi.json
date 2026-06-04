@@ -1,11 +1,35 @@
 {
-  "HomePage": {
-    "eyebrow": "Nền tảng Du lịch",
-    "title": "Trang Khách hàng",
-    "description": "Hệ thống thiết kế dùng chung từ @tourism/ui, đa ngôn ngữ với next-intl. Chạy trên Next.js 16.",
-    "explore": "Khám phá tour",
+  "Nav": {
+    "brand": "Tourism",
+    "home": "Trang chủ",
+    "tours": "Tour",
+    "destinations": "Điểm đến",
     "signIn": "Đăng nhập",
-    "learnMore": "Tìm hiểu thêm"
+    "ariaLabel": "Điều hướng chính",
+    "openMenu": "Mở menu"
+  },
+  "HomePage": {
+    "eyebrow": "Hành trình tuyển chọn",
+    "title": "Khám phá và đặt những chuyến đi khó quên",
+    "description": "Điểm đến tuyển chọn, giá minh bạch, đặt chỗ tức thì.",
+    "explore": "Khám phá tour",
+    "featuredTitle": "Tour nổi bật",
+    "featuredEmpty": "Chưa có tour nổi bật."
+  },
+  "Footer": {
+    "brand": "Tourism",
+    "tagline": "Tour tuyển chọn khắp Việt Nam và hơn thế nữa.",
+    "rights": "Bảo lưu mọi quyền."
+  },
+  "Error": {
+    "title": "Đã có lỗi xảy ra",
+    "description": "Một lỗi không mong muốn đã xảy ra. Vui lòng thử lại.",
+    "retry": "Thử lại"
+  },
+  "NotFound": {
+    "title": "Không tìm thấy trang",
+    "description": "Trang bạn tìm không tồn tại.",
+    "home": "Về trang chủ"
   },
   "LocaleSwitcher": {
     "label": "Ngôn ngữ"

@@ -1,11 +1,35 @@
 {
-  "HomePage": {
-    "eyebrow": "Tourism Platform",
-    "title": "Customer Web",
-    "description": "Shared design system from @tourism/ui, localized with next-intl. Running on Next.js 16.",
-    "explore": "Explore tours",
+  "Nav": {
+    "brand": "Tourism",
+    "home": "Home",
+    "tours": "Tours",
+    "destinations": "Destinations",
     "signIn": "Sign in",
-    "learnMore": "Learn more"
+    "ariaLabel": "Main navigation",
+    "openMenu": "Open menu"
+  },
+  "HomePage": {
+    "eyebrow": "Curated journeys",
+    "title": "Discover and book unforgettable tours",
+    "description": "Handpicked destinations, transparent pricing, and instant booking.",
+    "explore": "Explore tours",
+    "featuredTitle": "Featured tours",
+    "featuredEmpty": "No featured tours yet."
+  },
+  "Footer": {
+    "brand": "Tourism",
+    "tagline": "Curated tours across Vietnam and beyond.",
+    "rights": "All rights reserved."
+  },
+  "Error": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. Please try again.",
+    "retry": "Try again"
+  },
+  "NotFound": {
+    "title": "Page not found",
+    "description": "The page you are looking for does not exist.",
+    "home": "Back to home"
   },
   "LocaleSwitcher": {
     "label": "Language"

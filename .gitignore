@@ -35,6 +35,15 @@ docs/postman/.newman-cache/
 # Stripe CLI local state
 .stripe/
 
+# Playwright MCP runtime artifacts (auto-generated snapshots, console logs, traces)
+.playwright-mcp/
+
+# Local screenshots / QA captures — kept out of git to avoid root clutter
+.screenshots/
+
+# Figma reference exports (large local-only design refs; share via Figma link)
+docs/tourism/
+
 # Agent skills: commit source-of-truth (.agents/ + skills-lock.json) only.
 # Per-agent dirs are machine-specific symlinks/junctions; regenerate via `pnpm dlx skills install`.
 .claude/skills/

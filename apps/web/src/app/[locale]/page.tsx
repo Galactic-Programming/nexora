@@ -1,38 +1,25 @@
-import { use } from "react";
+import { use, Suspense } from "react";
 import { useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
-import { Button } from "@tourism/ui/components/legacy/button";
-import { LocaleSwitcher } from "@/components/locale-switcher";
+import { Hero } from "@/features/home/hero";
+import { FeaturedTours } from "@/features/home/featured-tours";
 
-type Props = {
-  params: Promise<{ locale: string }>;
-};
+type Props = { params: Promise<{ locale: string }> };
 
 export default function Home({ params }: Props) {
   const { locale } = use(params);
-
-  // Enable static rendering before calling next-intl hooks.
   setRequestLocale(locale);
-
   const t = useTranslations("HomePage");
 
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-8 p-8">
-      <div className="flex flex-col items-center gap-3 text-center">
-        <span className="text-muted-foreground text-sm tracking-widest uppercase">
-          {t("eyebrow")}
-        </span>
-        <h1 className="text-foreground text-4xl font-semibold tracking-tight">
-          {t("title")}
-        </h1>
-        <p className="text-muted-foreground max-w-md">{t("description")}</p>
-      </div>
-      <div className="flex flex-wrap items-center justify-center gap-3">
-        <Button>{t("explore")}</Button>
-        <Button variant="outline">{t("signIn")}</Button>
-        <Button variant="secondary">{t("learnMore")}</Button>
-      </div>
-      <LocaleSwitcher />
+    <main className="flex flex-col">
+      <Hero />
+      <section className="mx-auto w-full max-w-6xl px-4 pb-20">
+        <h2 className="mb-6 text-2xl font-semibold tracking-tight">{t("featuredTitle")}</h2>
+        <Suspense fallback={<p className="text-muted-foreground py-10 text-center">…</p>}>
+          <FeaturedTours emptyLabel={t("featuredEmpty")} />
+        </Suspense>
+      </section>
     </main>
   );
 }

@@ -131,10 +131,17 @@ Customer FE first, admin FE next. Both live inside this Turborepo as `apps/web` 
 
 > **Status correction (2026-06-03):** an earlier standalone customer FE (separate `tourism-frontend-customer` repo, which had reached ~C1.4) was **discarded** when the project consolidated into this Turborepo. `apps/web` and `apps/admin` are both **empty templates — no FE work has been done.** The prior C0–C1.4 progress does **not** carry over and any earlier "in progress" status here was stale.
 
+Customer FE is split into four sequential sub-projects, each on its own feature branch: **A. Foundation → B. Browse → C. Auth & Account → D. Booking & Review**.
+
 | Phase | App | Status | Plan doc |
 | --- | --- | --- | --- |
-| Customer FE | `apps/web` | ⬜ Not started (empty template) | TBD |
+| Customer FE — A. Foundation | `apps/web` | ✅ Done on `feat/customer-fe-foundation` (data layer: openapi-fetch client + envelope unwrap + typed env; Supabase SSR wiring; layout shell; Home with real featured tours; Vitest suite) | [specs/2026-06-03-customer-fe-foundation-design.md](../superpowers/specs/2026-06-03-customer-fe-foundation-design.md), [plans/2026-06-03-customer-fe-foundation.md](../superpowers/plans/2026-06-03-customer-fe-foundation.md) |
+| Customer FE — B. Browse | `apps/web` | ⬜ Not started | TBD |
+| Customer FE — C. Auth & Account | `apps/web` | ⬜ Not started | TBD |
+| Customer FE — D. Booking & Review | `apps/web` | ⬜ Not started | TBD |
 | Admin FE | `apps/admin` | ⬜ Not started (empty template) | TBD |
+
+> Foundation (A) known follow-up (deferred to B): add a root global-not-found so arbitrary unmatched URLs render the localized `not-found.tsx` (today it renders on explicit `notFound()` calls; unmatched URLs fall through to Next's default 404).
 
 ---
 
@@ -149,7 +156,7 @@ Triggered during customer FE Sprint C0 when `openapi-typescript-codegen` was wir
 | B4.7.3 | Wire `@ApiOkResponse` / `@ApiCreatedResponse` / `@ApiNoContentResponse` on all 12 customer-facing + admin controllers (25 endpoints total) | ✅ | n/a | api-overview |
 | B4.7.4 | Verify: BE `pnpm test` 87/87 pass + `tsc --noEmit` clean | ✅ | n/a | n/a |
 | B4.7.5 | Add `postinstall: prisma generate` to `package.json` (avoids TS2305 after `pnpm install`) | ✅ | n/a | runbooks/local-dev |
-| B4.7.6 | Regenerate FE API client → 31 typed models (was 15) | ⬜ | n/a | FE — done previously in the discarded `tourism-frontend-customer` repo; must be redone when `apps/web` is built. BE-side DTO coverage (B4.7.1–B4.7.5) stands and is verified. |
+| B4.7.6 | Regenerate FE API client | ✅ | n/a | Done in `apps/web` during Customer FE Foundation (A): `pnpm --filter @tourism/web api:types` → `src/lib/api/schema.d.ts` (openapi-typescript), consumed via an `openapi-fetch` client with envelope-unwrap middleware. |
 
 ---
 

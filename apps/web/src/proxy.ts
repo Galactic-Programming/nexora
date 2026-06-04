@@ -1,9 +1,14 @@
 import createMiddleware from "next-intl/middleware";
+import { type NextRequest } from "next/server";
 import { routing } from "./i18n/routing";
+import { updateSupabaseSession } from "./lib/supabase/middleware";
 
-// Next.js 16 renamed the "middleware" file convention to "proxy".
-// next-intl's handler is the same function; only the filename changed.
-export default createMiddleware(routing);
+const handleI18n = createMiddleware(routing);
+
+export default async function proxy(request: NextRequest) {
+  const response = handleI18n(request);
+  return updateSupabaseSession(request, response);
+}
 
 export const config = {
   // Match all pathnames except for API routes, Next internals, and files
