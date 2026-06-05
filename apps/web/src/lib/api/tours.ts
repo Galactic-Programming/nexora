@@ -93,6 +93,9 @@ async function getEnvelope<T>(path: string): Promise<{ data: T; meta?: Record<st
   }
   if (body.error) throw new ApiError(body.error.code, body.error.message, res.status);
   if (!res.ok) throw new ApiError("HTTP_ERROR", `Unexpected response (${res.status})`, res.status);
+  // A 2xx with data:null is unexpected (the backend uses an error envelope +
+  // 4xx/5xx for not-found / failures); treat it as an error rather than
+  // silently returning null to callers.
   if (body.data === null) throw new ApiError("EMPTY", `Empty response (${res.status})`, res.status);
   return { data: body.data, meta: body.meta };
 }
@@ -121,10 +124,10 @@ export async function getTourReviews(
     reviews: data,
     averageRating: typeof m.averageRating === "number" ? m.averageRating : null,
     meta: {
-      page: Number(m.page ?? page),
-      pageSize: Number(m.pageSize ?? data.length),
-      total: Number(m.total ?? data.length),
-      totalPages: Number(m.totalPages ?? 1),
+      page: typeof m.page === "number" ? m.page : page,
+      pageSize: typeof m.pageSize === "number" ? m.pageSize : data.length,
+      total: typeof m.total === "number" ? m.total : data.length,
+      totalPages: typeof m.totalPages === "number" ? m.totalPages : 1,
     },
   };
 }
