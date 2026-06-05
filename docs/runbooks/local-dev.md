@@ -93,6 +93,8 @@ Import:
 
 Select the `tourism-api · local` environment in Postman, then run the **Health** folder. All requests should pass.
 
+> Protected folders (Auth, Bookings, Payments…) need login accounts + paid bookings. Run `pnpm postman:seed` to auto-create them and write a ready-to-import `.tmp/postman.env.json` (test passwords land there). See [seed.md → Seeding auth users for Postman](seed.md#seeding-auth-users-for-postman-postmanseed).
+>
 > Workflow reminder: every time we ship a new endpoint, the Postman collection JSON in this repo MUST be updated and committed alongside the code.
 
 ## 7. Useful scripts

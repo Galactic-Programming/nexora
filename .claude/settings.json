@@ -1,5 +1,6 @@
 {
   "env": {
-    "ECC_GATEGUARD": "off"
+    "ECC_GATEGUARD": "off",
+    "ECC_DISABLED_HOOKS": "post:ecc-context-monitor"
   }
 }

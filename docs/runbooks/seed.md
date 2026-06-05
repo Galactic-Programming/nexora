@@ -2,6 +2,11 @@
 
 Populates the Supabase Postgres with a realistic catalog (4 destinations, 10 tours, 30 departures, 2 itinerary days) for local development, Postman runs, and demo screenshots.
 
+> **Two different "seeds" — don't confuse them.** This runbook's `pnpm db:seed`
+> only fills the **Postgres catalog** (tours/destinations/departures). It does
+> **not** create login accounts. Auth users + paid bookings for Postman come
+> from a separate harness — see [Seeding auth users for Postman](#seeding-auth-users-for-postman-postmanseed) below.
+
 ## Run it
 
 ```bash
@@ -74,3 +79,52 @@ Or via Postman: `Tours (Public) → GET /tours` returns 9 rows (the draft is hid
 Edit `prisma/seed.ts` directly. The data lives in two arrays near the top (`DESTINATIONS`, `TOURS`) — change any field, re-run `pnpm db:seed`, and the upsert path keeps the IDs stable.
 
 Avoid changing slugs unless you also clean up the old rows manually — the seed only upserts the slugs it knows about, so renamed entries leave orphaned rows behind.
+
+## Seeding auth users for Postman (`postman:seed`)
+
+`pnpm db:seed` above fills the **Postgres catalog only**. To actually run the
+Postman collection end-to-end you also need **login accounts** (a customer + an
+admin) and a couple of **PAID bookings** (for the refund and review folders).
+Those live in Supabase Auth + Stripe, not in Postgres, so they come from a
+second harness:
+
+```bash
+pnpm postman:seed          # node docs/postman/seed-test-data.mjs
+```
+
+What it does ([docs/postman/seed-test-data.mjs](../postman/seed-test-data.mjs)):
+
+1. Upserts two **email-confirmed** Supabase Auth users — `customer@example.com`
+   and `admin@example.com` (emails are hardcoded).
+2. Creates a dedicated OPEN departure on `sa-pa-trek-2d1n` and pays two bookings
+   via a self-signed Stripe webhook (no browser / Stripe CLI needed).
+3. Writes a **gitignored** Postman environment at `.tmp/postman.env.json` with
+   every value the collection needs.
+
+### Where do `userPassword` / `adminPassword` come from?
+
+You don't pick them — the script **generates them randomly on first run** and
+persists them into `.tmp/postman.env.json`. Re-running keeps the same passwords
+(the script reads the existing file back), so they're stable across runs.
+
+To use them in Postman, **import `.tmp/postman.env.json` directly** as the
+environment — `userEmail`, `userPassword`, `adminEmail`, `adminPassword` (plus
+`refundBookingId`, `reviewBookingCode`) are already filled. The script prints no
+secrets to stdout; open the file to read them. **Never commit `.tmp/`** — that's
+exactly why it's gitignored.
+
+### Prerequisites & order (fresh clone)
+
+`postman:seed` reads secrets from `apps/api/.env` (gitignored) and calls the
+running backend, so the order matters:
+
+1. `apps/api/.env` filled — needs `SUPABASE_*` **and** `STRIPE_SECRET_KEY` +
+   `STRIPE_WEBHOOK_SECRET`, plus `ADMIN_EMAILS` containing `admin@example.com`.
+2. `pnpm --filter @tourism/api exec prisma migrate deploy` — create the tables.
+3. `pnpm db:seed` — catalog (so the `sa-pa-trek-2d1n` tour the bookings target exists).
+4. `pnpm --filter @tourism/api start:dev` — backend must be up.
+5. `pnpm postman:seed` — auth users + paid bookings → `.tmp/postman.env.json`.
+6. `pnpm postman:test` — headless Newman run against that env.
+
+For the per-role token mechanics (pre-request script, admin vs customer slot),
+see [postman-auth.md](postman-auth.md).
