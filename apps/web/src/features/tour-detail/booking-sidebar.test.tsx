@@ -13,6 +13,7 @@ describe("BookingSidebar", () => {
   it("renders a row per departure with seats left and price", () => {
     render(<BookingSidebar departures={deps} currency="USD" localeTag="en-US" text={text} />);
     expect(screen.getByText("3 seats left")).toBeInTheDocument();
+    expect(screen.getByText(/2027/)).toBeInTheDocument();
   });
   it("renders empty state when there are no departures", () => {
     render(<BookingSidebar departures={[]} currency="USD" localeTag="en-US" text={text} />);

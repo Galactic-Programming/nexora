@@ -19,7 +19,9 @@ export function BookingSidebar({
   const money = (n: number) =>
     new Intl.NumberFormat(localeTag, { style: "currency", currency }).format(n);
   const day = (d: string) =>
-    new Intl.DateTimeFormat(localeTag, { dateStyle: "medium" }).format(new Date(d));
+    new Intl.DateTimeFormat(localeTag, { dateStyle: "medium" }).format(
+      new Date(d.length === 10 ? `${d}T00:00:00` : d),
+    );
 
   return (
     <aside className="border-border bg-muted/30 sticky top-20 rounded-2xl border p-6">

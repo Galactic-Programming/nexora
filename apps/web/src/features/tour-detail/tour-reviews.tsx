@@ -18,7 +18,7 @@ export function TourReviews({
         <h2 className="font-heading text-2xl font-semibold">{text.title}</h2>
         {averageRating !== null && (
           <span className="text-muted-foreground flex items-center gap-1 text-sm">
-            <StarIcon className="size-4 fill-current" /> {averageRating.toFixed(1)} · {reviewCount}
+            <StarIcon className="size-4 fill-current" aria-hidden="true" /> {averageRating.toFixed(1)} · {reviewCount}
           </span>
         )}
       </div>
@@ -30,9 +30,13 @@ export function TourReviews({
             <li key={r.id} className="border-border rounded-2xl border p-5">
               <div className="mb-2 flex items-center justify-between">
                 <span className="font-medium">{r.author}</span>
-                <span className="flex items-center gap-0.5 text-sm">
+                <span
+                  className="flex items-center gap-0.5 text-sm"
+                  role="img"
+                  aria-label={`${r.rating} out of 5 stars`}
+                >
                   {Array.from({ length: r.rating }).map((_, i) => (
-                    <StarIcon key={i} className="size-3.5 fill-current" />
+                    <StarIcon key={i} className="size-3.5 fill-current" aria-hidden="true" />
                   ))}
                 </span>
               </div>
