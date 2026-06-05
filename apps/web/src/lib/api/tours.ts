@@ -1,6 +1,7 @@
 import { env } from "../env";
 import { ApiError } from "./errors";
 import type { ApiTour } from "@/features/home/tour-view-model";
+import type { components } from "./schema";
 
 export interface PaginationMeta {
   page: number;
@@ -63,6 +64,67 @@ export async function listTours(
       pageSize: query.pageSize,
       total: tours.length,
       totalPages: tours.length ? 1 : 0,
+    },
+  };
+}
+
+// ─── Tour Detail helpers ───────────────────────────────────────────────────
+
+export type TourDetail = components["schemas"]["TourDetailDto"];
+export type Departure = components["schemas"]["DepartureDto"];
+export type PublicReview = components["schemas"]["PublicReviewDto"];
+
+type Envelope<T> = {
+  data: T | null;
+  error: { code: string; message: string } | null;
+  meta?: Record<string, unknown>;
+};
+
+/** Raw-envelope GET against the backend; throws ApiError on error/non-2xx/non-JSON. */
+async function getEnvelope<T>(path: string): Promise<{ data: T; meta?: Record<string, unknown> }> {
+  const res = await fetch(`${env.NEXT_PUBLIC_API_BASE_URL}${path}`, {
+    headers: { Accept: "application/json" },
+  });
+  let body: Envelope<T>;
+  try {
+    body = (await res.json()) as Envelope<T>;
+  } catch {
+    throw new ApiError("HTTP_ERROR", `Unexpected non-JSON response (${res.status})`, res.status);
+  }
+  if (body.error) throw new ApiError(body.error.code, body.error.message, res.status);
+  if (!res.ok) throw new ApiError("HTTP_ERROR", `Unexpected response (${res.status})`, res.status);
+  if (body.data === null) throw new ApiError("EMPTY", `Empty response (${res.status})`, res.status);
+  return { data: body.data, meta: body.meta };
+}
+
+export async function getTour(slug: string): Promise<TourDetail> {
+  const { data } = await getEnvelope<TourDetail>(`/api/v1/tours/${encodeURIComponent(slug)}`);
+  return data;
+}
+
+export async function getTourDepartures(slug: string): Promise<Departure[]> {
+  const { data } = await getEnvelope<Departure[]>(
+    `/api/v1/tours/${encodeURIComponent(slug)}/departures`,
+  );
+  return data;
+}
+
+export async function getTourReviews(
+  slug: string,
+  page = 1,
+): Promise<{ reviews: PublicReview[]; averageRating: number | null; meta: PaginationMeta }> {
+  const { data, meta } = await getEnvelope<PublicReview[]>(
+    `/api/v1/tours/${encodeURIComponent(slug)}/reviews?page=${page}`,
+  );
+  const m = meta ?? {};
+  return {
+    reviews: data,
+    averageRating: typeof m.averageRating === "number" ? m.averageRating : null,
+    meta: {
+      page: Number(m.page ?? page),
+      pageSize: Number(m.pageSize ?? data.length),
+      total: Number(m.total ?? data.length),
+      totalPages: Number(m.totalPages ?? 1),
     },
   };
 }
