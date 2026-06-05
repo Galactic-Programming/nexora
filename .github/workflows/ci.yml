@@ -40,6 +40,12 @@ jobs:
       RESEND_FROM_EMAIL: 'Tourism <noreply@example.com>'
       THROTTLE_TTL_SECONDS: 60
       THROTTLE_LIMIT: 100
+      # Web app (apps/web) public env — placeholders so `next build` passes
+      # env.ts fail-fast validation. No backend is hit at build time (all
+      # locale pages are dynamic / server-rendered on demand).
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:3000
+      NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
 
     steps:
       - uses: actions/checkout@v4

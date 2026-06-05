@@ -84,7 +84,11 @@ async function main() {
     } catch {
       // File missing — same as a content mismatch.
     }
-    if (existing !== out) {
+    // Compare EOL-insensitively: the generated string uses LF, but a checkout
+    // on Windows (or a CRLF-committed blob) may have CRLF on disk. Line endings
+    // are not meaningful content for this generated file, so normalize before
+    // comparing to avoid false "out of date" failures across platforms.
+    if (existing.replace(/\r\n/g, '\n') !== out) {
       console.error(
         '[postman:check] tourism-api.json is out of date. ' +
           'Run `pnpm postman:build` and commit the result.',
