@@ -8,8 +8,8 @@ export function TourGallery({ images, title, emptyLabel }: { images: string[]; t
         <p className="text-muted-foreground py-8">{emptyLabel}</p>
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-          {images.map((src, i) => (
-            <div key={src + i} className="relative aspect-[4/3] overflow-hidden rounded-xl">
+          {images.map((src) => (
+            <div key={src} className="relative aspect-4/3 overflow-hidden rounded-xl">
               <Image src={src} alt="" fill className="object-cover" sizes="(max-width: 640px) 50vw, 33vw" />
             </div>
           ))}
