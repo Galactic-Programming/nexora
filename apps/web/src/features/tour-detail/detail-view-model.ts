@@ -41,7 +41,7 @@ export function toTourDetailModel(tour: TourDetail, locale: string): TourDetailV
     title: vi ? tour.titleVi : tour.titleEn,
     summary: (vi ? tour.summaryVi : tour.summaryEn) ?? undefined,
     heroImage: heroUrl(tour.media),
-    gallery: tour.media.map((m) => m.url),
+    gallery: tour.media.filter((m) => m.role !== "hero").map((m) => m.url),
     rating: tour.averageRating ?? undefined,
     reviewCount: tour.reviewsCount,
     price: Number(tour.basePrice),
@@ -87,7 +87,8 @@ export function toDepartureModel(dep: Departure, tour: TourDetail, _locale: stri
     endDate: dep.endDate,
     seatsLeft,
     soldOut: seatsLeft <= 0,
-    price: Number(dep.priceOverride ?? tour.basePrice),
+    // `||` (not `??`) so an empty-string priceOverride falls back to basePrice.
+    price: Number(dep.priceOverride || tour.basePrice),
   };
 }
 
