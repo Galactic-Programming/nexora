@@ -23,7 +23,7 @@ export function DestinationDetail({
   return (
     <main className="flex flex-col">
       <DetailHero image={destination.heroImage} eyebrow={text.eyebrow} title={destination.name} />
-      <section className="mx-auto w-full max-w-6xl px-4 py-10">
+      <section aria-label={destination.name} className="mx-auto w-full max-w-6xl px-4 py-10">
         <p className="text-muted-foreground text-sm">
           {[destination.region, destination.country].filter(Boolean).join(", ")}
         </p>
