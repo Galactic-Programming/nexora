@@ -17,7 +17,11 @@ export function parseDestinationsQuery(sp: RawParams): DestinationsQuery {
     Object.entries(sp).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]),
   );
   const parsed = schema.parse(flat);
-  return { page: parsed.page, pageSize: DEST_PAGE_SIZE, search: parsed.q };
+  return {
+    page: parsed.page,
+    pageSize: DEST_PAGE_SIZE,
+    ...(parsed.q !== undefined && { search: parsed.q }),
+  };
 }
 
 /** Serialize a destinations query back to URLSearchParams, omitting defaults/empty. */
