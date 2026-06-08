@@ -126,11 +126,26 @@ B-phase pattern (schemas/helpers/view split → focused components → route wir
 
 ## 5. Reuse (priority: existing components)
 
-- `@tourism/ui` custom: `form-field` / `field-custom`, `password-input` + `password-strength`,
-  `button-custom`, `alert-custom`, `dropdown-menu-custom`, `avatar-custom`.
-- Existing Supabase + API wiring (§2). react-hook-form (7.77) + zod (4.4) already present; add only
-  `@hookform/resolvers`.
-- Confirm exact component prop shapes during implementation and adapt rather than rebuild.
+**Visual foundation — the `shadcn-studio/blocks` auth family** (a matched, cohesive set the project
+already ships; covers every C1 page + 2FA for C4):
+
+- `blocks/login-page-01/` → sign-in, `blocks/register-01/` → sign-up,
+  `blocks/forgot-password-01/` → forgot, `blocks/reset-password-01/` → reset
+  (`blocks/two-factor-authentication-01/` reserved for C4).
+- These blocks are **presentational templates only** (`onSubmit preventDefault`, hardcoded English,
+  legacy `Field`/`Input`/`InputGroup` with an eye-toggle, a Google button, `AuthBackgroundShape` +
+  `Logo`, card layout). **Adapt, don't rebuild:** copy each block's markup into `apps/web` auth
+  components, then (a) wire to react-hook-form + zod + Supabase, (b) replace all copy with the `Auth`
+  i18n namespace, (c) strip demo-only bits (magic-link link, "Login as User/Admin" quick buttons,
+  "Shadcn Studio" branding/`Logo` → the app brand), (d) show validation/auth errors via the legacy
+  `Field` invalid state and/or `alert-custom`, (e) keep the **Google button** rendered but inert as a
+  **C3 seam** (disabled/"coming soon" or wired in C3 — no OAuth logic in C1), (f) drop "Remember me"
+  and the privacy-policy checkbox unless trivially kept.
+- On sign-up, optionally layer `custom/password-strength` onto the block's password field.
+
+**Other reuse:** `@tourism/ui` `dropdown-menu-custom` + `avatar-custom` (UserMenu), `button-custom`,
+`alert-custom`. Existing Supabase + API wiring (§2). react-hook-form (7.77) + zod (4.4) already
+present; add only `@hookform/resolvers`. Confirm exact prop shapes during implementation and adapt.
 
 ---
 
