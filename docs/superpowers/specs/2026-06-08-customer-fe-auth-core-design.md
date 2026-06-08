@@ -44,7 +44,7 @@ that route and the surrounding flow real.
 
 - **C2** Account profile page (`/account`, `GET/PATCH /users/me`) — UserMenu links to it but the page is C2.
 - **C3** Google OAuth — `signInWithOAuth({ provider:'google' })` plugs into the same `/auth/callback`
-  + `returnTo` built here.
+  and `returnTo` plumbing built here.
 - **C4** 2FA TOTP enroll/challenge — sign-in leaves a seam to check AAL and branch to a challenge step.
 - Per-pixel visual polish; admin auth (`apps/admin`).
 - Supabase dashboard config (enable Confirm-email, Custom SMTP/Resend, redirect allow-list) is an
@@ -169,8 +169,11 @@ present; add only `@hookform/resolvers`. Confirm exact prop shapes during implem
 - `redirect.ts` — `sanitizeReturnTo` allows `/foo`, rejects `//evil`, `https://evil`, empty → `/`.
 - `actions.ts` — `syncUser` calls `createApiClient(token)` `POST /auth/sync`; surfaces error on failure (api mocked).
 - `auth-error.ts` — known Supabase error codes/messages map to the right i18n key; unknown → generic.
-- Forms — render + validation errors shown; submit calls the mocked supabase method (happy path +
-  one error path each). No real Supabase/network.
+
+The four form components are thin orchestration wrappers (RHF + supabase call + redirect) over the
+already-tested logic; per B-phase precedent they are **verified in the browser at DoD** rather than
+unit-tested with heavy supabase/next-intl/navigation mocks. The ≥80% target applies to the logic
+modules above. (A render/validation test can be added later if a form grows real branching.)
 
 Playwright E2E deferred (manual browser verification at DoD instead).
 
