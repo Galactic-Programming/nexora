@@ -18,6 +18,7 @@ export interface ToursQueryInput {
   maxPrice?: number;
   sortBy: "createdAt" | "basePrice" | "durationDays" | "titleEn";
   sortOrder: "asc" | "desc";
+  destination?: string;
 }
 
 type ListEnvelope = {
@@ -39,6 +40,7 @@ export async function listTours(
   if (query.q) params.set("q", query.q);
   if (query.minPrice !== undefined) params.set("minPrice", String(query.minPrice));
   if (query.maxPrice !== undefined) params.set("maxPrice", String(query.maxPrice));
+  if (query.destination) params.set("destination", query.destination);
 
   const url = `${env.NEXT_PUBLIC_API_BASE_URL}/api/v1/tours?${params.toString()}`;
   const res = await fetch(url, { headers: { Accept: "application/json" } });
