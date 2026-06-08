@@ -54,6 +54,7 @@ apps/web/
 - [ ] **Step 1: Verify the DTO + generated type.** Read `apps/api/src/modules/destinations/dto/destination.dto.ts`. If it has NO `media` property, add it mirroring `TourDto.media` (the `@ApiProperty({ type: () => [MediaItemDto] }) media!: MediaItemDto[];`). Then regenerate FE types: start backend (`pnpm --filter @tourism/api start:dev`), run `pnpm --filter @tourism/web api:types`, confirm `components["schemas"]["DestinationDto"]` now has `media`. If it already has `media`, skip the DTO edit.
 
 - [ ] **Step 2: Seed destination hero media.** In `apps/api/prisma/seed.ts`, the destinations are upserted in a loop (`for (const d of DESTINATIONS)` → `prisma.destination.upsert(... )` → `row`). Reuse the existing `TOUR_HERO_SAMPLES` constant (or add a `DESTINATION_HERO_SAMPLES` list of the same verified sample publicIds). After each destination upsert + capturing `row.id`, add idempotent media seeding (mirror the tour media block added earlier in the same file):
+
 ```ts
     // Destination hero media (Cloudinary sample) so cards/hero render images.
     const destIdx = DESTINATIONS.indexOf(d);
@@ -72,15 +73,18 @@ apps/web/
       },
     });
 ```
+
 (`MediaOwnerType`/`MediaType` are already imported in seed.ts from Task earlier; if not, add them to the `@prisma/client` import.)
 
 - [ ] **Step 3: Run seed + verify.** `pnpm --filter @tourism/api db:seed`; then with backend running `curl -s http://localhost:3000/api/v1/destinations?pageSize=1` and confirm each destination has a non-empty `media` array with a `res.cloudinary.com` url.
 
 - [ ] **Step 4: Typecheck + commit.** `pnpm --filter @tourism/api typecheck` clean.
+
 ```bash
 git add apps/api/prisma/seed.ts apps/api/src/modules/destinations/dto/destination.dto.ts apps/web/src/lib/api/schema.d.ts
 git commit -m "feat(api): seed destination hero media (+ expose media on DestinationDto if needed)"
 ```
+
 (Only add `schema.d.ts`/`destination.dto.ts` if you changed them.)
 
 ---
@@ -90,6 +94,7 @@ git commit -m "feat(api): seed destination hero media (+ expose media on Destina
 **Files:** Create `apps/web/src/lib/api/destinations.ts`, `destinations.test.ts`; Modify `apps/web/src/lib/api/tours.ts`.
 
 - [ ] **Step 1: Write the failing test** `apps/web/src/lib/api/destinations.test.ts`:
+
 ```ts
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { listDestinations, getDestination } from "./destinations";
@@ -132,6 +137,7 @@ describe("getDestination", () => {
 - [ ] **Step 2: Run, verify fail.** `pnpm --filter @tourism/web test src/lib/api/destinations.test.ts`.
 
 - [ ] **Step 3: Implement** `apps/web/src/lib/api/destinations.ts`:
+
 ```ts
 import { env } from "../env";
 import { ApiError } from "./errors";
@@ -184,9 +190,11 @@ export async function getDestination(slug: string): Promise<Destination> {
   return data;
 }
 ```
+
 > This duplicates `getEnvelope` from `tours.ts` (private there). Acceptable parallel for now; do NOT refactor B1/B2 code in this task.
 
 - [ ] **Step 4: Extend `listTours` with `destination`.** In `apps/web/src/lib/api/tours.ts`: add `destination?: string;` to `ToursQueryInput`, and in `listTours` after the other optional params add:
+
 ```ts
   if (query.destination) params.set("destination", query.destination);
 ```
@@ -194,6 +202,7 @@ export async function getDestination(slug: string): Promise<Destination> {
 - [ ] **Step 5: Run tests + typecheck.** `pnpm --filter @tourism/web test src/lib/api/destinations.test.ts` → 4 pass; `pnpm --filter @tourism/web typecheck` → clean (existing tours tests still pass).
 
 - [ ] **Step 6: Commit.**
+
 ```bash
 git add apps/web/src/lib/api/destinations.ts apps/web/src/lib/api/destinations.test.ts apps/web/src/lib/api/tours.ts
 git commit -m "feat(web): destinations API helpers + listTours destination filter"
@@ -206,6 +215,7 @@ git commit -m "feat(web): destinations API helpers + listTours destination filte
 **Files:** Create `apps/web/src/features/destinations/destinations-query.ts`, `.test.ts`.
 
 - [ ] **Step 1: Write the failing test** `destinations-query.test.ts`:
+
 ```ts
 import { describe, it, expect } from "vitest";
 import { parseDestinationsQuery, serializeDestinationsQuery, DEST_PAGE_SIZE } from "./destinations-query";
@@ -237,6 +247,7 @@ describe("serializeDestinationsQuery", () => {
 - [ ] **Step 2: Run, verify fail.**
 
 - [ ] **Step 3: Implement** `destinations-query.ts` (URL uses `q`; API field is `search`):
+
 ```ts
 import { z } from "zod";
 import type { DestinationsQueryInput } from "@/lib/api/destinations";
@@ -263,9 +274,11 @@ export function serializeDestinationsQuery(q: Partial<DestinationsQuery>): URLSe
   return sp;
 }
 ```
+
 > zod v4: if `z.coerce`/`.catch` differ, adapt to the same behavior (see `tours-query.ts`). Keep exports stable.
 
 - [ ] **Step 4: Run, verify pass** (5). **Step 5: Commit.**
+
 ```bash
 git add apps/web/src/features/destinations/destinations-query.ts apps/web/src/features/destinations/destinations-query.test.ts
 git commit -m "feat(web): destinations URL query parse/serialize"
@@ -278,6 +291,7 @@ git commit -m "feat(web): destinations URL query parse/serialize"
 **Files:** Create `apps/web/src/features/destinations/destination-view-model.ts`, `.test.ts`.
 
 - [ ] **Step 1: Write the failing test** `destination-view-model.test.ts`:
+
 ```ts
 import { describe, it, expect } from "vitest";
 import { toDestinationModel } from "./destination-view-model";
@@ -307,6 +321,7 @@ describe("toDestinationModel", () => {
 ```
 
 - [ ] **Step 2: Run, verify fail. Step 3: Implement** `destination-view-model.ts`:
+
 ```ts
 import type { Destination } from "@/lib/api/destinations";
 
@@ -336,9 +351,11 @@ export function toDestinationModel(dest: Destination, locale: string): Destinati
   };
 }
 ```
+
 > If `dest.media` typing differs (e.g. `MediaItemDto[]`), keep the safe `?? []` + role access; adjust the local cast to the generated media item type.
 
 - [ ] **Step 4: Run, verify pass** (2). **Step 5: Commit.**
+
 ```bash
 git add apps/web/src/features/destinations/destination-view-model.ts apps/web/src/features/destinations/destination-view-model.test.ts
 git commit -m "feat(web): destination view-model (localized props + hero)"
@@ -351,6 +368,7 @@ git commit -m "feat(web): destination view-model (localized props + hero)"
 **Files:** Create `destination-card.tsx`, `destinations-grid.tsx`, `destinations-grid.test.tsx`, `destinations-search.tsx` (client), `destinations-archive.tsx` under `apps/web/src/features/destinations/`.
 
 - [ ] **Step 1: `destination-card.tsx`** (server; image + text; links to detail via next-intl `Link`):
+
 ```tsx
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
@@ -375,6 +393,7 @@ export function DestinationCard({ destination }: { destination: DestinationVM })
 ```
 
 - [ ] **Step 2: `destinations-grid.test.tsx`**:
+
 ```tsx
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
@@ -398,6 +417,7 @@ describe("DestinationsGrid", () => {
 ```
 
 - [ ] **Step 3: `destinations-grid.tsx`**:
+
 ```tsx
 import { DestinationCard } from "./destination-card";
 import type { DestinationVM } from "./destination-view-model";
@@ -413,9 +433,11 @@ export function DestinationsGrid({ destinations, emptyLabel }: { destinations: D
   );
 }
 ```
+
 Run its test → 2 pass.
 
 - [ ] **Step 4: `destinations-search.tsx`** (client; mirror B1's filter push):
+
 ```tsx
 "use client";
 
@@ -450,6 +472,7 @@ export function DestinationsSearch({ placeholder, submitLabel }: { placeholder: 
 ```
 
 - [ ] **Step 5: `destinations-archive.tsx`** (server shell):
+
 ```tsx
 import type { DestinationVM } from "./destination-view-model";
 import { DestinationsSearch } from "./destinations-search";
@@ -479,9 +502,11 @@ export function DestinationsArchive({ destinations, total, totalPages, text }: {
   );
 }
 ```
+
 > NOTE: fix the typo `class_name` → `className` (left intentionally as a reminder that the implementer must write valid JSX). `ToursPagination` (B1) reads/writes the `page` URL param generically, so it works here too — confirm it doesn't hard-depend on tours-only params; it uses `parseToursQuery` which only reads `page` for pagination, compatible. If it conflicts, build a tiny local pagination mirroring it.
 
 - [ ] **Step 6: typecheck + commit.**
+
 ```bash
 pnpm --filter @tourism/web typecheck
 git add apps/web/src/features/destinations/destination-card.tsx apps/web/src/features/destinations/destinations-grid.tsx apps/web/src/features/destinations/destinations-grid.test.tsx apps/web/src/features/destinations/destinations-search.tsx apps/web/src/features/destinations/destinations-archive.tsx
@@ -497,6 +522,7 @@ git commit -m "feat(web): destinations card, grid, search, archive shell"
 **Files:** Create `destination-detail.tsx`; `app/[locale]/destinations/page.tsx` + `loading.tsx`; `app/[locale]/destinations/[slug]/page.tsx` + `loading.tsx`. Modify `messages/en.json`, `vi.json`.
 
 - [ ] **Step 1: i18n — add `Destinations` namespace to `messages/en.json`** (merge; read first):
+
 ```json
 "Destinations": {
   "eyebrow": "Where to go",
@@ -514,6 +540,7 @@ git commit -m "feat(web): destinations card, grid, search, archive shell"
 ```
 
 - [ ] **Step 2: same for `messages/vi.json`** (merge):
+
 ```json
 "Destinations": {
   "eyebrow": "Điểm đến",
@@ -531,6 +558,7 @@ git commit -m "feat(web): destinations card, grid, search, archive shell"
 ```
 
 - [ ] **Step 3: `destination-detail.tsx`** (hero + info + tours grid, reusing B1 `TourGrid`):
+
 ```tsx
 import type { DestinationVM } from "./destination-view-model";
 import type { ApiTour } from "@/features/home/tour-view-model";
@@ -558,9 +586,11 @@ export function DestinationDetail({ destination, tours, locale, text }: {
   );
 }
 ```
+
 > Reuses B2's `DetailHero` and B1's `TourGrid` (which maps via `toTourCardModel`). Confirm both import paths.
 
 - [ ] **Step 4: list `app/[locale]/destinations/page.tsx`** (RSC):
+
 ```tsx
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { listDestinations } from "@/lib/api/destinations";
@@ -593,6 +623,7 @@ export default async function DestinationsPage({ params, searchParams }: Props) 
 ```
 
 - [ ] **Step 5: detail `app/[locale]/destinations/[slug]/page.tsx`** (RSC):
+
 ```tsx
 import { notFound } from "next/navigation";
 import { setRequestLocale, getTranslations } from "next-intl/server";
@@ -630,9 +661,11 @@ export default async function DestinationDetailPage({ params }: Props) {
   );
 }
 ```
+
 > `listTours` returns `{ tours, meta }` (B1). `detail` typing: if TS flags `dest` "used before assigned", type it `let dest: Awaited<ReturnType<typeof getDestination>>;` (notFound returns never).
 
 - [ ] **Step 6: loading files.** `app/[locale]/destinations/loading.tsx` (skeleton grid like B1's tours loading) and `app/[locale]/destinations/[slug]/loading.tsx` (skeleton hero + grid like B2's). Mirror those existing files' `ShimmerSkeleton` usage.
+
 ```tsx
 // list loading.tsx
 import { ShimmerSkeleton } from "@tourism/ui/components/custom/shimmer-skeleton";
@@ -647,6 +680,7 @@ export default function Loading() {
   );
 }
 ```
+
 ```tsx
 // [slug]/loading.tsx
 import { ShimmerSkeleton } from "@tourism/ui/components/custom/shimmer-skeleton";
@@ -663,6 +697,7 @@ export default function Loading() {
 ```
 
 - [ ] **Step 7: verify + commit.**
+
 ```bash
 pnpm --filter @tourism/web typecheck
 pnpm --filter @tourism/web lint
@@ -682,6 +717,7 @@ git commit -m "feat(web): destinations list + detail routes, detail component, i
 - [ ] **Step 2: Verify** — list shows destination cards **with images** + search (changes `?q=`) + pagination; click a card → `/en/destinations/[slug]` shows hero + info + a grid of that destination's tours (cards link to `/tours/[slug]` = B2); `/vi/destinations` localized; unknown slug → localized not-found; no console errors.
 - [ ] **Step 3: Update roadmap** — mark "Customer FE — B3 Destinations" done + note Phase B complete in `docs/planning/roadmap.md`. Commit.
 - [ ] **Step 4: Integrate (rebase-and-merge, linear)** — confirm with user before pushing master:
+
 ```bash
 git checkout master
 git merge --ff-only feat/customer-fe-browse-destinations
