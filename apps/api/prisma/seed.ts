@@ -523,6 +523,23 @@ async function main(): Promise<void> {
       update: { ...destFields, isActive: true },
     });
     destinationIdBySlug.set(d.slug, row.id);
+
+    // Destination hero media (Cloudinary sample) so cards/hero render images.
+    const destIdx = DESTINATIONS.indexOf(d);
+    await prisma.mediaAsset.deleteMany({
+      where: { ownerType: MediaOwnerType.DESTINATION, ownerId: row.id },
+    });
+    await prisma.mediaAsset.create({
+      data: {
+        publicId: TOUR_HERO_SAMPLES[destIdx % TOUR_HERO_SAMPLES.length],
+        type: MediaType.IMAGE,
+        ownerType: MediaOwnerType.DESTINATION,
+        ownerId: row.id,
+        role: 'hero',
+        format: 'jpg',
+        sortOrder: 0,
+      },
+    });
   }
 
   // 2. Tours — upsert by slug. Carries itinerary for one tour.
