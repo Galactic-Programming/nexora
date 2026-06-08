@@ -51,6 +51,19 @@
     "clear": "Clear",
     "paginationAria": "Tours pagination"
   },
+  "Destinations": {
+    "eyebrow": "Where to go",
+    "title": "Destinations",
+    "resultsCount": "{count} destinations",
+    "empty": "No destinations match your search.",
+    "searchPlaceholder": "Search destinations",
+    "search": "Search",
+    "paginationAria": "Destinations pagination",
+    "toursTitle": "Tours in {name}",
+    "toursEmpty": "No tours here yet.",
+    "region": "Region",
+    "country": "Country"
+  },
   "TourDetail": {
     "eyebrow": "Explore",
     "infoTitle": "Information",

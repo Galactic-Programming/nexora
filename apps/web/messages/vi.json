@@ -51,6 +51,19 @@
     "clear": "Xóa lọc",
     "paginationAria": "Phân trang tour"
   },
+  "Destinations": {
+    "eyebrow": "Điểm đến",
+    "title": "Điểm đến",
+    "resultsCount": "{count} điểm đến",
+    "empty": "Không có điểm đến phù hợp.",
+    "searchPlaceholder": "Tìm điểm đến",
+    "search": "Tìm",
+    "paginationAria": "Phân trang điểm đến",
+    "toursTitle": "Tour tại {name}",
+    "toursEmpty": "Chưa có tour ở đây.",
+    "region": "Khu vực",
+    "country": "Quốc gia"
+  },
   "TourDetail": {
     "eyebrow": "Khám phá",
     "infoTitle": "Thông tin",
