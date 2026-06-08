@@ -41,7 +41,7 @@ A **read-only** server-rendered tour detail page at `/[locale]/tours/[slug]` mat
 ## 2. Backend contract (already available, public)
 
 - **U-07 `GET /tours/:slug`** → `TourDetailDto` = `TourWithStatsDto` + `destination: DestinationDto`
-  + `itinerary: ItineraryDayDto[]` (sorted by `dayNumber`). 404 when missing/unpublished.
+  - `itinerary: ItineraryDayDto[]` (sorted by `dayNumber`). 404 when missing/unpublished.
   Tour carries: `slug, titleEn/Vi, summaryEn/Vi, basePrice (string), currency, durationDays,
   maxGroupSize, category, difficulty, included[], excluded[], meetingPoint, media[] (url, role, type),
   averageRating, reviewsCount, peopleGoing, destination, itinerary`.
@@ -50,7 +50,7 @@ A **read-only** server-rendered tour detail page at `/[locale]/tours/[slug]` mat
   Seats left = `seatsTotal - seatsBooked`; price = `priceOverride ?? tour.basePrice`.
 - **U-09 `GET /tours/:slug/reviews?page&limit`** → `PaginatedPublicReviewsDto`:
   `data: PublicReviewDto[]` (`id, rating 1–5, title (string|null), body, createdAt, userFullName`)
-  + `meta` including `averageRating` (and pagination). Approved-only, newest first.
+  - `meta` including `averageRating` (and pagination). Approved-only, newest first.
 
 `DestinationDto`: `slug, nameEn, nameVi, country, region (nullable), descriptionEn/Vi (nullable)`.
 
@@ -150,7 +150,7 @@ reviews-empty, average-rating label.
 
 - `detail-view-model.ts` — maps a `TourDetailDto` to localized view props (EN vs VI title/summary,
   hero image from media, formatted price/duration); maps a `DepartureDto` to date range + seats-left
-  + resolved price; maps a `PublicReviewDto` to display props.
+  - resolved price; maps a `PublicReviewDto` to display props.
 - `tour-reviews.tsx` — renders a review per item + average rating; renders empty state for `[]`.
 - `tour-plan.tsx` — renders one row per itinerary day; empty/absent itinerary handled.
 - `booking-sidebar.tsx` — renders a row per departure with seats-left + price; renders empty state.
