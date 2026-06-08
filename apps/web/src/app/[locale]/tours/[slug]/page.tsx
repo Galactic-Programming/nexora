@@ -29,6 +29,10 @@ export default async function TourDetailPage({ params }: Props) {
     throw err;
   }
 
+  // Departures and reviews are non-critical: if either sub-resource fails we
+  // degrade to empty rather than failing the whole page (the primary getTour
+  // above already hard-fails to the error boundary / notFound). The catches
+  // intentionally swallow all errors for graceful degradation in B2.
   const [departuresRaw, reviewsRes] = await Promise.all([
     getTourDepartures(slug).catch(() => []),
     getTourReviews(slug).catch(() => ({
