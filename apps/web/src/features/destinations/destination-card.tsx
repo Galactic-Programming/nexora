@@ -5,11 +5,11 @@ import type { DestinationVM } from "./destination-view-model";
 export function DestinationCard({ destination }: { destination: DestinationVM }) {
   return (
     <Link href={destination.href} className="group border-border block overflow-hidden rounded-2xl border">
-      <div className="bg-muted relative aspect-[4/3] overflow-hidden">
+      <div className="bg-muted relative aspect-4/3 overflow-hidden">
         {destination.heroImage && (
           <Image
             src={destination.heroImage}
-            alt=""
+            alt={destination.name}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"
             sizes="(max-width: 640px) 100vw, 33vw"

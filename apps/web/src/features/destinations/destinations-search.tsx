@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@tourism/ui/components/custom/button-custom";
@@ -18,6 +18,10 @@ export function DestinationsSearch({
   const sp = useSearchParams();
   const current = parseDestinationsQuery(Object.fromEntries(sp.entries()));
   const [q, setQ] = useState(current.search ?? "");
+
+  useEffect(() => {
+    setQ(current.search ?? "");
+  }, [current.search]);
 
   function apply() {
     const next = serializeDestinationsQuery({
