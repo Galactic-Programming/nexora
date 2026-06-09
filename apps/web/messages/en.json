@@ -6,7 +6,9 @@
     "destinations": "Destinations",
     "signIn": "Sign in",
     "ariaLabel": "Main navigation",
-    "openMenu": "Open menu"
+    "openMenu": "Open menu",
+    "account": "Account",
+    "signOut": "Sign out"
   },
   "HomePage": {
     "eyebrow": "Curated journeys",
@@ -93,5 +95,52 @@
     "reviewsTitle": "Reviews",
     "reviewsEmpty": "No reviews yet.",
     "average": "average"
+  },
+  "Auth": {
+    "signInTitle": "Sign in",
+    "signInSubtitle": "Welcome back. Sign in to continue.",
+    "signUpTitle": "Create your account",
+    "signUpSubtitle": "Join to book and manage your tours.",
+    "forgotTitle": "Reset your password",
+    "forgotSubtitle": "Enter your email and we'll send you a reset link.",
+    "resetTitle": "Set a new password",
+    "resetSubtitle": "Choose a new password for your account.",
+    "emailLabel": "Email address",
+    "emailPlaceholder": "you@example.com",
+    "passwordLabel": "Password",
+    "confirmPasswordLabel": "Confirm password",
+    "passwordPlaceholder": "••••••••",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "signInCta": "Sign in",
+    "signUpCta": "Create account",
+    "forgotCta": "Send reset link",
+    "resetCta": "Update password",
+    "googleCta": "Continue with Google",
+    "googleSoon": "Google sign-in is coming soon",
+    "orDivider": "or",
+    "noAccount": "New here?",
+    "createAccount": "Create an account",
+    "haveAccount": "Already have an account?",
+    "backToSignIn": "Back to sign in",
+    "forgotLink": "Forgot password?",
+    "checkEmailTitle": "Check your email",
+    "checkEmailBody": "We sent a link to {email}. Click it to continue.",
+    "signOut": "Sign out",
+    "validation": {
+      "emailInvalid": "Enter a valid email address.",
+      "passwordMin": "Password must be at least 8 characters.",
+      "passwordMax": "Password is too long.",
+      "passwordMismatch": "Passwords do not match."
+    },
+    "errors": {
+      "invalidCredentials": "Wrong email or password.",
+      "emailNotConfirmed": "Please confirm your email first. Check your inbox.",
+      "emailTaken": "An account with this email already exists.",
+      "rateLimited": "Too many attempts. Please wait a moment and try again.",
+      "linkInvalid": "This link is invalid or has expired. Request a new one.",
+      "syncFailed": "Signed in, but we couldn't load your profile. Retry.",
+      "generic": "Something went wrong. Please try again."
+    }
   }
 }

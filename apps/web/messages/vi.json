@@ -6,7 +6,9 @@
     "destinations": "Điểm đến",
     "signIn": "Đăng nhập",
     "ariaLabel": "Điều hướng chính",
-    "openMenu": "Mở menu"
+    "openMenu": "Mở menu",
+    "account": "Tài khoản",
+    "signOut": "Đăng xuất"
   },
   "HomePage": {
     "eyebrow": "Hành trình tuyển chọn",
@@ -93,5 +95,52 @@
     "reviewsTitle": "Đánh giá",
     "reviewsEmpty": "Chưa có đánh giá.",
     "average": "trung bình"
+  },
+  "Auth": {
+    "signInTitle": "Đăng nhập",
+    "signInSubtitle": "Chào mừng trở lại. Đăng nhập để tiếp tục.",
+    "signUpTitle": "Tạo tài khoản",
+    "signUpSubtitle": "Tham gia để đặt và quản lý tour của bạn.",
+    "forgotTitle": "Đặt lại mật khẩu",
+    "forgotSubtitle": "Nhập email, chúng tôi sẽ gửi liên kết đặt lại.",
+    "resetTitle": "Đặt mật khẩu mới",
+    "resetSubtitle": "Chọn mật khẩu mới cho tài khoản của bạn.",
+    "emailLabel": "Địa chỉ email",
+    "emailPlaceholder": "ban@example.com",
+    "passwordLabel": "Mật khẩu",
+    "confirmPasswordLabel": "Xác nhận mật khẩu",
+    "passwordPlaceholder": "••••••••",
+    "showPassword": "Hiện mật khẩu",
+    "hidePassword": "Ẩn mật khẩu",
+    "signInCta": "Đăng nhập",
+    "signUpCta": "Tạo tài khoản",
+    "forgotCta": "Gửi liên kết",
+    "resetCta": "Cập nhật mật khẩu",
+    "googleCta": "Tiếp tục với Google",
+    "googleSoon": "Đăng nhập Google sẽ sớm có",
+    "orDivider": "hoặc",
+    "noAccount": "Bạn mới biết đến?",
+    "createAccount": "Tạo tài khoản",
+    "haveAccount": "Đã có tài khoản?",
+    "backToSignIn": "Quay lại đăng nhập",
+    "forgotLink": "Quên mật khẩu?",
+    "checkEmailTitle": "Kiểm tra email",
+    "checkEmailBody": "Chúng tôi đã gửi liên kết tới {email}. Nhấp vào để tiếp tục.",
+    "signOut": "Đăng xuất",
+    "validation": {
+      "emailInvalid": "Nhập địa chỉ email hợp lệ.",
+      "passwordMin": "Mật khẩu cần ít nhất 8 ký tự.",
+      "passwordMax": "Mật khẩu quá dài.",
+      "passwordMismatch": "Mật khẩu không khớp."
+    },
+    "errors": {
+      "invalidCredentials": "Sai email hoặc mật khẩu.",
+      "emailNotConfirmed": "Vui lòng xác nhận email trước. Kiểm tra hộp thư.",
+      "emailTaken": "Đã tồn tại tài khoản với email này.",
+      "rateLimited": "Quá nhiều lần thử. Vui lòng đợi một lát rồi thử lại.",
+      "linkInvalid": "Liên kết không hợp lệ hoặc đã hết hạn. Hãy yêu cầu liên kết mới.",
+      "syncFailed": "Đã đăng nhập, nhưng chưa tải được hồ sơ. Thử lại.",
+      "generic": "Đã có lỗi xảy ra. Vui lòng thử lại."
+    }
   }
 }
