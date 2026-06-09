@@ -14,6 +14,9 @@ describe("mapAuthError", () => {
   it("maps rate limiting", () => {
     expect(mapAuthError({ message: "For security purposes, you can only request this after 30 seconds" })).toBe("errors.rateLimited");
   });
+  it("maps an expired/invalid link", () => {
+    expect(mapAuthError({ message: "Token has expired or is invalid" })).toBe("errors.linkInvalid");
+  });
   it("falls back to a generic key", () => {
     expect(mapAuthError({ message: "some unknown thing" })).toBe("errors.generic");
     expect(mapAuthError(null)).toBe("errors.generic");
