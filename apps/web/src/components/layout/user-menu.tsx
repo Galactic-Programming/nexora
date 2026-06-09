@@ -2,8 +2,9 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@tourism/ui/components/custom/button-custom";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { UserMenuActions } from "./user-menu-actions";
 
-/** Server component: shows Sign in when logged out, the email when logged in. */
+/** Server component: shows Sign in when logged out, dropdown when logged in. */
 export async function UserMenu() {
   const t = await getTranslations("Nav");
   const supabase = await createSupabaseServerClient();
@@ -18,9 +19,5 @@ export async function UserMenu() {
       </Button>
     );
   }
-  return (
-    <span className="text-sm font-medium" data-testid="user-email">
-      {user.email}
-    </span>
-  );
+  return <UserMenuActions email={user.email ?? ""} />;
 }
