@@ -6,6 +6,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -35,21 +36,23 @@ export function UserMenuActions({ email }: { email: string }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className="flex items-center gap-2 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        nativeButton
+        className="flex items-center gap-2 rounded-full focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         aria-label={email}
-        nativeButton={false}
       >
         <Avatar className="size-8">
           <AvatarFallback>{initial}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel
-          className="max-w-48 truncate"
-          data-testid="user-email"
-        >
-          {email}
-        </DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel
+            className="max-w-48 truncate"
+            data-testid="user-email"
+          >
+            {email}
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           render={<Link href="/account" />}
