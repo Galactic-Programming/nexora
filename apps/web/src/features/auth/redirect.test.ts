@@ -13,5 +13,6 @@ describe("sanitizeReturnTo", () => {
     expect(sanitizeReturnTo("//evil.com")).toBe("/");      // protocol-relative
     expect(sanitizeReturnTo("https://evil.com")).toBe("/");
     expect(sanitizeReturnTo("/\\evil")).toBe("/");          // backslash trick
+    expect(sanitizeReturnTo("%2F%2Fevil.com")).toBe("/");  // encoded //
   });
 });

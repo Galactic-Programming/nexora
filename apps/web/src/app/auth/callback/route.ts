@@ -17,7 +17,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const supabase = await createSupabaseServerClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      await syncUser();
+      const sync = await syncUser();
+      if (!sync.ok) {
+        console.error("[auth/callback] syncUser failed:", sync.error);
+      }
       return NextResponse.redirect(new URL(next, url.origin));
     }
   }
