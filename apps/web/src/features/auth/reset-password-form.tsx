@@ -31,7 +31,6 @@ export function ResetPasswordForm() {
       return;
     }
     router.push("/sign-in");
-    router.refresh();
   }
 
   return (

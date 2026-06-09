@@ -42,7 +42,6 @@ export function SignInForm() {
       return;
     }
     router.push(returnTo);
-    router.refresh();
   }
 
   return (

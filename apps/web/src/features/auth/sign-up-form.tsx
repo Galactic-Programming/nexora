@@ -51,7 +51,6 @@ export function SignUpForm() {
         return;
       }
       router.push(returnTo);
-      router.refresh();
       return;
     }
     // Confirm-email ON → show the check-email panel.
