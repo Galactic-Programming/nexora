@@ -13,6 +13,7 @@
     "api:types": "openapi-typescript http://localhost:3000/api/docs-json -o src/lib/api/schema.d.ts"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.4.0",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.105.3",
     "@tanstack/react-query": "^5.101.0",
