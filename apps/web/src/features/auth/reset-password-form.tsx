@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTranslations } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@tourism/ui/components/legacy/button";
 import { Field, FieldGroup } from "@tourism/ui/components/legacy/field";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -14,7 +13,7 @@ import { PasswordField } from "./password-field";
 
 export function ResetPasswordForm() {
   const t = useTranslations("Auth");
-  const router = useRouter();
+  const locale = useLocale();
   const [formError, setFormError] = useState<string | null>(null);
   const {
     register,
@@ -30,7 +29,7 @@ export function ResetPasswordForm() {
       setFormError(t(mapAuthError(error)));
       return;
     }
-    router.push("/sign-in");
+    window.location.assign(`/${locale}/sign-in`);
   }
 
   return (

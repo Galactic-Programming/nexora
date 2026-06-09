@@ -3,9 +3,8 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import { useRouter } from "@/i18n/navigation";
 import { Button } from "@tourism/ui/components/legacy/button";
 import { Field, FieldGroup, FieldLabel } from "@tourism/ui/components/legacy/field";
 import { Input } from "@tourism/ui/components/legacy/input";
@@ -18,7 +17,7 @@ import { PasswordField } from "./password-field";
 
 export function SignInForm() {
   const t = useTranslations("Auth");
-  const router = useRouter();
+  const locale = useLocale();
   const sp = useSearchParams();
   const returnTo = sanitizeReturnTo(sp.get("returnTo"));
   const [formError, setFormError] = useState<string | null>(null);
@@ -41,7 +40,7 @@ export function SignInForm() {
       setFormError(t("errors.syncFailed"));
       return;
     }
-    router.push(returnTo);
+    window.location.assign(`/${locale}${returnTo}`);
   }
 
   return (
