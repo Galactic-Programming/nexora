@@ -29,6 +29,12 @@ describe("signUpSchema", () => {
       expect(issue?.message).toBe("validation.passwordMismatch");
     }
   });
+  it("rejects a password longer than 72 chars", () => {
+    const long = "x".repeat(73);
+    const r = signUpSchema.safeParse({ email: "a@b.com", password: long, confirmPassword: long });
+    expect(r.success).toBe(false);
+    if (!r.success) expect(r.error.issues[0]?.message).toBe("validation.passwordMax");
+  });
 });
 
 describe("forgotSchema / resetSchema", () => {
@@ -38,5 +44,10 @@ describe("forgotSchema / resetSchema", () => {
   it("reset requires matching passwords", () => {
     expect(resetSchema.safeParse({ password: "secret12", confirmPassword: "secret12" }).success).toBe(true);
     expect(resetSchema.safeParse({ password: "secret12", confirmPassword: "x" }).success).toBe(false);
+  });
+  it("forgot rejects an invalid email", () => {
+    const r = forgotSchema.safeParse({ email: "nope" });
+    expect(r.success).toBe(false);
+    if (!r.success) expect(r.error.issues[0]?.message).toBe("validation.emailInvalid");
   });
 });

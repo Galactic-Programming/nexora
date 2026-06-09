@@ -3,6 +3,7 @@ import { z } from "zod";
 // Validation messages are STABLE KEYS under the `Auth` i18n namespace; the
 // forms render them via `t(key)`. Keep keys in sync with messages/*.json.
 const email = z.string().email("validation.emailInvalid");
+// Keys passwordMax / passwordMin / emailInvalid / passwordMismatch must exist in the Auth i18n namespace (messages/*.json).
 const password = z.string().min(8, "validation.passwordMin").max(72, "validation.passwordMax");
 
 export const signInSchema = z.object({ email, password });
