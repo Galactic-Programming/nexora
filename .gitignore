@@ -6,6 +6,16 @@ node_modules/
 dist/
 build/
 .turbo/
+# Next.js / build caches — apps/web + apps/admin ignore their own copies; these
+# are root-level safety nets that also cover any future packages.
+.next/
+out/
+*.tsbuildinfo
+.eslintcache
+.cache/
+
+# Vercel local deployment config
+.vercel/
 
 # Prisma generated client (regenerated via `prisma generate`)
 **/prisma/generated/
@@ -40,6 +50,9 @@ docs/postman/.newman-cache/
 
 # Local screenshots / QA captures — kept out of git to avoid root clutter
 .screenshots/
+
+# Brainstorm visual companion runtime (local-only mockups + server state)
+.superpowers/
 
 # Figma reference exports (large local-only design refs; share via Figma link)
 docs/tourism/
