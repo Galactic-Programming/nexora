@@ -7,8 +7,6 @@ import { routing } from '@/i18n/routing';
 import '../globals.css';
 import { TooltipProvider } from '@tourism/ui/components/legacy/tooltip';
 import { QueryProvider } from '@/providers/query-provider';
-import { SiteHeader } from '@/components/layout/site-header';
-import { SiteFooter } from '@/components/layout/site-footer';
 
 // Body / UI font — Be Vietnam Pro has first-class Vietnamese diacritics.
 const bodyFont = Be_Vietnam_Pro({
@@ -63,11 +61,7 @@ export default async function LocaleLayout({ children, params }: Props) {
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider>
           <QueryProvider>
-            <TooltipProvider>
-              <SiteHeader />
-              <div className="flex-1">{children}</div>
-              <SiteFooter />
-            </TooltipProvider>
+            <TooltipProvider>{children}</TooltipProvider>
           </QueryProvider>
         </NextIntlClientProvider>
       </body>
