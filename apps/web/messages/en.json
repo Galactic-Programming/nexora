@@ -127,6 +127,8 @@
     "checkEmailTitle": "Check your email",
     "checkEmailBody": "We sent a link to {email}. Click it to continue.",
     "signOut": "Sign out",
+    "brandHeadline": "Discover & book unforgettable trips",
+    "brandSubline": "Curated destinations · transparent pricing",
     "validation": {
       "emailInvalid": "Enter a valid email address.",
       "passwordMin": "Password must be at least 8 characters.",

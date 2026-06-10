@@ -127,6 +127,8 @@
     "checkEmailTitle": "Kiểm tra email",
     "checkEmailBody": "Chúng tôi đã gửi liên kết tới {email}. Nhấp vào để tiếp tục.",
     "signOut": "Đăng xuất",
+    "brandHeadline": "Khám phá & đặt những chuyến đi khó quên",
+    "brandSubline": "Điểm đến tuyển chọn · giá minh bạch",
     "validation": {
       "emailInvalid": "Nhập địa chỉ email hợp lệ.",
       "passwordMin": "Mật khẩu cần ít nhất 8 ký tự.",
