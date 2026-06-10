@@ -84,7 +84,7 @@ function makePrisma(overrides: Partial<Record<string, jest.Mock>> = {}) {
       count: overrides.count ?? jest.fn(),
     },
   };
-  // Supports the array form (list reads) AND the interactive callback form
+  // Supports the array form AND the interactive callback form (write paths)
   // (create/update/remove writes). The callback gets the same mock client.
   client.$transaction =
     overrides.$transaction ??

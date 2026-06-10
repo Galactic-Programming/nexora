@@ -89,9 +89,9 @@ export class ToursService {
    *
    * Sort whitelist is enforced in the DTO; default is newest first.
    *
-   * Uses `$transaction` so `count` + `findMany` agree exactly even under
-   * concurrent writes — without this you get off-by-one totals when a
-   * row lands between the two queries.
+   * Runs list + count with `Promise.all` (NOT `$transaction`) — the Supabase
+   * transaction-mode pooler (connection_limit=1) can't start a batch transaction
+   * under concurrency; a paginated count needs no cross-query snapshot consistency.
    */
   async findPublishedList(query: ListToursQueryDto): Promise<PaginatedTours> {
     const page = query.page ?? 1;

@@ -148,9 +148,6 @@ describe('ReviewsService.findApprovedForTour', () => {
           .fn()
           .mockResolvedValue({ _avg: { rating: opts.avg ?? null } }),
       },
-      $transaction: jest.fn(async (ops: Promise<unknown>[]) =>
-        Promise.all(ops),
-      ),
     };
   }
 
