@@ -17,7 +17,7 @@ export async function AuthBrandPanel() {
       <Image src={BRAND_IMAGE_URL} alt="" fill priority sizes="50vw" className="object-cover" />
       {/* brand-tint wash — token-driven, no hex */}
       <div
-        className="from-primary/85 to-primary/40 absolute inset-0 bg-gradient-to-br"
+        className="from-primary/85 to-primary/40 absolute inset-0 bg-linear-to-br"
         aria-hidden="true"
       />
       {/* wrapper-div fallback: SVG has hardcoded width/height attrs; CSS size-* reliably
@@ -26,7 +26,7 @@ export async function AuthBrandPanel() {
         className="pointer-events-none absolute -top-16 -right-16 opacity-40"
         aria-hidden="true"
       >
-        <div className="size-[28rem]">
+        <div className="size-112">
           <AuthBackgroundShape className="h-full w-full" />
         </div>
       </div>
