@@ -114,7 +114,10 @@ export class ToursService {
 
     const where = this.buildPublishedWhere(query, destinationId);
 
-    const [items, total] = await this.prisma.$transaction([
+    // Read-only list+count: use Promise.all (NOT $transaction) — the Supabase
+    // transaction-mode pooler (connection_limit=1) can't start a batch transaction
+    // under concurrency; pagination needs no cross-query snapshot consistency.
+    const [items, total] = await Promise.all([
       this.prisma.tour.findMany({
         where,
         include: { destination: true },

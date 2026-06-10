@@ -153,7 +153,10 @@ export class ReviewsService {
     const limit = query.limit ?? 10;
     const where = { tourId: tour.id, isApproved: true } as const;
 
-    const [rows, total, aggregate] = await this.prisma.$transaction([
+    // Read-only list+count: use Promise.all (NOT $transaction) — the Supabase
+    // transaction-mode pooler (connection_limit=1) can't start a batch transaction
+    // under concurrency; pagination needs no cross-query snapshot consistency.
+    const [rows, total, aggregate] = await Promise.all([
       this.prisma.review.findMany({
         where,
         orderBy: { createdAt: 'desc' },

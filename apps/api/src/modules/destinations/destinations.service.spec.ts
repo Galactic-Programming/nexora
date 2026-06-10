@@ -213,12 +213,11 @@ describe('DestinationsService', () => {
 
   describe('list (via findPublicList)', () => {
     it('forces isActive=true and returns pagination meta', async () => {
-      const tx = jest
-        .fn<Promise<[Destination[], number]>, [unknown[]]>()
-        .mockResolvedValue([[sampleRow], 1]);
-      const findMany = jest.fn();
-      const count = jest.fn();
-      const prisma = makePrisma({ findMany, count, $transaction: tx });
+      const findMany = jest
+        .fn<Promise<Destination[]>, [unknown]>()
+        .mockResolvedValue([sampleRow]);
+      const count = jest.fn<Promise<number>, [unknown]>().mockResolvedValue(1);
+      const prisma = makePrisma({ findMany, count });
       const svc = new DestinationsService(
         prisma as never,
         makeMedia() as never,
@@ -236,8 +235,9 @@ describe('DestinationsService', () => {
         total: 1,
         totalPages: 1,
       });
-      // Sanity: $transaction was called with both queries.
-      expect(tx.mock.calls[0][0]).toHaveLength(2);
+      // Sanity: Promise.all runs findMany and count independently (not $transaction).
+      expect(findMany).toHaveBeenCalled();
+      expect(count).toHaveBeenCalled();
     });
   });
 });

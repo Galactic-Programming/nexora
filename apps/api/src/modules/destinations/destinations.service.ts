@@ -282,7 +282,10 @@ export class DestinationsService {
         : {}),
     };
 
-    const [items, total] = await this.prisma.$transaction([
+    // Read-only list+count: use Promise.all (NOT $transaction) — the Supabase
+    // transaction-mode pooler (connection_limit=1) can't start a batch transaction
+    // under concurrency; pagination needs no cross-query snapshot consistency.
+    const [items, total] = await Promise.all([
       this.prisma.destination.findMany({
         where,
         orderBy: { [sortBy]: sortOrder },
