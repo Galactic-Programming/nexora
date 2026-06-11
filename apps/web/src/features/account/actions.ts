@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { updateMe } from "@/lib/api/users";
+import { routing } from "@/i18n/routing";
 import { profileSchema, type ProfileValues } from "./schema";
 import { buildUpdateBody, type ProfileOriginal } from "./build-update-body";
 
@@ -37,7 +38,10 @@ export async function updateProfile(input: UpdateProfileInput): Promise<UpdatePr
 
   try {
     await updateMe(session.access_token, body);
-    revalidatePath(`/${input.locale}/account`);
+    const locale = (routing.locales as readonly string[]).includes(input.locale)
+      ? input.locale
+      : routing.defaultLocale;
+    revalidatePath(`/${locale}/account`);
     return { ok: true };
   } catch {
     return { ok: false, error: "REQUEST_FAILED" };

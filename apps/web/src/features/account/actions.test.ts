@@ -50,4 +50,10 @@ describe("updateProfile", () => {
     h.updateMe.mockRejectedValue(new Error("boom"));
     expect(await updateProfile(validInput)).toEqual({ ok: false, error: "REQUEST_FAILED" });
   });
+  it("falls back to the default locale when an unknown locale segment is supplied", async () => {
+    h.updateMe.mockResolvedValue({ ...original, fullName: "Janet" });
+    const badLocale = { ...validInput, locale: "zz" };
+    expect(await updateProfile(badLocale)).toEqual({ ok: true });
+    expect(h.revalidatePath).toHaveBeenCalledWith("/en/account");
+  });
 });
