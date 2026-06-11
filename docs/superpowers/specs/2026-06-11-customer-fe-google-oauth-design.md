@@ -21,6 +21,7 @@ dependency: the Google provider must be configured in Google Cloud Console + Sup
 (deliberately staged AFTER code — see §6).
 
 **Brainstorm decisions (locked):**
+
 - **Approach:** client-side `signInWithOAuth({ provider: "google" })` from the button (standard
   supabase-js browser flow). No server action indirection, no Google SDK / One Tap.
 - **Config staging:** code + unit tests first; Google Cloud + Supabase Dashboard config afterwards
@@ -33,6 +34,7 @@ dependency: the Google provider must be configured in Google Cloud Console + Sup
   Sign-in renders both flags (fixing the C1 display gap).
 
 **In scope:**
+
 - Rewrite `features/auth/google-button.tsx` (live OAuth, loading state, inline error).
 - Extend `app/auth/callback/route.ts` (detect provider `error` param; locale-aware error bounce).
 - Sign-in form displays callback error flags (`link`, `oauth`).
@@ -41,6 +43,7 @@ dependency: the Google provider must be configured in Google Cloud Console + Sup
 - Config runbook step-by-step (Google Cloud + Supabase Dashboard) + e2e verification.
 
 **Out of scope (unchanged / deferred):**
+
 - Any backend change (`/auth/sync` already handles OAuth users — it mirrors whatever Supabase JWT
   arrives).
 - Other providers (Facebook/Apple…), Google One Tap, manual account-linking UI.
@@ -52,10 +55,12 @@ dependency: the Google provider must be configured in Google Cloud Console + Sup
 ## 2. Components & data flow
 
 ### 2.1 `GoogleButton` (rewrite — `features/auth/google-button.tsx`)
+
 `"use client"`. Drops the `{ label, soon }` props; reads everything itself like `sign-in-form.tsx`:
 `useTranslations("Auth")`, `useLocale()`, `useSearchParams()` (+ `sanitizeReturnTo`).
 
 Click handler:
+
 1. `setPending(true)`, clear inline error.
 2. `const redirectTo = buildOAuthRedirect(window.location.origin, locale, returnTo)`
    → `` `${origin}/auth/callback?next=${encodeURIComponent(`/${locale}${returnTo}`)}` ``.
@@ -68,7 +73,9 @@ Button shows `googleCta` normally, `googleRedirecting` + disabled while pending.
 `(auth)/sign-in/page.tsx` and `(auth)/sign-up/page.tsx` change to `<GoogleButton />` (no props).
 
 ### 2.2 Pure helpers (TDD — these carry the logic)
+
 In `features/auth/`:
+
 - **`buildOAuthRedirect(origin: string, locale: string, returnTo: string): string`** — new file
   `features/auth/oauth.ts`. Encodes `next` exactly once; `returnTo` is already sanitized by the
   caller.
@@ -79,7 +86,9 @@ In `features/auth/`:
   else → `null` (unknown flags show nothing).
 
 ### 2.3 Callback route (extend — `app/auth/callback/route.ts`)
+
 Order of checks:
+
 1. `const next = sanitizeReturnTo(url.searchParams.get("next"))` (unchanged).
 2. **NEW:** if `url.searchParams.get("error")` is present (Google/Supabase provider error or user
    cancel), redirect to `${localePrefix}/sign-in?error=oauth` where
@@ -93,12 +102,14 @@ Order of checks:
    via the same `pathLocale(next)` logic.
 
 ### 2.4 Sign-in error display (fix C1 gap — `features/auth/sign-in-form.tsx`)
+
 The form already has `formError` state + `sp = useSearchParams()`. Initialize:
 `const callbackErrorKey = mapCallbackError(sp.get("error"))` and seed the rendered error with
 `t(callbackErrorKey)` when present (cleared on next submit attempt, as today). No new UI — reuses
 the existing `role="alert"` paragraph.
 
 ### 2.5 Account behavior notes (no code)
+
 - New Google user → Supabase creates the user with a verified email → callback exchanges code →
   `syncUser` mirrors into the local DB with role `CUSTOMER`. No FE branching needed.
 - Supabase default: a Google identity with the **same verified email** as an existing
@@ -119,6 +130,7 @@ the existing `role="alert"` paragraph.
 ## 4. Testing
 
 **TDD (pure logic):**
+
 - `buildOAuthRedirect` — exact URL shape, single encoding, locale+returnTo composition, root
   returnTo (`/`) case.
 - `pathLocale` — `/vi/account` → `"vi"`, `/en` → `"en"`, `/account` → `null`, `/fr/x` → `null`,
@@ -145,6 +157,7 @@ check.
 ## 5. Files (planned)
 
 **Modified:**
+
 - `apps/web/src/features/auth/google-button.tsx` (rewrite)
 - `apps/web/src/features/auth/redirect.ts` (+ `pathLocale`) and `redirect.test.ts`
 - `apps/web/src/features/auth/auth-error.ts` (+ `mapCallbackError`) and `auth-error.test.ts`
@@ -155,6 +168,7 @@ check.
 - `docs/planning/roadmap.md` (mark C3 at the end)
 
 **New:**
+
 - `apps/web/src/features/auth/oauth.ts` (+ `oauth.test.ts`) — `buildOAuthRedirect`
 
 ---
