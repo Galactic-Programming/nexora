@@ -118,6 +118,13 @@
     "resetCta": "Cập nhật mật khẩu",
     "googleCta": "Tiếp tục với Google",
     "googleRedirecting": "Đang chuyển hướng tới Google…",
+    "mfa": {
+      "title": "Mã xác thực hai lớp",
+      "help": "Nhập mã 6 số từ ứng dụng xác thực của bạn.",
+      "codeLabel": "Mã xác thực",
+      "verifyCta": "Xác minh",
+      "back": "Quay lại đăng nhập"
+    },
     "orDivider": "hoặc",
     "noAccount": "Bạn mới biết đến?",
     "createAccount": "Tạo tài khoản",
@@ -142,6 +149,7 @@
       "rateLimited": "Quá nhiều lần thử. Vui lòng đợi một lát rồi thử lại.",
       "linkInvalid": "Liên kết không hợp lệ hoặc đã hết hạn. Hãy yêu cầu liên kết mới.",
       "oauthFailed": "Đăng nhập Google thất bại. Vui lòng thử lại.",
+      "mfaCodeInvalid": "Mã không đúng. Kiểm tra ứng dụng xác thực và thử lại.",
       "syncFailed": "Đã đăng nhập, nhưng chưa tải được hồ sơ. Thử lại.",
       "generic": "Đã có lỗi xảy ra. Vui lòng thử lại."
     }
@@ -149,8 +157,28 @@
   "Account": {
     "title": "Tài khoản của tôi",
     "subtitle": "Quản lý hồ sơ và tùy chọn của bạn.",
+    "security": {
+      "title": "Xác thực hai lớp",
+      "description": "Thêm một bước xác minh khi đăng nhập bằng mật khẩu.",
+      "statusEnabled": "Xác thực hai lớp đang bật.",
+      "statusDisabled": "Xác thực hai lớp đang tắt.",
+      "enableCta": "Bật 2FA",
+      "removeCta": "Gỡ 2FA",
+      "enrollTitle": "Thiết lập ứng dụng xác thực",
+      "enrollHelp": "Quét mã QR bằng ứng dụng xác thực, hoặc nhập khóa thủ công, rồi nhập mã 6 số ứng dụng hiển thị.",
+      "qrAlt": "Mã QR cho ứng dụng xác thực",
+      "secretLabel": "Khóa thiết lập",
+      "codeLabel": "Mã 6 số",
+      "verifyCta": "Xác minh và bật",
+      "cancelCta": "Hủy",
+      "removeTitle": "Gỡ xác thực hai lớp",
+      "removeHelp": "Nhập mã hiện tại từ ứng dụng xác thực để xác nhận gỡ.",
+      "removeConfirmCta": "Xác nhận gỡ",
+      "genericError": "Đã xảy ra lỗi. Vui lòng thử lại."
+    },
     "nav": {
-      "profile": "Hồ sơ"
+      "profile": "Hồ sơ",
+      "security": "Bảo mật"
     },
     "identity": {
       "heading": "Thông tin tài khoản",

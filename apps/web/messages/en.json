@@ -118,6 +118,13 @@
     "resetCta": "Update password",
     "googleCta": "Continue with Google",
     "googleRedirecting": "Redirecting to Google…",
+    "mfa": {
+      "title": "Two-factor code",
+      "help": "Enter the 6-digit code from your authenticator app.",
+      "codeLabel": "Authentication code",
+      "verifyCta": "Verify",
+      "back": "Back to sign in"
+    },
     "orDivider": "or",
     "noAccount": "New here?",
     "createAccount": "Create an account",
@@ -142,6 +149,7 @@
       "rateLimited": "Too many attempts. Please wait a moment and try again.",
       "linkInvalid": "This link is invalid or has expired. Request a new one.",
       "oauthFailed": "Google sign-in failed. Please try again.",
+      "mfaCodeInvalid": "That code didn’t work. Check your authenticator app and try again.",
       "syncFailed": "Signed in, but we couldn't load your profile. Retry.",
       "generic": "Something went wrong. Please try again."
     }
@@ -149,8 +157,28 @@
   "Account": {
     "title": "My account",
     "subtitle": "Manage your profile and preferences.",
+    "security": {
+      "title": "Two-factor authentication",
+      "description": "Add an extra verification step when signing in with your password.",
+      "statusEnabled": "Two-factor authentication is on.",
+      "statusDisabled": "Two-factor authentication is off.",
+      "enableCta": "Enable 2FA",
+      "removeCta": "Remove 2FA",
+      "enrollTitle": "Set up your authenticator app",
+      "enrollHelp": "Scan the QR code with your authenticator app, or enter the secret manually, then enter the 6-digit code it shows.",
+      "qrAlt": "QR code for your authenticator app",
+      "secretLabel": "Setup key",
+      "codeLabel": "6-digit code",
+      "verifyCta": "Verify and enable",
+      "cancelCta": "Cancel",
+      "removeTitle": "Remove two-factor authentication",
+      "removeHelp": "Enter the current code from your authenticator app to confirm removal.",
+      "removeConfirmCta": "Confirm removal",
+      "genericError": "Something went wrong. Please try again."
+    },
     "nav": {
-      "profile": "Profile"
+      "profile": "Profile",
+      "security": "Security"
     },
     "identity": {
       "heading": "Account details",
