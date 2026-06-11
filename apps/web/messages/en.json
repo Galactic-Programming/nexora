@@ -117,6 +117,7 @@
     "forgotCta": "Send reset link",
     "resetCta": "Update password",
     "googleCta": "Continue with Google",
+    "googleRedirecting": "Redirecting to Google…",
     "googleSoon": "Google sign-in is coming soon",
     "orDivider": "or",
     "noAccount": "New here?",
@@ -141,6 +142,7 @@
       "emailTaken": "An account with this email already exists.",
       "rateLimited": "Too many attempts. Please wait a moment and try again.",
       "linkInvalid": "This link is invalid or has expired. Request a new one.",
+      "oauthFailed": "Google sign-in failed. Please try again.",
       "syncFailed": "Signed in, but we couldn't load your profile. Retry.",
       "generic": "Something went wrong. Please try again."
     }

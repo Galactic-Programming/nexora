@@ -117,6 +117,7 @@
     "forgotCta": "Gửi liên kết",
     "resetCta": "Cập nhật mật khẩu",
     "googleCta": "Tiếp tục với Google",
+    "googleRedirecting": "Đang chuyển hướng tới Google…",
     "googleSoon": "Đăng nhập Google sẽ sớm có",
     "orDivider": "hoặc",
     "noAccount": "Bạn mới biết đến?",
@@ -141,6 +142,7 @@
       "emailTaken": "Đã tồn tại tài khoản với email này.",
       "rateLimited": "Quá nhiều lần thử. Vui lòng đợi một lát rồi thử lại.",
       "linkInvalid": "Liên kết không hợp lệ hoặc đã hết hạn. Hãy yêu cầu liên kết mới.",
+      "oauthFailed": "Đăng nhập Google thất bại. Vui lòng thử lại.",
       "syncFailed": "Đã đăng nhập, nhưng chưa tải được hồ sơ. Thử lại.",
       "generic": "Đã có lỗi xảy ra. Vui lòng thử lại."
     }
