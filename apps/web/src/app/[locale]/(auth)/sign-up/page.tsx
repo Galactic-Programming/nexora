@@ -30,7 +30,7 @@ export default async function SignUpPage({
             <span className="text-sm">{t("orDivider")}</span>
             <Separator className="flex-1" />
           </div>
-          <GoogleButton label={t("googleCta")} soon={t("googleSoon")} />
+          <GoogleButton />
         </div>
       }
     >
