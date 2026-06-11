@@ -144,5 +144,46 @@
       "syncFailed": "Signed in, but we couldn't load your profile. Retry.",
       "generic": "Something went wrong. Please try again."
     }
+  },
+  "Account": {
+    "title": "My account",
+    "subtitle": "Manage your profile and preferences.",
+    "nav": {
+      "profile": "Profile"
+    },
+    "identity": {
+      "heading": "Account details",
+      "email": "Email",
+      "role": "Role",
+      "memberSince": "Member since"
+    },
+    "role": {
+      "CUSTOMER": "Customer",
+      "ADMIN": "Admin"
+    },
+    "fields": {
+      "fullName": "Full name",
+      "fullNamePlaceholder": "Your full name",
+      "phone": "Phone",
+      "locale": "Preferred language",
+      "localeHelp": "Used for account notifications. It does not change the language of this page.",
+      "localeEn": "English",
+      "localeVi": "Vietnamese"
+    },
+    "validation": {
+      "fullNameMax": "Full name must be 120 characters or fewer.",
+      "phoneLength": "Phone must be between 6 and 20 characters."
+    },
+    "actions": {
+      "save": "Save changes",
+      "saving": "Saving…"
+    },
+    "status": {
+      "saved": "Your profile has been updated.",
+      "noChanges": "No changes to save.",
+      "error": "Something went wrong. Please try again.",
+      "loadError": "We couldn't load your profile.",
+      "retry": "Try again"
+    }
   }
 }

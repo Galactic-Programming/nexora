@@ -144,5 +144,46 @@
       "syncFailed": "Đã đăng nhập, nhưng chưa tải được hồ sơ. Thử lại.",
       "generic": "Đã có lỗi xảy ra. Vui lòng thử lại."
     }
+  },
+  "Account": {
+    "title": "Tài khoản của tôi",
+    "subtitle": "Quản lý hồ sơ và tùy chọn của bạn.",
+    "nav": {
+      "profile": "Hồ sơ"
+    },
+    "identity": {
+      "heading": "Thông tin tài khoản",
+      "email": "Email",
+      "role": "Vai trò",
+      "memberSince": "Thành viên từ"
+    },
+    "role": {
+      "CUSTOMER": "Khách hàng",
+      "ADMIN": "Quản trị viên"
+    },
+    "fields": {
+      "fullName": "Họ và tên",
+      "fullNamePlaceholder": "Họ và tên của bạn",
+      "phone": "Số điện thoại",
+      "locale": "Ngôn ngữ ưu tiên",
+      "localeHelp": "Dùng cho thông báo tài khoản. Tùy chọn này không thay đổi ngôn ngữ của trang.",
+      "localeEn": "Tiếng Anh",
+      "localeVi": "Tiếng Việt"
+    },
+    "validation": {
+      "fullNameMax": "Họ và tên không được vượt quá 120 ký tự.",
+      "phoneLength": "Số điện thoại phải từ 6 đến 20 ký tự."
+    },
+    "actions": {
+      "save": "Lưu thay đổi",
+      "saving": "Đang lưu…"
+    },
+    "status": {
+      "saved": "Hồ sơ của bạn đã được cập nhật.",
+      "noChanges": "Không có thay đổi để lưu.",
+      "error": "Đã xảy ra lỗi. Vui lòng thử lại.",
+      "loadError": "Chúng tôi không thể tải hồ sơ của bạn.",
+      "retry": "Thử lại"
+    }
   }
 }
