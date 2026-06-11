@@ -20,3 +20,14 @@ export function mapAuthError(error: AuthErrorLike | null | undefined): string {
   if (msg.includes("expired") || msg.includes("invalid")) return "errors.linkInvalid";
   return "errors.generic";
 }
+
+/**
+ * Maps the /auth/callback `?error=` flag (carried onto the sign-in URL) to a
+ * STABLE KEY under the `Auth` i18n namespace. Unknown/absent flags → null
+ * (sign-in renders nothing).
+ */
+export function mapCallbackError(flag: string | null): string | null {
+  if (flag === "link") return "errors.linkInvalid";
+  if (flag === "oauth") return "errors.oauthFailed";
+  return null;
+}

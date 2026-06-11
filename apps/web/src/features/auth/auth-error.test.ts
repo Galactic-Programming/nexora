@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { mapAuthError } from "./auth-error";
+import { mapAuthError, mapCallbackError } from "./auth-error";
 
 describe("mapAuthError", () => {
   it("maps invalid credentials", () => {
@@ -20,5 +20,17 @@ describe("mapAuthError", () => {
   it("falls back to a generic key", () => {
     expect(mapAuthError({ message: "some unknown thing" })).toBe("errors.generic");
     expect(mapAuthError(null)).toBe("errors.generic");
+  });
+});
+
+describe("mapCallbackError", () => {
+  it("maps known callback flags to i18n keys", () => {
+    expect(mapCallbackError("link")).toBe("errors.linkInvalid");
+    expect(mapCallbackError("oauth")).toBe("errors.oauthFailed");
+  });
+  it("returns null for unknown or absent flags", () => {
+    expect(mapCallbackError("weird")).toBe(null);
+    expect(mapCallbackError("")).toBe(null);
+    expect(mapCallbackError(null)).toBe(null);
   });
 });
