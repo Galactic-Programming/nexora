@@ -60,24 +60,35 @@ export function MfaSection() {
   async function startEnroll() {
     resetTransient();
     setBusy(true);
-    const supabase = createSupabaseBrowserClient();
-    // Clean up an abandoned unverified factor from a previous attempt.
-    const { data: existing } = await supabase.auth.mfa.listFactors();
-    const stale = existing?.totp?.find((f) => f.status !== "verified");
-    if (stale) await supabase.auth.mfa.unenroll({ factorId: stale.id });
+    try {
+      const supabase = createSupabaseBrowserClient();
+      // Re-check fresh state: a verified factor may exist if the mount-time
+      // listFactors failed (the disabled view is also the error fallback) —
+      // never enroll a second factor on top of it.
+      const { data: existing } = await supabase.auth.mfa.listFactors();
+      const verified = pickTotpFactor(existing);
+      if (verified) {
+        setView({ kind: "enabled", factor: verified });
+        return;
+      }
+      // Clean up an abandoned unverified factor from a previous attempt.
+      const stale = existing?.totp?.find((f) => f.status !== "verified");
+      if (stale) await supabase.auth.mfa.unenroll({ factorId: stale.id });
 
-    const { data, error: enrollError } = await supabase.auth.mfa.enroll({ factorType: "totp" });
-    setBusy(false);
-    if (enrollError || !data) {
-      setError(t("security.genericError"));
-      return;
+      const { data, error: enrollError } = await supabase.auth.mfa.enroll({ factorType: "totp" });
+      if (enrollError || !data) {
+        setError(t("security.genericError"));
+        return;
+      }
+      setView({
+        kind: "enrolling",
+        factorId: data.id,
+        qrCode: data.totp.qr_code,
+        secret: data.totp.secret,
+      });
+    } finally {
+      setBusy(false);
     }
-    setView({
-      kind: "enrolling",
-      factorId: data.id,
-      qrCode: data.totp.qr_code,
-      secret: data.totp.secret,
-    });
   }
 
   /** challenge + verify the given factor with the entered code. */
@@ -106,46 +117,60 @@ export function MfaSection() {
     if (view.kind !== "enrolling") return;
     setError(null);
     setBusy(true);
-    const ok = await verifyCode(view.factorId);
-    setBusy(false);
-    if (ok) {
-      resetTransient();
-      setView({ kind: "loading" });
-      await refresh();
+    try {
+      const ok = await verifyCode(view.factorId);
+      if (ok) {
+        resetTransient();
+        setView({ kind: "loading" });
+        await refresh();
+      }
+    } finally {
+      setBusy(false);
     }
   }
 
   async function cancelEnroll() {
     if (view.kind !== "enrolling") return;
     setBusy(true);
-    const supabase = createSupabaseBrowserClient();
-    await supabase.auth.mfa.unenroll({ factorId: view.factorId });
-    setBusy(false);
-    resetTransient();
-    setView({ kind: "disabled" });
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const { error: unenrollError } = await supabase.auth.mfa.unenroll({
+        factorId: view.factorId,
+      });
+      if (unenrollError) {
+        // Stay on the enroll panel so the user sees the failure; the stale
+        // factor is also cleaned up by the next startEnroll attempt.
+        setError(t("security.genericError"));
+        return;
+      }
+      resetTransient();
+      setView({ kind: "disabled" });
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function confirmRemove() {
     if (view.kind !== "removing") return;
     setError(null);
     setBusy(true);
-    const supabase = createSupabaseBrowserClient();
-    const ok = await verifyCode(view.factor.id);
-    if (!ok) {
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const ok = await verifyCode(view.factor.id);
+      if (!ok) return;
+      const { error: unenrollError } = await supabase.auth.mfa.unenroll({
+        factorId: view.factor.id,
+      });
+      if (unenrollError) {
+        setError(t("security.genericError"));
+        return;
+      }
+      resetTransient();
+      setView({ kind: "loading" });
+      await refresh();
+    } finally {
       setBusy(false);
-      return;
     }
-    const { error: unenrollError } = await supabase.auth.mfa.unenroll({
-      factorId: view.factor.id,
-    });
-    setBusy(false);
-    if (unenrollError) {
-      setError(t("security.genericError"));
-      return;
-    }
-    resetTransient();
-    setView({ kind: "loading" });
-    await refresh();
   }
 
   if (view.kind === "loading") {
