@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { mapAuthError, mapCallbackError } from "./auth-error";
+import { mapAuthError, mapCallbackError, callbackErrorFlag } from "./auth-error";
 
 describe("mapAuthError", () => {
   it("maps invalid credentials", () => {
@@ -20,6 +20,17 @@ describe("mapAuthError", () => {
   it("falls back to a generic key", () => {
     expect(mapAuthError({ message: "some unknown thing" })).toBe("errors.generic");
     expect(mapAuthError(null)).toBe("errors.generic");
+  });
+});
+
+describe("callbackErrorFlag", () => {
+  it("classifies an expired email OTP link as a link error", () => {
+    expect(callbackErrorFlag("otp_expired")).toBe("link");
+  });
+  it("classifies everything else (provider error / cancel / unknown) as oauth", () => {
+    expect(callbackErrorFlag("user_cancelled")).toBe("oauth");
+    expect(callbackErrorFlag("access_denied")).toBe("oauth");
+    expect(callbackErrorFlag(null)).toBe("oauth");
   });
 });
 

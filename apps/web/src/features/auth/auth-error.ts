@@ -31,3 +31,13 @@ export function mapCallbackError(flag: string | null): string | null {
   if (flag === "oauth") return "errors.oauthFailed";
   return null;
 }
+
+/**
+ * Classifies a Supabase callback `?error_code=` into our sign-in error flag.
+ * Expired email OTP links (verify/recovery) arrive as `error_code=otp_expired`
+ * and must show the "link invalid" message — everything else on the error
+ * branch is an OAuth/provider failure (cancel, provider error, unknown).
+ */
+export function callbackErrorFlag(errorCode: string | null): "link" | "oauth" {
+  return errorCode === "otp_expired" ? "link" : "oauth";
+}

@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { syncUser } from "@/features/auth/actions";
 import { sanitizeReturnTo, pathLocale } from "@/features/auth/redirect";
+import { callbackErrorFlag } from "@/features/auth/auth-error";
 
 /**
  * Exchanges the `?code` from a Supabase email-verify / recovery / OAuth link
@@ -17,10 +18,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const locale = pathLocale(next);
   const prefix = locale ? `/${locale}` : "";
 
-  // Provider errors / user cancel arrive as ?error=... (no code) from the
-  // OAuth flow — bounce to sign-in with the dedicated oauth flag.
+  // Errors arrive as ?error=... (no code): OAuth provider failures / user
+  // cancel, but ALSO expired email OTP links (error_code=otp_expired) — route
+  // each to the matching sign-in flag so the message isn't misleading.
   if (url.searchParams.get("error")) {
-    return NextResponse.redirect(new URL(`${prefix}/sign-in?error=oauth`, url.origin));
+    const flag = callbackErrorFlag(url.searchParams.get("error_code"));
+    return NextResponse.redirect(new URL(`${prefix}/sign-in?error=${flag}`, url.origin));
   }
 
   if (code) {
