@@ -17,6 +17,8 @@ export function mapAuthError(error: AuthErrorLike | null | undefined): string {
   if (msg.includes("email not confirmed")) return "errors.emailNotConfirmed";
   if (msg.includes("already registered")) return "errors.emailTaken";
   if (msg.includes("for security purposes") || msg.includes("rate limit")) return "errors.rateLimited";
+  // MUST run before the generic `invalid` check — TOTP errors contain "invalid".
+  if (msg.includes("totp") || msg.includes("mfa")) return "errors.mfaCodeInvalid";
   if (msg.includes("expired") || msg.includes("invalid")) return "errors.linkInvalid";
   return "errors.generic";
 }

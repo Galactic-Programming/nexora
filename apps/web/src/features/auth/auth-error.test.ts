@@ -17,6 +17,10 @@ describe("mapAuthError", () => {
   it("maps an expired/invalid link", () => {
     expect(mapAuthError({ message: "Token has expired or is invalid" })).toBe("errors.linkInvalid");
   });
+  it("maps TOTP/MFA errors before the generic 'invalid' branch", () => {
+    expect(mapAuthError({ message: "Invalid TOTP code entered" })).toBe("errors.mfaCodeInvalid");
+    expect(mapAuthError({ message: "MFA verification failed" })).toBe("errors.mfaCodeInvalid");
+  });
   it("falls back to a generic key", () => {
     expect(mapAuthError({ message: "some unknown thing" })).toBe("errors.generic");
     expect(mapAuthError(null)).toBe("errors.generic");
