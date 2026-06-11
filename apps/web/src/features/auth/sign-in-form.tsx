@@ -11,7 +11,7 @@ import { Input } from "@tourism/ui/components/legacy/input";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { signInSchema, type SignInValues } from "./schemas";
 import { sanitizeReturnTo } from "./redirect";
-import { mapAuthError } from "./auth-error";
+import { mapAuthError, mapCallbackError } from "./auth-error";
 import { syncUser } from "./actions";
 import { PasswordField } from "./password-field";
 
@@ -20,7 +20,12 @@ export function SignInForm() {
   const locale = useLocale();
   const sp = useSearchParams();
   const returnTo = sanitizeReturnTo(sp.get("returnTo"));
-  const [formError, setFormError] = useState<string | null>(null);
+  // Seed the form error from a /auth/callback `?error=` flag (link/oauth);
+  // cleared on the next submit attempt like any other form error.
+  const callbackErrorKey = mapCallbackError(sp.get("error"));
+  const [formError, setFormError] = useState<string | null>(
+    callbackErrorKey ? t(callbackErrorKey) : null,
+  );
   const {
     register,
     handleSubmit,
