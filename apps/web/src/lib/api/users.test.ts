@@ -58,5 +58,15 @@ describe("updateMe", () => {
     const res = await updateMe("tok", { fullName: "Janet" });
     expect(res.fullName).toBe("Janet");
     expect(h.PATCH).toHaveBeenCalledWith("/api/v1/users/me", { body: { fullName: "Janet" } });
+    expect(h.tokens).toContain("tok");
+  });
+  it("throws ApiError(EMPTY) when data is missing", async () => {
+    h.PATCH.mockResolvedValue({ data: undefined });
+    await expect(updateMe("tok", { fullName: "x" })).rejects.toMatchObject({ name: "ApiError", code: "EMPTY" });
+  });
+  it("propagates a thrown ApiError from the middleware", async () => {
+    const { ApiError } = await import("./errors");
+    h.PATCH.mockRejectedValue(new ApiError("REQUEST_FAILED", "boom", 500));
+    await expect(updateMe("tok", { fullName: "x" })).rejects.toMatchObject({ name: "ApiError", code: "REQUEST_FAILED" });
   });
 });
