@@ -84,7 +84,8 @@ export default async function AccountPage({
         </div>
       </AccountShell>
     );
-  } catch {
+  } catch (error) {
+    console.error("Failed to load account profile", error);
     return (
       <AccountShell>
         <Alert variant="destructive">
