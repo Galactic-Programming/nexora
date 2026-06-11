@@ -77,7 +77,7 @@ export default async function AccountPage({
   try {
     const profile = await loadProfile(accessToken);
     return (
-      <AccountShell>
+      <AccountShell active="profile">
         <div className="space-y-8">
           <IdentityBlock user={profile} locale={locale} />
           <ProfileForm user={profile} />
@@ -87,7 +87,7 @@ export default async function AccountPage({
   } catch (error) {
     console.error("Failed to load account profile", error);
     return (
-      <AccountShell>
+      <AccountShell active="profile">
         <Alert variant="destructive">
           <AlertTitle>{t("status.loadError")}</AlertTitle>
           <AlertDescription>
