@@ -1,3 +1,5 @@
+import { routing } from "@/i18n/routing";
+
 /**
  * Returns a safe redirect target: only same-origin RELATIVE paths are allowed.
  * Anything else (absolute URL, protocol-relative `//`, backslash tricks, empty)
@@ -20,4 +22,18 @@ export function sanitizeReturnTo(value: string | null | undefined): string {
   if (!decoded.startsWith("/")) return "/";
   if (decoded.startsWith("//") || decoded.startsWith("/\\")) return "/";
   return value;
+}
+
+type AppLocale = (typeof routing.locales)[number];
+
+/**
+ * Returns the leading path segment iff it is a known routing locale, else null.
+ * Used by /auth/callback to keep error bounces on the user's locale. Only ever
+ * returns values from `routing.locales`, so the result is injection-safe.
+ */
+export function pathLocale(path: string): AppLocale | null {
+  const segment = (path.split("/")[1] ?? "").split(/[?#]/)[0] ?? "";
+  return (routing.locales as readonly string[]).includes(segment)
+    ? (segment as AppLocale)
+    : null;
 }
