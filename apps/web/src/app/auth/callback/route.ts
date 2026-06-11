@@ -1,17 +1,27 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { syncUser } from "@/features/auth/actions";
-import { sanitizeReturnTo } from "@/features/auth/redirect";
+import { sanitizeReturnTo, pathLocale } from "@/features/auth/redirect";
 
 /**
  * Exchanges the `?code` from a Supabase email-verify / recovery / OAuth link
  * for a session, mirrors the user (best-effort), then redirects to the
  * sanitized `next` path. Non-localized so next-intl cannot prefix it.
+ * Error bounces reuse the locale carried inside `next` (when present) so a
+ * VI user is not dumped onto the EN sign-in.
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const next = sanitizeReturnTo(url.searchParams.get("next"));
+  const locale = pathLocale(next);
+  const prefix = locale ? `/${locale}` : "";
+
+  // Provider errors / user cancel arrive as ?error=... (no code) from the
+  // OAuth flow — bounce to sign-in with the dedicated oauth flag.
+  if (url.searchParams.get("error")) {
+    return NextResponse.redirect(new URL(`${prefix}/sign-in?error=oauth`, url.origin));
+  }
 
   if (code) {
     const supabase = await createSupabaseServerClient();
@@ -25,5 +35,5 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
   }
   // No code or exchange failed → bounce to sign-in with an error flag.
-  return NextResponse.redirect(new URL("/sign-in?error=link", url.origin));
+  return NextResponse.redirect(new URL(`${prefix}/sign-in?error=link`, url.origin));
 }
