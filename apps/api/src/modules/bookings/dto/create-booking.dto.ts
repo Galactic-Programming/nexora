@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Length,
   Matches,
   Max,
   MaxLength,
@@ -87,10 +88,15 @@ export class CreateBookingDto {
   @MaxLength(200)
   contactEmail!: string;
 
-  @ApiPropertyOptional({ example: '+84901234567', maxLength: 30 })
+  /**
+   * Looser max than `users.phone` (6–20) on purpose: agents paste numbers
+   * with spaces/extensions. Same security floor though — min 6 rejects junk
+   * that used to slip through with only a max bound.
+   */
+  @ApiPropertyOptional({ example: '+84901234567', minLength: 6, maxLength: 30 })
   @IsOptional()
   @IsString()
-  @MaxLength(30)
+  @Length(6, 30)
   contactPhone?: string;
 
   /** Free-form notes shown to the tour operator (dietary, mobility, ...). */

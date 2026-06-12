@@ -1,12 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { MediaType } from '@prisma/client';
+import { MediaRole, MediaType } from '@prisma/client';
 import {
   IsEnum,
   IsInt,
   IsNumber,
   IsOptional,
   IsString,
-  Matches,
   Max,
   MaxLength,
   Min,
@@ -36,16 +35,14 @@ export class MediaInputDto {
   @IsEnum(MediaType)
   type!: MediaType;
 
-  @ApiProperty({
-    example: 'gallery',
-    description: "Slot within the owner, e.g. 'hero' | 'gallery' | 'avatar'.",
-    maxLength: 40,
-  })
-  @IsString()
-  @Matches(/^[a-z][a-z0-9-]{0,39}$/, {
-    message: 'role must be lowercase kebab-ish (a-z, 0-9, hyphen)',
-  })
-  role!: string;
+  /**
+   * Closed enum (was a free-form kebab string). Security-first: the FE
+   * filters on these exact values and a typo'd role would silently hide
+   * media. Adding a slot means extending `MediaRole` in the Prisma schema.
+   */
+  @ApiProperty({ enum: MediaRole, example: MediaRole.gallery })
+  @IsEnum(MediaRole)
+  role!: MediaRole;
 
   @ApiPropertyOptional({ example: 'jpg', maxLength: 10 })
   @IsOptional()
@@ -109,8 +106,8 @@ export class MediaItemDto {
   @ApiProperty({ enum: MediaType })
   type!: MediaType;
 
-  @ApiProperty({ example: 'gallery' })
-  role!: string;
+  @ApiProperty({ enum: MediaRole, example: MediaRole.gallery })
+  role!: MediaRole;
 
   @ApiPropertyOptional({ format: 'uri', description: 'Video poster URL.' })
   posterUrl?: string;

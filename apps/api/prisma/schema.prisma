@@ -55,6 +55,15 @@ enum MediaOwnerType {
   USER
 }
 
+/// Slot a media asset occupies within its owner. Kept as a closed enum
+/// (security-first): the FE filters on these exact strings and a free-form
+/// column invited drift. Adding a slot = enum migration, which is the point.
+enum MediaRole {
+  hero
+  gallery
+  avatar
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // User — local mirror of Supabase auth.users
 // ─────────────────────────────────────────────────────────────────────────────
@@ -62,9 +71,9 @@ enum MediaOwnerType {
 model User {
   id          String   @id @default(uuid()) @db.Uuid
   supabaseId  String   @unique @map("supabase_id") @db.Uuid
-  email       String   @unique
-  fullName    String?  @map("full_name")
-  phone       String?
+  email       String   @unique @db.VarChar(255)
+  fullName    String?  @map("full_name") @db.VarChar(120)
+  phone       String?  @db.VarChar(20)
   locale      Locale   @default(en)
   role        UserRole @default(CUSTOMER)
   createdAt   DateTime @default(now()) @map("created_at")
@@ -84,13 +93,13 @@ model User {
 
 model Destination {
   id             String   @id @default(uuid()) @db.Uuid
-  slug           String   @unique
-  nameEn         String   @map("name_en")
-  nameVi         String   @map("name_vi")
-  country        String   @default("Vietnam")
-  region         String?
-  descriptionEn  String?  @map("description_en")
-  descriptionVi  String?  @map("description_vi")
+  slug           String   @unique @db.VarChar(80)
+  nameEn         String   @map("name_en") @db.VarChar(120)
+  nameVi         String   @map("name_vi") @db.VarChar(120)
+  country        String   @default("Vietnam") @db.VarChar(60)
+  region         String?  @db.VarChar(80)
+  descriptionEn  String?  @map("description_en") @db.VarChar(2000)
+  descriptionVi  String?  @map("description_vi") @db.VarChar(2000)
   isActive       Boolean  @default(true) @map("is_active")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
@@ -107,23 +116,23 @@ model Destination {
 
 model Tour {
   id              String        @id @default(uuid()) @db.Uuid
-  slug            String        @unique
-  titleEn         String        @map("title_en")
-  titleVi         String        @map("title_vi")
-  summaryEn       String?       @map("summary_en")
-  summaryVi       String?       @map("summary_vi")
+  slug            String        @unique @db.VarChar(120)
+  titleEn         String        @map("title_en") @db.VarChar(200)
+  titleVi         String        @map("title_vi") @db.VarChar(200)
+  summaryEn       String?       @map("summary_en") @db.VarChar(500)
+  summaryVi       String?       @map("summary_vi") @db.VarChar(500)
   destinationId   String        @map("destination_id") @db.Uuid
   durationDays    Int           @map("duration_days")
   maxGroupSize    Int           @default(20) @map("max_group_size")
   basePrice       Decimal       @map("base_price") @db.Decimal(12, 2)
   currency        String        @default("USD") @db.VarChar(3)
   category        TourCategory  @default(DAY)
-  difficulty      String?
+  difficulty      String?       @db.VarChar(30)
   isPublished     Boolean       @default(false) @map("is_published")
   isFeatured      Boolean       @default(false) @map("is_featured")
   included        Json          @default("[]")
   excluded        Json          @default("[]")
-  meetingPoint    String?       @map("meeting_point")
+  meetingPoint    String?       @map("meeting_point") @db.VarChar(300)
   createdAt       DateTime      @default(now()) @map("created_at")
   updatedAt       DateTime      @updatedAt @map("updated_at")
 
@@ -148,10 +157,10 @@ model TourItineraryDay {
   id             String   @id @default(uuid()) @db.Uuid
   tourId         String   @map("tour_id") @db.Uuid
   dayNumber      Int      @map("day_number")
-  titleEn        String   @map("title_en")
-  titleVi        String   @map("title_vi")
-  descriptionEn  String?  @map("description_en")
-  descriptionVi  String?  @map("description_vi")
+  titleEn        String   @map("title_en") @db.VarChar(200)
+  titleVi        String   @map("title_vi") @db.VarChar(200)
+  descriptionEn  String?  @map("description_en") @db.VarChar(2000)
+  descriptionVi  String?  @map("description_vi") @db.VarChar(2000)
 
   tour           Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
 
@@ -189,7 +198,7 @@ model TourDeparture {
 
 model Booking {
   id                     String        @id @default(uuid()) @db.Uuid
-  code                   String        @unique
+  code                   String        @unique @db.VarChar(20)
   userId                 String        @map("user_id") @db.Uuid
   tourId                 String        @map("tour_id") @db.Uuid
   departureId            String        @map("departure_id") @db.Uuid
@@ -198,12 +207,12 @@ model Booking {
   totalAmount            Decimal       @map("total_amount") @db.Decimal(12, 2)
   currency               String        @default("USD") @db.VarChar(3)
   status                 BookingStatus @default(PENDING)
-  contactName            String        @map("contact_name")
-  contactEmail           String        @map("contact_email")
-  contactPhone           String?       @map("contact_phone")
-  specialRequests        String?       @map("special_requests")
-  stripeSessionId        String?       @unique @map("stripe_session_id")
-  stripePaymentIntentId  String?       @map("stripe_payment_intent_id")
+  contactName            String        @map("contact_name") @db.VarChar(120)
+  contactEmail           String        @map("contact_email") @db.VarChar(200)
+  contactPhone           String?       @map("contact_phone") @db.VarChar(30)
+  specialRequests        String?       @map("special_requests") @db.VarChar(1000)
+  stripeSessionId        String?       @unique @map("stripe_session_id") @db.VarChar(255)
+  stripePaymentIntentId  String?       @map("stripe_payment_intent_id") @db.VarChar(255)
   paidAt                 DateTime?     @map("paid_at")
   cancelledAt            DateTime?     @map("cancelled_at")
   createdAt              DateTime      @default(now()) @map("created_at")
@@ -229,9 +238,11 @@ model Review {
   tourId      String   @map("tour_id") @db.Uuid
   userId      String   @map("user_id") @db.Uuid
   bookingId   String   @unique @map("booking_id") @db.Uuid
+  // rating range 1..5 is ALSO enforced by a raw-SQL CHECK constraint in the
+  // migration (reviews_rating_range) — public aggregates depend on it.
   rating      Int
-  title       String?
-  body        String
+  title       String?  @db.VarChar(120)
+  body        String   @db.VarChar(2000)
   isApproved  Boolean  @default(false) @map("is_approved")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
@@ -268,8 +279,8 @@ model Wishlist {
 
 model PaymentEvent {
   id              String   @id @default(uuid()) @db.Uuid
-  stripeEventId   String   @unique @map("stripe_event_id")
-  type            String
+  stripeEventId   String   @unique @map("stripe_event_id") @db.VarChar(255)
+  type            String   @db.VarChar(100)
   payload         Json
   processedAt     DateTime @default(now()) @map("processed_at")
 
@@ -293,16 +304,16 @@ model PaymentEvent {
 
 model MediaAsset {
   id           String         @id @default(uuid()) @db.Uuid
-  publicId     String         @map("public_id") // Cloudinary public_id
+  publicId     String         @map("public_id") @db.VarChar(300) // Cloudinary public_id
   type         MediaType
   ownerType    MediaOwnerType @map("owner_type")
   ownerId      String         @map("owner_id") @db.Uuid
-  role         String // 'hero' | 'gallery' | 'avatar'
-  format       String? // jpg, webp, mp4...
+  role         MediaRole
+  format       String?        @db.VarChar(10) // jpg, webp, mp4...
   width        Int?
   height       Int?
   durationSec  Float?         @map("duration_sec") // video only
-  posterId     String?        @map("poster_id") // video thumbnail public_id
+  posterId     String?        @map("poster_id") @db.VarChar(300) // video thumbnail public_id
   bytes        Int?
   sortOrder    Int            @default(0) @map("sort_order")
   createdAt    DateTime       @default(now()) @map("created_at")
