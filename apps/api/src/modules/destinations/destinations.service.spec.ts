@@ -144,6 +144,48 @@ describe('DestinationsService', () => {
         ConflictException,
       );
     });
+
+    it('normalizes a messy provided slug to canonical kebab', async () => {
+      const created = jest.fn().mockResolvedValue(sampleRow);
+      const prisma = makePrisma({ create: created });
+      const svc = new DestinationsService(
+        prisma as never,
+        makeMedia() as never,
+      );
+
+      await svc.create({ ...baseCreateDto, slug: '  Hội An 2024 ' });
+
+      const calls = created.mock.calls as unknown as DestinationWriteCall[][];
+      expect(calls[0][0].data.slug).toBe('hoi-an-2024');
+    });
+
+    it('generates the slug from nameEn when omitted', async () => {
+      const created = jest.fn().mockResolvedValue(sampleRow);
+      const prisma = makePrisma({ create: created });
+      const svc = new DestinationsService(
+        prisma as never,
+        makeMedia() as never,
+      );
+
+      await svc.create({ ...baseCreateDto, slug: undefined, nameEn: 'Đà Nẵng' });
+
+      const calls = created.mock.calls as unknown as DestinationWriteCall[][];
+      expect(calls[0][0].data.slug).toBe('da-nang');
+    });
+
+    it('rejects INVALID_SLUG when the provided slug normalizes to nothing', async () => {
+      const created = jest.fn();
+      const prisma = makePrisma({ create: created });
+      const svc = new DestinationsService(
+        prisma as never,
+        makeMedia() as never,
+      );
+
+      await expect(
+        svc.create({ ...baseCreateDto, slug: '!!!' }),
+      ).rejects.toMatchObject({ response: { code: 'INVALID_SLUG' } });
+      expect(created).not.toHaveBeenCalled();
+    });
   });
 
   describe('update', () => {

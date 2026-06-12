@@ -40,19 +40,22 @@ import { MediaInputDto } from '../../media/dto/media.dto';
 export class CreateTourDto {
   // ── Identity ──────────────────────────────────────────────────────────────
 
-  @ApiProperty({
+  /**
+   * OPTIONAL since the slug-normalization pass (2026-06-12): any format is
+   * accepted — the service normalizes via `slugify()` (diacritics stripped,
+   * lowercased, kebab, capped at 120). Omit to auto-generate from `titleEn`.
+   * Input that normalizes to nothing (symbols only) → 400 `INVALID_SLUG`.
+   */
+  @ApiPropertyOptional({
     example: 'hoi-an-walking-tour',
-    minLength: 2,
-    maxLength: 120,
-    description: 'kebab-case slug; must match /^[a-z0-9]+(?:-[a-z0-9]+)*$/',
+    maxLength: 200,
+    description:
+      'Any format — normalized server-side to kebab-case (max 120). Omit to generate from titleEn.',
   })
+  @IsOptional()
   @IsString()
-  @MinLength(2)
-  @MaxLength(120)
-  @Matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
-    message: 'slug must be kebab-case (lowercase a-z, digits, single hyphens)',
-  })
-  slug!: string;
+  @MaxLength(200)
+  slug?: string;
 
   @ApiProperty({ example: 'Hoi An Ancient Town Walking Tour' })
   @IsString()

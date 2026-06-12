@@ -180,6 +180,40 @@ describe('ToursService', () => {
         response: { code: 'TOUR_SLUG_EXISTS' },
       });
     });
+
+    it('normalizes a messy provided slug to canonical kebab', async () => {
+      const destFind = jest.fn().mockResolvedValue({ id: 'd-1' });
+      const tourCreate = jest.fn().mockResolvedValue(sampleTour);
+      const prisma = makePrisma({
+        destinationFindUnique: destFind,
+        tourCreate,
+      });
+      const svc = new ToursService(prisma as never, makeMedia() as never);
+
+      await svc.create({ ...baseCreateDto, slug: 'TOUR Đặc Biệt (Hè 2026)' });
+
+      const calls = tourCreate.mock.calls as unknown as TourCreateCall[][];
+      expect(calls[0][0].data.slug).toBe('tour-dac-biet-he-2026');
+    });
+
+    it('generates the slug from titleEn when omitted', async () => {
+      const destFind = jest.fn().mockResolvedValue({ id: 'd-1' });
+      const tourCreate = jest.fn().mockResolvedValue(sampleTour);
+      const prisma = makePrisma({
+        destinationFindUnique: destFind,
+        tourCreate,
+      });
+      const svc = new ToursService(prisma as never, makeMedia() as never);
+
+      await svc.create({
+        ...baseCreateDto,
+        slug: undefined,
+        titleEn: 'Sa Pa Trek & Homestay',
+      });
+
+      const calls = tourCreate.mock.calls as unknown as TourCreateCall[][];
+      expect(calls[0][0].data.slug).toBe('sa-pa-trek-homestay');
+    });
   });
 
   describe('update', () => {

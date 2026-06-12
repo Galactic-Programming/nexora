@@ -28,20 +28,23 @@ import { MediaInputDto } from '../../media/dto/media.dto';
  * added in a follow-up `PATCH`.
  */
 export class CreateDestinationDto {
-  @ApiProperty({
+  /**
+   * OPTIONAL since the slug-normalization pass (2026-06-12): any format is
+   * accepted ("Hội An 2024", "ĐÀ NẴNG/Huế", …) — the service normalizes via
+   * `slugify()` (diacritics stripped, lowercased, kebab, capped at 80).
+   * Omit entirely to auto-generate from `nameEn`. Input that normalizes to
+   * nothing (symbols only) → 400 `INVALID_SLUG`.
+   */
+  @ApiPropertyOptional({
     example: 'hoi-an',
-    minLength: 2,
-    maxLength: 80,
-    description: 'kebab-case slug; must match /^[a-z0-9]+(?:-[a-z0-9]+)*$/',
+    maxLength: 120,
+    description:
+      'Any format — normalized server-side to kebab-case (max 80). Omit to generate from nameEn.',
   })
+  @IsOptional()
   @IsString()
-  @MinLength(2)
-  @MaxLength(80)
-  @Matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
-    message:
-      'slug must be kebab-case (lowercase a-z, digits, single hyphens, no leading/trailing hyphen)',
-  })
-  slug!: string;
+  @MaxLength(120)
+  slug?: string;
 
   @ApiProperty({ example: 'Hoi An', minLength: 1, maxLength: 120 })
   @IsString()

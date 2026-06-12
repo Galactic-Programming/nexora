@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { MediaOwnerType, Prisma, Tour } from '@prisma/client';
+import { slugify } from '../../common/slugify';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MediaService } from '../media/media.service';
 import { CreateTourDto } from './dto/create-tour.dto';
@@ -233,10 +234,13 @@ export class ToursService {
    */
   async create(body: CreateTourDto): Promise<Tour> {
     await this.assertDestinationExists(body.destinationId);
+    // Normalize ANY admin input; omitted slug falls back to titleEn.
+    // Symbol-only input → 400 INVALID_SLUG.
+    const slug = this.normalizeSlug(body.slug, body.titleEn);
     try {
       const tour = await this.prisma.$transaction(async (tx) => {
         const created = await tx.tour.create({
-          data: this.mapCreatePayload(body),
+          data: this.mapCreatePayload(body, slug),
           include: { destination: true },
         });
         if (body.media) {
@@ -277,6 +281,10 @@ export class ToursService {
     await this.findBySlug(slug); // 404 early
     if (body.destinationId) {
       await this.assertDestinationExists(body.destinationId);
+    }
+    // Same normalization as create when the PATCH renames the slug.
+    if (body.slug !== undefined) {
+      body = { ...body, slug: this.normalizeSlug(body.slug, body.titleEn) };
     }
     try {
       const updated = await this.prisma.$transaction(async (tx) => {
@@ -427,9 +435,35 @@ export class ToursService {
    * shape, applying defaults consistently so DB-level defaults don't
    * silently disagree with the API contract.
    */
-  private mapCreatePayload(body: CreateTourDto): Prisma.TourCreateInput {
+  /**
+   * Normalizes (or generates, when `provided` is absent/blank) the slug.
+   * Cap 120 chars mirrors the DB `VarChar(120)`; a trailing hyphen left by
+   * the cut is trimmed so the result stays canonical kebab.
+   *
+   * @throws BadRequestException — `INVALID_SLUG` when nothing usable remains.
+   */
+  private normalizeSlug(
+    provided: string | undefined,
+    fallback?: string,
+  ): string {
+    const source = provided?.trim() ? provided : (fallback ?? '');
+    const normalized = slugify(source).slice(0, 120).replace(/-+$/, '');
+    if (!normalized) {
+      throw new BadRequestException({
+        code: 'INVALID_SLUG',
+        message:
+          'Slug (or titleEn fallback) contains no usable characters after normalization',
+      });
+    }
+    return normalized;
+  }
+
+  private mapCreatePayload(
+    body: CreateTourDto,
+    slug: string,
+  ): Prisma.TourCreateInput {
     return {
-      slug: body.slug,
+      slug,
       titleEn: body.titleEn,
       titleVi: body.titleVi,
       summaryEn: body.summaryEn,

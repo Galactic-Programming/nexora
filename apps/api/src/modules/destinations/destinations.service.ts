@@ -1,10 +1,12 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { Destination, MediaOwnerType, Prisma } from '@prisma/client';
+import { slugify } from '../../common/slugify';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MediaService } from '../media/media.service';
 import { CreateDestinationDto } from './dto/create-destination.dto';
@@ -133,10 +135,13 @@ export class DestinationsService {
    * @throws ConflictException — slug already exists.
    */
   async create(body: CreateDestinationDto): Promise<Destination> {
+    // Normalize ANY admin input ("Hội An 2024" → hoi-an-2024); omitted slug
+    // falls back to nameEn. Symbol-only input → 400 INVALID_SLUG.
+    const slug = this.normalizeSlug(body.slug, body.nameEn);
     try {
       const destination = await this.prisma.$transaction(async (tx) => {
         const created = await tx.destination.create({
-          data: this.mapCreatePayload(body),
+          data: this.mapCreatePayload(body, slug),
         });
         if (body.media) {
           await this.media.syncAssets(
@@ -180,6 +185,11 @@ export class DestinationsService {
     // would throw P2025 which we'd have to translate identically anyway.
     await this.findBySlug(slug);
     const { media, ...fields } = body;
+    // A slug sent in the PATCH body goes through the same normalization as
+    // create — admins can rename with any input format.
+    if (fields.slug !== undefined) {
+      fields.slug = this.normalizeSlug(fields.slug, fields.nameEn);
+    }
     try {
       const updated = await this.prisma.$transaction(async (tx) => {
         const row = await tx.destination.update({
@@ -316,11 +326,35 @@ export class DestinationsService {
    * (rather than in the DTO) so the DB schema's default never silently
    * disagrees with the API contract.
    */
+  /**
+   * Normalizes (or generates, when `provided` is absent/blank) the slug.
+   * Cap 80 chars mirrors the DB `VarChar(80)`; a trailing hyphen left by the
+   * cut is trimmed so the result still matches the canonical kebab format.
+   *
+   * @throws BadRequestException — `INVALID_SLUG` when nothing usable remains.
+   */
+  private normalizeSlug(
+    provided: string | undefined,
+    fallback?: string,
+  ): string {
+    const source = provided?.trim() ? provided : (fallback ?? '');
+    const normalized = slugify(source).slice(0, 80).replace(/-+$/, '');
+    if (!normalized) {
+      throw new BadRequestException({
+        code: 'INVALID_SLUG',
+        message:
+          'Slug (or nameEn fallback) contains no usable characters after normalization',
+      });
+    }
+    return normalized;
+  }
+
   private mapCreatePayload(
     body: CreateDestinationDto,
+    slug: string,
   ): Prisma.DestinationCreateInput {
     return {
-      slug: body.slug,
+      slug,
       nameEn: body.nameEn,
       nameVi: body.nameVi,
       country: body.country ?? 'Vietnam',
