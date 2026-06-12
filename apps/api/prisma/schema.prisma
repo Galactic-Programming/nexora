@@ -282,7 +282,13 @@ model PaymentEvent {
   stripeEventId   String   @unique @map("stripe_event_id") @db.VarChar(255)
   type            String   @db.VarChar(100)
   payload         Json
-  processedAt     DateTime @default(now()) @map("processed_at")
+  /// Set ONLY after the handler finished all side effects. NULL means the
+  /// event was received but processing died mid-way — a Stripe retry with
+  /// the same event id must RE-RUN the handler instead of being skipped
+  /// (handlers are idempotent at booking level). Rows from before this
+  /// column became nullable carry their insert timestamp = processed.
+  processedAt     DateTime? @map("processed_at")
+  receivedAt      DateTime  @default(now()) @map("received_at")
 
   @@index([type])
   @@map("payment_events")

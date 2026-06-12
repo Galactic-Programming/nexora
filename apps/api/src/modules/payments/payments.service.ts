@@ -84,8 +84,12 @@ export class PaymentsService {
       });
     }
 
-    // 2. Idempotency — insert event row first. P2002 means "already saw this".
-    //    We persist the full payload as JSON for post-mortem debugging.
+    // 2. Idempotency — insert event row first (processedAt stays NULL until
+    //    the handler finishes). P2002 means "already saw this id" — but only
+    //    a row with a non-null processedAt may be skipped. A NULL one means
+    //    a previous attempt crashed between insert and completion, and the
+    //    Stripe retry we're handling right now is our chance to recover:
+    //    re-run the handler (booking-level idempotency makes that safe).
     try {
       await this.prisma.paymentEvent.create({
         data: {
@@ -95,13 +99,20 @@ export class PaymentsService {
         },
       });
     } catch (err) {
-      if (this.isUniqueConstraintError(err)) {
+      if (!this.isUniqueConstraintError(err)) throw err;
+      const existing = await this.prisma.paymentEvent.findUnique({
+        where: { stripeEventId: event.id },
+        select: { processedAt: true },
+      });
+      if (existing?.processedAt) {
         this.logger.log(
-          `Skipping duplicate Stripe event ${event.id} (${event.type})`,
+          `Skipping duplicate Stripe event ${event.id} (${event.type}) — already processed`,
         );
         return { received: true, eventId: event.id, type: event.type };
       }
-      throw err;
+      this.logger.warn(
+        `Re-processing Stripe event ${event.id} (${event.type}) — prior attempt never finished`,
+      );
     }
 
     // 3. Dispatch
@@ -115,6 +126,12 @@ export class PaymentsService {
       default:
         this.logger.log(`Ignoring unhandled Stripe event type: ${event.type}`);
     }
+
+    // 4. Mark done — from here on, retries of this event id are pure no-ops.
+    await this.prisma.paymentEvent.update({
+      where: { stripeEventId: event.id },
+      data: { processedAt: new Date() },
+    });
 
     return { received: true, eventId: event.id, type: event.type };
   }

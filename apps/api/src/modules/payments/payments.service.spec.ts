@@ -60,6 +60,8 @@ const sampleBooking = {
 function makePrisma(overrides: {
   bookingFindUnique?: jest.Mock;
   paymentEventCreate?: jest.Mock;
+  paymentEventFindUnique?: jest.Mock;
+  paymentEventUpdate?: jest.Mock;
   transactionResult?: 'paid' | 'overbooked' | 'already_processed';
   bookingUpdate?: jest.Mock;
 }) {
@@ -90,6 +92,11 @@ function makePrisma(overrides: {
   return {
     paymentEvent: {
       create: overrides.paymentEventCreate ?? jest.fn().mockResolvedValue({}),
+      // Default for duplicate lookups: the prior row finished processing.
+      findUnique:
+        overrides.paymentEventFindUnique ??
+        jest.fn().mockResolvedValue({ processedAt: new Date() }),
+      update: overrides.paymentEventUpdate ?? jest.fn().mockResolvedValue({}),
     },
     booking: {
       findUnique: overrides.bookingFindUnique ?? jest.fn(),
@@ -139,7 +146,7 @@ describe('PaymentsService.handleStripeEvent', () => {
     ).rejects.toMatchObject({ response: { code: 'STRIPE_WEBHOOK_INVALID' } });
   });
 
-  it('returns early without side effects when the event id is already processed (P2002)', async () => {
+  it('returns early without side effects when the duplicate event was FULLY processed', async () => {
     const constructEvent = jest.fn().mockReturnValue(
       makeEvent({
         id: 'evt_dup',
@@ -150,7 +157,11 @@ describe('PaymentsService.handleStripeEvent', () => {
     const paymentEventCreate = jest.fn().mockRejectedValue(p2002());
     const transaction = jest.fn();
     const prisma = {
-      paymentEvent: { create: paymentEventCreate },
+      paymentEvent: {
+        create: paymentEventCreate,
+        findUnique: jest.fn().mockResolvedValue({ processedAt: new Date() }),
+        update: jest.fn(),
+      },
       $transaction: transaction,
     };
 
@@ -171,6 +182,83 @@ describe('PaymentsService.handleStripeEvent', () => {
     expect(transaction).not.toHaveBeenCalled();
   });
 
+  it('RE-PROCESSES a duplicate whose prior attempt never finished (processedAt null)', async () => {
+    // Crash-after-insert scenario: the event row exists but processing died
+    // before completing. Stripe's retry must run the handler again instead
+    // of being swallowed by the duplicate check.
+    const constructEvent = jest.fn().mockReturnValue(
+      makeEvent({
+        id: 'evt_crashed',
+        type: 'checkout.session.completed',
+        bookingId: 'b-1',
+      }),
+    );
+    const paymentEventCreate = jest.fn().mockRejectedValue(p2002());
+    const paymentEventFindUnique = jest
+      .fn()
+      .mockResolvedValue({ processedAt: null });
+    const paymentEventUpdate = jest.fn().mockResolvedValue({});
+    const bookingFindUnique = jest.fn().mockResolvedValue(undefined);
+    const prisma = makePrisma({
+      paymentEventCreate,
+      paymentEventFindUnique,
+      paymentEventUpdate,
+      bookingFindUnique,
+      transactionResult: 'paid',
+    });
+
+    const svc = new PaymentsService(
+      prisma as never,
+      makeStripe(constructEvent),
+      makeConfig(),
+      makeEmail(),
+    );
+
+    await svc.handleStripeEvent(Buffer.from('{}'), 'good-sig');
+
+    // The handler ran (transaction invoked) AND the row was marked done.
+    expect(prisma.$transaction).toHaveBeenCalled();
+    expect(paymentEventUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { stripeEventId: 'evt_crashed' },
+        data: { processedAt: expect.any(Date) as Date },
+      }),
+    );
+  });
+
+  it('marks the event processed after a successful first-time dispatch', async () => {
+    const constructEvent = jest.fn().mockReturnValue(
+      makeEvent({
+        id: 'evt_fresh',
+        type: 'checkout.session.completed',
+        bookingId: 'b-1',
+      }),
+    );
+    const paymentEventUpdate = jest.fn().mockResolvedValue({});
+    const bookingFindUnique = jest.fn().mockResolvedValue(undefined);
+    const prisma = makePrisma({
+      paymentEventUpdate,
+      bookingFindUnique,
+      transactionResult: 'paid',
+    });
+
+    const svc = new PaymentsService(
+      prisma as never,
+      makeStripe(constructEvent),
+      makeConfig(),
+      makeEmail(),
+    );
+
+    await svc.handleStripeEvent(Buffer.from('{}'), 'good-sig');
+
+    expect(paymentEventUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { stripeEventId: 'evt_fresh' },
+        data: { processedAt: expect.any(Date) as Date },
+      }),
+    );
+  });
+
   it('ignores checkout.session.completed when metadata.bookingId is missing', async () => {
     const constructEvent = jest.fn().mockReturnValue({
       id: 'evt_meta_missing',
@@ -179,7 +267,11 @@ describe('PaymentsService.handleStripeEvent', () => {
     });
     const transaction = jest.fn();
     const prisma = {
-      paymentEvent: { create: jest.fn().mockResolvedValue({}) },
+      paymentEvent: {
+        create: jest.fn().mockResolvedValue({}),
+        findUnique: jest.fn().mockResolvedValue({ processedAt: new Date() }),
+        update: jest.fn().mockResolvedValue({}),
+      },
       $transaction: transaction,
     };
 
@@ -220,7 +312,11 @@ describe('PaymentsService.handleStripeEvent', () => {
     );
 
     const prisma = {
-      paymentEvent: { create: jest.fn().mockResolvedValue({}) },
+      paymentEvent: {
+        create: jest.fn().mockResolvedValue({}),
+        findUnique: jest.fn().mockResolvedValue({ processedAt: new Date() }),
+        update: jest.fn().mockResolvedValue({}),
+      },
       $transaction: transaction,
     };
     const refund = jest.fn();
@@ -284,7 +380,11 @@ describe('PaymentsService.handleStripeEvent', () => {
     // Outside-tx booking.update used by `refundOverbookedAndCancel`.
     const bookingUpdateOutside = jest.fn().mockResolvedValue(undefined);
     const prisma = {
-      paymentEvent: { create: jest.fn().mockResolvedValue({}) },
+      paymentEvent: {
+        create: jest.fn().mockResolvedValue({}),
+        findUnique: jest.fn().mockResolvedValue({ processedAt: new Date() }),
+        update: jest.fn().mockResolvedValue({}),
+      },
       booking: { update: bookingUpdateOutside },
       $transaction: transaction,
     };
@@ -331,7 +431,11 @@ describe('PaymentsService.handleStripeEvent', () => {
     const bookingUpdate = jest.fn().mockResolvedValue(undefined);
 
     const prisma = {
-      paymentEvent: { create: jest.fn().mockResolvedValue({}) },
+      paymentEvent: {
+        create: jest.fn().mockResolvedValue({}),
+        findUnique: jest.fn().mockResolvedValue({ processedAt: new Date() }),
+        update: jest.fn().mockResolvedValue({}),
+      },
       booking: { findUnique: bookingFindUnique, update: bookingUpdate },
       $transaction: jest.fn(),
     };
@@ -360,7 +464,11 @@ describe('PaymentsService.handleStripeEvent', () => {
 
     const transaction = jest.fn();
     const prisma = {
-      paymentEvent: { create: jest.fn().mockResolvedValue({}) },
+      paymentEvent: {
+        create: jest.fn().mockResolvedValue({}),
+        findUnique: jest.fn().mockResolvedValue({ processedAt: new Date() }),
+        update: jest.fn().mockResolvedValue({}),
+      },
       $transaction: transaction,
     };
 
