@@ -220,8 +220,43 @@ describe('DestinationsService', () => {
   });
 
   describe('remove', () => {
+    it('refuses to delete an ACTIVE destination (two-tier: deactivate first)', async () => {
+      const findUnique = jest
+        .fn()
+        .mockResolvedValue({ ...sampleRow, isActive: true });
+      const del = jest.fn();
+      const prisma = makePrisma({ findUnique, delete: del });
+      const svc = new DestinationsService(
+        prisma as never,
+        makeMedia() as never,
+      );
+
+      await expect(svc.remove('hoi-an')).rejects.toMatchObject({
+        response: { code: 'DESTINATION_IS_ACTIVE' },
+      });
+      expect(del).not.toHaveBeenCalled();
+    });
+
+    it('deletes an inactive destination', async () => {
+      const inactive = { ...sampleRow, isActive: false };
+      const findUnique = jest.fn().mockResolvedValue(inactive);
+      const del = jest.fn().mockResolvedValue(inactive);
+      const prisma = makePrisma({ findUnique, delete: del });
+      const svc = new DestinationsService(
+        prisma as never,
+        makeMedia() as never,
+      );
+
+      await expect(svc.remove('hoi-an')).resolves.toMatchObject({
+        slug: 'hoi-an',
+      });
+      expect(del).toHaveBeenCalled();
+    });
+
     it('translates FK violation (P2003) to ConflictException with helpful message', async () => {
-      const findUnique = jest.fn().mockResolvedValue(sampleRow);
+      const findUnique = jest
+        .fn()
+        .mockResolvedValue({ ...sampleRow, isActive: false });
       const del = jest.fn().mockRejectedValue(p2003());
       const prisma = makePrisma({ findUnique, delete: del });
       const svc = new DestinationsService(

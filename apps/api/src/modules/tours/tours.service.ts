@@ -329,6 +329,16 @@ export class ToursService {
    */
   async remove(slug: string): Promise<Tour> {
     const tour = await this.findBySlug(slug);
+    // Two-tier delete: tier 1 is the reversible hide (isPublished=false),
+    // tier 2 is this hard delete — only drafts can be erased, so one
+    // mis-click never destroys live content. (Tier 3 is the FK Restrict
+    // from bookings, translated in the catch below.)
+    if (tour.isPublished) {
+      throw new ConflictException({
+        code: 'TOUR_IS_PUBLISHED',
+        message: 'Unpublish the tour (isPublished=false) before deleting it.',
+      });
+    }
     try {
       await this.prisma.$transaction(async (tx) => {
         await this.media.deleteForOwner(tx, MediaOwnerType.TOUR, tour.id);

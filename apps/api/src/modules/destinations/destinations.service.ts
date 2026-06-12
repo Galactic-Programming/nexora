@@ -233,6 +233,17 @@ export class DestinationsService {
    */
   async remove(slug: string): Promise<Destination> {
     const existing = await this.findBySlug(slug);
+    // Two-tier delete: tier 1 is the reversible hide (isActive=false), tier 2
+    // is this hard delete — only reachable for already-hidden rows, so one
+    // mis-click can never erase live content. (Tier 3 is the FK Restrict from
+    // tours, which the catch below translates.)
+    if (existing.isActive) {
+      throw new ConflictException({
+        code: 'DESTINATION_IS_ACTIVE',
+        message:
+          'Deactivate the destination (isActive=false) before deleting it.',
+      });
+    }
     try {
       const deleted = await this.prisma.$transaction(async (tx) => {
         await this.media.deleteForOwner(

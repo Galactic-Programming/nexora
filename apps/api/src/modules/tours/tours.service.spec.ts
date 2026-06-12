@@ -248,6 +248,20 @@ describe('ToursService', () => {
   });
 
   describe('remove', () => {
+    it('refuses to delete a PUBLISHED tour (two-tier: unpublish first)', async () => {
+      const tourFindUnique = jest
+        .fn()
+        .mockResolvedValue({ ...sampleTour, isPublished: true });
+      const tourDelete = jest.fn();
+      const prisma = makePrisma({ tourFindUnique, tourDelete });
+      const svc = new ToursService(prisma as never, makeMedia() as never);
+
+      await expect(svc.remove('hoi-an-walking')).rejects.toMatchObject({
+        response: { code: 'TOUR_IS_PUBLISHED' },
+      });
+      expect(tourDelete).not.toHaveBeenCalled();
+    });
+
     it('translates FK violation (P2003) to ConflictException TOUR_HAS_BOOKINGS', async () => {
       const tourFindUnique = jest.fn().mockResolvedValue(sampleTour);
       const tourDelete = jest.fn().mockRejectedValue(p2003());
