@@ -141,9 +141,12 @@ export class BookingsService {
     // OPEN status alone is not enough: an operator who forgets to close an
     // old departure must not leave it bookable. Same-day departures stay
     // bookable (walk-in sales); only strictly-past start dates are rejected.
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
-    if (departure.startDate < startOfToday) {
+    // Compare CALENDAR DATES in UTC — `@db.Date` loads as UTC midnight, so a
+    // local-midnight comparison would mis-reject same-day on UTC-negative
+    // servers. String compare of YYYY-MM-DD is server-timezone independent.
+    const todayUtc = new Date().toISOString().slice(0, 10);
+    const startUtc = departure.startDate.toISOString().slice(0, 10);
+    if (startUtc < todayUtc) {
       throw new BadRequestException({
         code: 'DEPARTURE_DEPARTED',
         message: 'This departure has already started — bookings closed',
