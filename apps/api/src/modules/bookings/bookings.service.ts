@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { mintBookingCode } from './booking-code';
 import {
   BadRequestException,
   ConflictException,
@@ -418,14 +418,14 @@ export class BookingsService {
   }
 
   /**
-   * Mints a short, human-readable booking code: `BK-` + 8 base36 chars.
-   * Roughly 36^8 ≈ 2.8 × 10^12 distinct codes — collisions are virtually
-   * impossible at our scale, but we still retry once on the off-chance
-   * Postgres' UNIQUE constraint fires before yielding.
+   * Mints a short, human-readable booking code (see `mintBookingCode` for the
+   * format contract). Collisions are virtually impossible at our scale, but
+   * we still retry once on the off-chance Postgres' UNIQUE constraint fires
+   * before yielding.
    */
   private async generateUniqueCode(): Promise<string> {
     for (let attempt = 0; attempt < 2; attempt++) {
-      const candidate = `BK-${randomBytes(6).toString('base64url').slice(0, 8).toUpperCase()}`;
+      const candidate = mintBookingCode();
       const existing = await this.prisma.booking.findUnique({
         where: { code: candidate },
         select: { id: true },
