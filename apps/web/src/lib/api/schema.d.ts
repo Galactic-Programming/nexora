@@ -586,8 +586,11 @@ export interface components {
             url: string;
             /** @enum {string} */
             type: "IMAGE" | "VIDEO";
-            /** @example gallery */
-            role: string;
+            /**
+             * @example gallery
+             * @enum {string}
+             */
+            role: "hero" | "gallery" | "avatar";
             /**
              * Format: uri
              * @description Video poster URL.
@@ -647,10 +650,10 @@ export interface components {
              */
             type: "IMAGE" | "VIDEO";
             /**
-             * @description Slot within the owner, e.g. 'hero' | 'gallery' | 'avatar'.
              * @example gallery
+             * @enum {string}
              */
-            role: string;
+            role: "hero" | "gallery" | "avatar";
             /** @example jpg */
             format?: string;
             /** @example 1920 */
