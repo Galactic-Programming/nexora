@@ -213,6 +213,12 @@ model Booking {
   specialRequests        String?       @map("special_requests") @db.VarChar(1000)
   stripeSessionId        String?       @unique @map("stripe_session_id") @db.VarChar(255)
   stripePaymentIntentId  String?       @map("stripe_payment_intent_id") @db.VarChar(255)
+  /// Audit trail for admin refunds (2026-06-12): who triggered it and why.
+  /// `refundedById` is a users.id snapshot WITHOUT an FK relation — same
+  /// precedent as MediaAsset.ownerId; users are never deletable via the API
+  /// so the reference cannot dangle, and we avoid relation noise on User.
+  refundReason           String?       @map("refund_reason") @db.VarChar(500)
+  refundedById           String?       @map("refunded_by") @db.Uuid
   paidAt                 DateTime?     @map("paid_at")
   cancelledAt            DateTime?     @map("cancelled_at")
   createdAt              DateTime      @default(now()) @map("created_at")

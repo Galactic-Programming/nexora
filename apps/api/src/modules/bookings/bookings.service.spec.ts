@@ -481,7 +481,7 @@ describe('BookingsService.refundByAdmin', () => {
       makeEmail(),
     );
     await expect(
-      svc.refundByAdmin({ bookingId: 'missing' }),
+      svc.refundByAdmin({ bookingId: 'missing', adminUserId: 'u-admin' }),
     ).rejects.toMatchObject({
       response: { code: 'BOOKING_NOT_FOUND' },
     });
@@ -501,11 +501,11 @@ describe('BookingsService.refundByAdmin', () => {
       makeConfig(),
       makeEmail(),
     );
-    await expect(svc.refundByAdmin({ bookingId: 'b-1' })).rejects.toMatchObject(
-      {
-        response: { code: 'BOOKING_NOT_REFUNDABLE' },
-      },
-    );
+    await expect(
+      svc.refundByAdmin({ bookingId: 'b-1', adminUserId: 'u-admin' }),
+    ).rejects.toMatchObject({
+      response: { code: 'BOOKING_NOT_REFUNDABLE' },
+    });
   });
 
   it('refunds, decrements seats, marks REFUNDED, and emails the customer', async () => {
@@ -539,7 +539,11 @@ describe('BookingsService.refundByAdmin', () => {
       email,
     );
 
-    await svc.refundByAdmin({ bookingId: 'b-1', reason: 'Tour cancelled' });
+    await svc.refundByAdmin({
+      bookingId: 'b-1',
+      reason: 'Tour cancelled',
+      adminUserId: 'u-admin',
+    });
 
     expect(refund).toHaveBeenCalledWith({
       paymentIntentId: 'pi_test_001',
@@ -552,6 +556,79 @@ describe('BookingsService.refundByAdmin', () => {
     const bookCalls = bookingUpdate.mock.calls as unknown as BookCall[][];
     expect(bookCalls[0][0].data.status).toBe(BookingStatus.REFUNDED);
     expect(sendBookingRefunded).toHaveBeenCalled();
+  });
+
+  it('persists refundReason and refundedById on the booking (audit trail)', async () => {
+    const bookingUpdate = jest
+      .fn()
+      .mockResolvedValue({ ...paidBooking, status: BookingStatus.REFUNDED });
+    const tx = {
+      tourDeparture: { update: jest.fn().mockResolvedValue(undefined) },
+      booking: { update: bookingUpdate },
+    };
+    const transaction = jest.fn(async (cb: (tx: unknown) => Promise<unknown>) =>
+      cb(tx),
+    );
+    const prisma = {
+      booking: { findUnique: jest.fn().mockResolvedValue(paidBooking) },
+      $transaction: transaction,
+    };
+    const svc = new BookingsService(
+      prisma as never,
+      {
+        createRefund: jest.fn().mockResolvedValue({ id: 're_1' }),
+      } as unknown as StripeService,
+      makeConfig(),
+      makeEmail(),
+    );
+
+    await svc.refundByAdmin({
+      bookingId: 'b-1',
+      reason: 'Overbooked by operator',
+      adminUserId: 'u-admin',
+    });
+
+    type AuditCall = {
+      data: { refundReason: string | null; refundedById: string };
+    };
+    const calls = bookingUpdate.mock.calls as unknown as AuditCall[][];
+    expect(calls[0][0].data.refundReason).toBe('Overbooked by operator');
+    expect(calls[0][0].data.refundedById).toBe('u-admin');
+  });
+
+  it('converges to REFUNDED when Stripe reports charge_already_refunded', async () => {
+    // The payment was refunded out-of-band (e.g. Stripe Dashboard). The DB
+    // must still converge instead of leaving the booking stuck PAID.
+    const bookingUpdate = jest
+      .fn()
+      .mockResolvedValue({ ...paidBooking, status: BookingStatus.REFUNDED });
+    const tx = {
+      tourDeparture: { update: jest.fn().mockResolvedValue(undefined) },
+      booking: { update: bookingUpdate },
+    };
+    const transaction = jest.fn(async (cb: (tx: unknown) => Promise<unknown>) =>
+      cb(tx),
+    );
+    const prisma = {
+      booking: { findUnique: jest.fn().mockResolvedValue(paidBooking) },
+      $transaction: transaction,
+    };
+    const alreadyRefunded = Object.assign(
+      new Error('Charge ch_x has already been refunded.'),
+      { code: 'charge_already_refunded' },
+    );
+    const refund = jest.fn().mockRejectedValue(alreadyRefunded);
+    const svc = new BookingsService(
+      prisma as never,
+      { createRefund: refund } as unknown as StripeService,
+      makeConfig(),
+      makeEmail(),
+    );
+
+    await expect(
+      svc.refundByAdmin({ bookingId: 'b-1', adminUserId: 'u-admin' }),
+    ).resolves.toMatchObject({ status: BookingStatus.REFUNDED });
+    expect(transaction).toHaveBeenCalled();
   });
 
   it('rejects REFUND_FAILED and does not write to DB when Stripe errors', async () => {
@@ -568,11 +645,11 @@ describe('BookingsService.refundByAdmin', () => {
       makeEmail(),
     );
 
-    await expect(svc.refundByAdmin({ bookingId: 'b-1' })).rejects.toMatchObject(
-      {
-        response: { code: 'REFUND_FAILED' },
-      },
-    );
+    await expect(
+      svc.refundByAdmin({ bookingId: 'b-1', adminUserId: 'u-admin' }),
+    ).rejects.toMatchObject({
+      response: { code: 'REFUND_FAILED' },
+    });
     expect(transaction).not.toHaveBeenCalled();
   });
 });

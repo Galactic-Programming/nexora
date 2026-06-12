@@ -328,6 +328,8 @@ export class BookingsService {
   async refundByAdmin(args: {
     bookingId: string;
     reason?: string;
+    /** Local users.id of the admin triggering the refund (audit trail). */
+    adminUserId: string;
   }): Promise<Booking> {
     const booking = await this.prisma.booking.findUnique({
       where: { id: args.bookingId },
@@ -362,14 +364,23 @@ export class BookingsService {
         reason: args.reason ?? 'requested_by_customer',
       });
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'unknown';
-      this.logger.error(
-        `Stripe refund failed for booking ${booking.code}: ${message}`,
-      );
-      throw new BadRequestException({
-        code: 'REFUND_FAILED',
-        message: `Stripe refund failed: ${message}`,
-      });
+      // Out-of-band refunds (Stripe Dashboard, dispute resolution) leave the
+      // payment already refunded. Converge the DB instead of stranding the
+      // booking in PAID forever — the money is provably back with the buyer.
+      if (this.isAlreadyRefundedError(err)) {
+        this.logger.warn(
+          `Stripe reports booking ${booking.code} already refunded — converging DB state`,
+        );
+      } else {
+        const message = err instanceof Error ? err.message : 'unknown';
+        this.logger.error(
+          `Stripe refund failed for booking ${booking.code}: ${message}`,
+        );
+        throw new BadRequestException({
+          code: 'REFUND_FAILED',
+          message: `Stripe refund failed: ${message}`,
+        });
+      }
     }
 
     const totalSeats = booking.numAdults + booking.numChildren;
@@ -383,6 +394,8 @@ export class BookingsService {
         data: {
           status: BookingStatus.REFUNDED,
           cancelledAt: new Date(),
+          refundReason: args.reason ?? null,
+          refundedById: args.adminUserId,
         },
       });
     });
@@ -450,6 +463,18 @@ export class BookingsService {
         message: `Only ${remaining} seat(s) left, requested ${totalSeats}`,
       });
     }
+  }
+
+  /**
+   * Stripe rejects double-refunds with `code: 'charge_already_refunded'`
+   * (surfaced on both the SDK error object and its `raw`). Anything carrying
+   * that code means the money is already back with the buyer.
+   */
+  private isAlreadyRefundedError(err: unknown): boolean {
+    const code =
+      (err as { code?: string })?.code ??
+      (err as { raw?: { code?: string } })?.raw?.code;
+    return code === 'charge_already_refunded';
   }
 
   /**

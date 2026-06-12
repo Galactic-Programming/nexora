@@ -6,6 +6,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  UnauthorizedException,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -14,7 +15,8 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Booking, UserRole } from '@prisma/client';
+import { Booking, User, UserRole } from '@prisma/client';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { BookingsService } from './bookings.service';
 import { BookingDto } from './dto/booking.dto';
@@ -61,12 +63,22 @@ export class AdminBookingsController {
   @ApiResponse({ status: 403, description: 'Caller is not an admin' })
   @ApiResponse({ status: 404, description: 'Booking not found' })
   refund(
+    @CurrentUser() user: User | null,
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() body: RefundBookingDto,
   ): Promise<Booking> {
+    // RolesGuard guarantees an ADMIN user here; the null-check is the same
+    // defensive narrowing every guarded handler performs.
+    if (!user) {
+      throw new UnauthorizedException({
+        code: 'USER_NOT_SYNCED',
+        message: 'Call POST /auth/admin/sync first',
+      });
+    }
     return this.bookingsService.refundByAdmin({
       bookingId: id,
       reason: body.reason,
+      adminUserId: user.id,
     });
   }
 }
