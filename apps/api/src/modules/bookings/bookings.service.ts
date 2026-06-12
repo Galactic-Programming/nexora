@@ -138,6 +138,18 @@ export class BookingsService {
       });
     }
 
+    // OPEN status alone is not enough: an operator who forgets to close an
+    // old departure must not leave it bookable. Same-day departures stay
+    // bookable (walk-in sales); only strictly-past start dates are rejected.
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    if (departure.startDate < startOfToday) {
+      throw new BadRequestException({
+        code: 'DEPARTURE_DEPARTED',
+        message: 'This departure has already started — bookings closed',
+      });
+    }
+
     const totalSeats = body.numAdults + (body.numChildren ?? 0);
     this.assertSeatsAvailable(departure, totalSeats);
 
@@ -169,18 +181,38 @@ export class BookingsService {
     const unitAmountCents = Math.round(effectiveUnitPrice.toNumber() * 100);
     const frontendUrl = this.config.getOrThrow<string>('app.frontendUrl');
 
-    const session = await this.stripe.createCheckoutSession({
-      bookingId: booking.id,
-      bookingCode: booking.code,
-      customerEmail: body.contactEmail,
-      currency: tour.currency.toLowerCase(),
-      unitAmount: unitAmountCents,
-      quantity: totalSeats,
-      productName: tour.titleEn,
-      productDescription: `Booking ${booking.code} — ${totalSeats} seat(s)`,
-      successUrl: `${frontendUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancelUrl: `${frontendUrl}/checkout/cancel?code=${booking.code}`,
-    });
+    // Compensation on Stripe failure: the booking row was inserted before
+    // this outbound call (deliberately outside a transaction — see the
+    // docstring). If the session can't be minted there is nothing for the
+    // buyer to pay and no `checkout.session.expired` will ever clean the
+    // row up, so delete it instead of leaving an orphan PENDING forever.
+    let session: Awaited<ReturnType<StripeService['createCheckoutSession']>>;
+    try {
+      session = await this.stripe.createCheckoutSession({
+        bookingId: booking.id,
+        bookingCode: booking.code,
+        customerEmail: body.contactEmail,
+        currency: tour.currency.toLowerCase(),
+        unitAmount: unitAmountCents,
+        quantity: totalSeats,
+        productName: tour.titleEn,
+        productDescription: `Booking ${booking.code} — ${totalSeats} seat(s)`,
+        successUrl: `${frontendUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancelUrl: `${frontendUrl}/checkout/cancel?code=${booking.code}`,
+      });
+    } catch (err) {
+      await this.prisma.booking
+        .delete({ where: { id: booking.id } })
+        .catch((cleanupErr: unknown) => {
+          // Worst case the orphan survives — log loudly for manual cleanup.
+          this.logger.error(
+            `Failed to clean up orphan booking ${booking.code} after Stripe error: ${
+              cleanupErr instanceof Error ? cleanupErr.message : 'unknown'
+            }`,
+          );
+        });
+      throw err;
+    }
 
     if (!session.url) {
       throw new BadRequestException({

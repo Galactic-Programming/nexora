@@ -99,6 +99,7 @@ function makePrisma(overrides: Partial<Record<string, jest.Mock>> = {}) {
       findMany: overrides.bookingFindMany ?? jest.fn(),
       create: overrides.bookingCreate ?? jest.fn(),
       update: overrides.bookingUpdate ?? jest.fn(),
+      delete: overrides.bookingDelete ?? jest.fn(),
     },
   };
 }
@@ -163,6 +164,88 @@ describe('BookingsService.create', () => {
       response: { code: 'DEPARTURE_NOT_OPEN' },
     });
     expect(bookingCreate).not.toHaveBeenCalled();
+  });
+
+  it('rejects DEPARTURE_DEPARTED when startDate is in the past (even if OPEN)', async () => {
+    const tourFindFirst = jest.fn().mockResolvedValue(sampleTour);
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const depFindFirst = jest.fn().mockResolvedValue({
+      ...sampleDeparture,
+      startDate: yesterday,
+      endDate: yesterday,
+    });
+    const bookingCreate = jest.fn();
+    const prisma = makePrisma({ tourFindFirst, depFindFirst, bookingCreate });
+    const svc = new BookingsService(
+      prisma as never,
+      makeStripe(),
+      makeConfig(),
+      makeEmail(),
+    );
+
+    await expect(svc.create('u-customer', baseDto)).rejects.toMatchObject({
+      response: { code: 'DEPARTURE_DEPARTED' },
+    });
+    expect(bookingCreate).not.toHaveBeenCalled();
+  });
+
+  it('allows booking a departure that starts TODAY (same-day is bookable)', async () => {
+    const tourFindFirst = jest.fn().mockResolvedValue(sampleTour);
+    const todayMidday = new Date();
+    todayMidday.setHours(12, 0, 0, 0);
+    const depFindFirst = jest.fn().mockResolvedValue({
+      ...sampleDeparture,
+      startDate: todayMidday,
+      endDate: todayMidday,
+    });
+    const bookingCreate = jest.fn().mockResolvedValue(sampleBooking);
+    const bookingUpdate = jest.fn().mockResolvedValue(sampleBooking);
+    const prisma = makePrisma({
+      tourFindFirst,
+      depFindFirst,
+      bookingCreate,
+      bookingUpdate,
+    });
+    const svc = new BookingsService(
+      prisma as never,
+      makeStripe(),
+      makeConfig(),
+      makeEmail(),
+    );
+
+    const result = await svc.create('u-customer', baseDto);
+    expect(result.checkoutUrl).toContain('checkout.stripe.com');
+    expect(bookingCreate).toHaveBeenCalled();
+  });
+
+  it('deletes the orphan PENDING booking and rethrows when Stripe session creation fails', async () => {
+    const tourFindFirst = jest.fn().mockResolvedValue(sampleTour);
+    const depFindFirst = jest.fn().mockResolvedValue(sampleDeparture);
+    const bookingCreate = jest.fn().mockResolvedValue(sampleBooking);
+    const bookingDelete = jest.fn().mockResolvedValue(sampleBooking);
+    const prisma = makePrisma({
+      tourFindFirst,
+      depFindFirst,
+      bookingCreate,
+      bookingDelete,
+    });
+    const stripeFail = jest
+      .fn()
+      .mockRejectedValue(new Error('stripe is down'));
+    const svc = new BookingsService(
+      prisma as never,
+      makeStripe(stripeFail),
+      makeConfig(),
+      makeEmail(),
+    );
+
+    await expect(svc.create('u-customer', baseDto)).rejects.toThrow(
+      'stripe is down',
+    );
+    expect(bookingDelete).toHaveBeenCalledWith({
+      where: { id: sampleBooking.id },
+    });
   });
 
   it('rejects SEATS_NOT_AVAILABLE when remaining < requested', async () => {
