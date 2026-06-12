@@ -158,7 +158,7 @@
               "if (pm.response.code === 200) {",
               "  pm.test('echoes deleted slug', () => pm.expect(body.data.slug).to.be.a('string'));",
               "} else {",
-              "  pm.test('conflict code is DESTINATION_HAS_TOURS', () => pm.expect(body.error.code).to.eql('DESTINATION_HAS_TOURS'));",
+              "  pm.test('conflict code is a delete guard', () => pm.expect(['DESTINATION_IS_ACTIVE', 'DESTINATION_HAS_TOURS']).to.include(body.error.code));",
               "}"
             ]
           }

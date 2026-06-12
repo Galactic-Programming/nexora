@@ -193,7 +193,7 @@
           "host": ["{{baseUrl}}"],
           "path": ["admin", "tours", "{{tourSlug}}"]
         },
-        "description": "Hard delete. Returns 409 TOUR_HAS_BOOKINGS when bookings still reference the tour."
+        "description": "Hard delete (two-tier). Returns 409 TOUR_IS_PUBLISHED while published, or 409 TOUR_HAS_BOOKINGS when bookings still reference the tour."
       },
       "response": [],
       "event": [
@@ -207,7 +207,7 @@
               "if (pm.response.code === 200) {",
               "  pm.test('echoes deleted slug', () => pm.expect(body.data.slug).to.be.a('string'));",
               "} else {",
-              "  pm.test('conflict code is TOUR_HAS_BOOKINGS', () => pm.expect(body.error.code).to.eql('TOUR_HAS_BOOKINGS'));",
+              "  pm.test('conflict code is a delete guard', () => pm.expect(['TOUR_IS_PUBLISHED', 'TOUR_HAS_BOOKINGS']).to.include(body.error.code));",
               "}"
             ]
           }

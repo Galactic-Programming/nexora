@@ -678,10 +678,10 @@ export interface components {
         };
         CreateDestinationDto: {
             /**
-             * @description kebab-case slug; must match /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+             * @description Any format — normalized server-side to kebab-case (max 80). Omit to generate from nameEn.
              * @example hoi-an
              */
-            slug: string;
+            slug?: string;
             /** @example Hoi An */
             nameEn: string;
             /** @example Hội An */
@@ -703,7 +703,7 @@ export interface components {
         };
         UpdateDestinationDto: {
             /**
-             * @description kebab-case slug; must match /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+             * @description Any format — normalized server-side to kebab-case (max 80). Omit to generate from nameEn.
              * @example hoi-an
              */
             slug?: string;
@@ -932,10 +932,10 @@ export interface components {
         };
         CreateTourDto: {
             /**
-             * @description kebab-case slug; must match /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+             * @description Any format — normalized server-side to kebab-case (max 120). Omit to generate from titleEn.
              * @example hoi-an-walking-tour
              */
-            slug: string;
+            slug?: string;
             /** @example Hoi An Ancient Town Walking Tour */
             titleEn: string;
             /** @example Tour bộ phố cổ Hội An */
@@ -998,7 +998,7 @@ export interface components {
         };
         UpdateTourDto: {
             /**
-             * @description kebab-case slug; must match /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+             * @description Any format — normalized server-side to kebab-case (max 120). Omit to generate from titleEn.
              * @example hoi-an-walking-tour
              */
             slug?: string;
