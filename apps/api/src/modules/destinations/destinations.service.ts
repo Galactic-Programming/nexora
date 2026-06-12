@@ -276,8 +276,9 @@ export class DestinationsService {
    * Shared list implementation used by both public and admin endpoints.
    *
    * Builds a `where` clause from the query DTO, runs `count` + `findMany`
-   * in a single Prisma transaction so the totals match the page contents
-   * exactly (no skew if rows are inserted between the two queries).
+   * via `Promise.all` (NOT `$transaction` — see the inline note below; the
+   * Supabase transaction-mode pooler can't batch reads under concurrency,
+   * and a ±1 total drift on a rare race is harmless for pagination).
    *
    * @param query  Already-validated query params (the public path
    *               injects `isActive: true` before delegating here).
