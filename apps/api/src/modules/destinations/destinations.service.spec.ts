@@ -167,7 +167,11 @@ describe('DestinationsService', () => {
         makeMedia() as never,
       );
 
-      await svc.create({ ...baseCreateDto, slug: undefined, nameEn: 'Đà Nẵng' });
+      await svc.create({
+        ...baseCreateDto,
+        slug: undefined,
+        nameEn: 'Đà Nẵng',
+      });
 
       const calls = created.mock.calls as unknown as DestinationWriteCall[][];
       expect(calls[0][0].data.slug).toBe('da-nang');

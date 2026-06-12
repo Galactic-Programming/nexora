@@ -16,7 +16,6 @@ import {
   Max,
   MaxLength,
   Min,
-  MinLength,
   ValidateNested,
 } from 'class-validator';
 import { MediaInputDto } from '../../media/dto/media.dto';

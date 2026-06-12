@@ -7,9 +7,7 @@ import {
   IsOptional,
   IsString,
   Length,
-  Matches,
   MaxLength,
-  MinLength,
   ValidateNested,
 } from 'class-validator';
 import { MediaInputDto } from '../../media/dto/media.dto';
