@@ -116,6 +116,18 @@ export class DeparturesService {
     const tour = await this.findTourBySlugOrThrow(slug);
     this.assertDateRange(body.startDate, body.endDate);
 
+    // Typo-guard: a departure must not be born already departed. Same-day is
+    // allowed (walk-in sales). UTC calendar-date compare mirrors the booking
+    // flow's DEPARTURE_DEPARTED check, so admin + customer agree on "past".
+    const todayUtc = new Date().toISOString().slice(0, 10);
+    const startUtc = new Date(body.startDate).toISOString().slice(0, 10);
+    if (startUtc < todayUtc) {
+      throw new BadRequestException({
+        code: 'DEPARTURE_IN_PAST',
+        message: `startDate ${startUtc} is in the past — departures must start today or later`,
+      });
+    }
+
     const departure = await this.prisma.tourDeparture.create({
       data: {
         tour: { connect: { id: tour.id } },

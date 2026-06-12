@@ -124,6 +124,41 @@ describe('DeparturesService', () => {
       expect(depCreate).not.toHaveBeenCalled();
     });
 
+    it('rejects DEPARTURE_IN_PAST when startDate is before today (UTC)', async () => {
+      const tourFindUnique = jest.fn().mockResolvedValue({ id: 't-1' });
+      const depCreate = jest.fn();
+      const prisma = makePrisma({ tourFindUnique, depCreate });
+      const svc = new DeparturesService(prisma as never);
+
+      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 10);
+
+      await expect(
+        svc.create('hoi-an-walking', {
+          startDate: yesterday,
+          endDate: yesterday,
+          seatsTotal: 10,
+        }),
+      ).rejects.toMatchObject({ response: { code: 'DEPARTURE_IN_PAST' } });
+      expect(depCreate).not.toHaveBeenCalled();
+    });
+
+    it('allows a departure starting TODAY (same-day, UTC)', async () => {
+      const tourFindUnique = jest.fn().mockResolvedValue({ id: 't-1' });
+      const depCreate = jest.fn().mockResolvedValue(sampleDeparture);
+      const prisma = makePrisma({ tourFindUnique, depCreate });
+      const svc = new DeparturesService(prisma as never);
+
+      const today = new Date().toISOString().slice(0, 10);
+      await svc.create('hoi-an-walking', {
+        startDate: today,
+        endDate: today,
+        seatsTotal: 10,
+      });
+      expect(depCreate).toHaveBeenCalled();
+    });
+
     it('persists with seatsBooked=0 and default status=OPEN when status omitted', async () => {
       const tourFindUnique = jest.fn().mockResolvedValue({ id: 't-1' });
       const depCreate = jest.fn().mockResolvedValue(sampleDeparture);
