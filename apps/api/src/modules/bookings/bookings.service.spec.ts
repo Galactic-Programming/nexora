@@ -230,9 +230,7 @@ describe('BookingsService.create', () => {
       bookingCreate,
       bookingDelete,
     });
-    const stripeFail = jest
-      .fn()
-      .mockRejectedValue(new Error('stripe is down'));
+    const stripeFail = jest.fn().mockRejectedValue(new Error('stripe is down'));
     const svc = new BookingsService(
       prisma as never,
       makeStripe(stripeFail),
