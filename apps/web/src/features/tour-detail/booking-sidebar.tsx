@@ -43,6 +43,7 @@ export function BookingSidebar({
                 {d.soldOut ? null : (
                   <Link
                     href={`/tours/${slug}/book?departure=${d.id}`}
+                    aria-label={`${text.bookNow} — ${day(d.startDate)}`}
                     className="bg-foreground text-background rounded-md px-3 py-1.5 text-xs font-medium"
                   >
                     {text.bookNow}
