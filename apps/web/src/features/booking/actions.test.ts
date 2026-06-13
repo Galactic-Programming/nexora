@@ -75,4 +75,9 @@ describe("getBookingStatus", () => {
     h.getBookingByCode.mockRejectedValue(new ApiError("BOOKING_NOT_FOUND", "nf", 404));
     expect(await getBookingStatus("BK-X")).toEqual({ ok: false });
   });
+  it("returns ok:false without a session (never calls the API)", async () => {
+    h.getSession.mockResolvedValue({ data: { session: null } });
+    expect(await getBookingStatus("BK-X")).toEqual({ ok: false });
+    expect(h.getBookingByCode).not.toHaveBeenCalled();
+  });
 });
