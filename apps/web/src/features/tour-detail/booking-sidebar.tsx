@@ -1,3 +1,4 @@
+import { Link } from "@/i18n/navigation";
 import type { DepartureVM } from "./detail-view-model";
 
 interface Text {
@@ -9,8 +10,9 @@ interface Text {
 }
 
 export function BookingSidebar({
-  departures, currency, localeTag, text,
+  slug, departures, currency, localeTag, text,
 }: {
+  slug: string;
   departures: DepartureVM[];
   currency: string;
   localeTag: string;
@@ -36,19 +38,21 @@ export function BookingSidebar({
                 <p className="text-sm font-medium">{day(d.startDate)} → {day(d.endDate)}</p>
                 <p className="text-muted-foreground text-xs">{text.seatsLeft(d.seatsLeft)}</p>
               </div>
-              <span className="text-sm font-semibold">{money(d.price)}</span>
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-semibold">{money(d.price)}</span>
+                {d.soldOut ? null : (
+                  <Link
+                    href={`/tours/${slug}/book?departure=${d.id}`}
+                    className="bg-foreground text-background rounded-md px-3 py-1.5 text-xs font-medium"
+                  >
+                    {text.bookNow}
+                  </Link>
+                )}
+              </div>
             </li>
           ))}
         </ul>
       )}
-      {/* Booking flow is phase D — CTA is intentionally disabled for now. */}
-      <button
-        type="button"
-        disabled
-        className="bg-foreground text-background w-full cursor-not-allowed rounded-md py-2.5 text-sm font-medium opacity-60"
-      >
-        {text.bookNow}
-      </button>
     </aside>
   );
 }

@@ -57,6 +57,7 @@ export function TourDetail({
       <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-10 px-4 py-12 lg:grid-cols-[1fr_340px]">
         <TourInfo tour={tour} labels={text.info} />
         <BookingSidebar
+          slug={tour.slug}
           departures={departures}
           currency={tour.currency}
           localeTag={tour.localeTag}
