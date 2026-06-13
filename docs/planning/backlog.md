@@ -1,3 +1,7 @@
+<!-- markdownlint-disable MD013 -->
+<!-- MD013 (line length): tables, URLs, and command one-liners cannot wrap
+     without breaking GFM rendering or copy-paste. -->
+
 # Backlog — out-of-scope items
 
 Features that surface in the Figma design or sprint planning but are deliberately deferred. Document why each one is here so a future maintainer knows whether to revive or drop it.

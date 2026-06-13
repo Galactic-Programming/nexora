@@ -1,3 +1,7 @@
+<!-- markdownlint-disable MD013 -->
+<!-- MD013 (line length): tables, URLs, and command one-liners cannot wrap
+     without breaking GFM rendering or copy-paste. -->
+
 # Runbook — Stripe testing (Checkout + webhook)
 
 How to exercise the full booking → payment → confirmation loop locally with Stripe test mode + the Stripe CLI.

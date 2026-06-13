@@ -1,3 +1,7 @@
+<!-- markdownlint-disable MD013 -->
+<!-- MD013 (line length): reference tables and technical one-liners (URLs, SQL,
+     roadmap rows) cannot wrap without breaking GFM rendering. -->
+
 # Tourism API — Entity Relationship Diagram
 
 > Source of truth: [`prisma/schema.prisma`](../../apps/api/prisma/schema.prisma).
@@ -102,6 +106,8 @@ erDiagram
         text special_requests
         string stripe_session_id UK
         string stripe_payment_intent_id
+        string refund_reason "audit; VarChar(500)"
+        uuid refunded_by "users.id snapshot; no FK"
         timestamp paid_at
         timestamp cancelled_at
     }
@@ -128,7 +134,8 @@ erDiagram
         string stripe_event_id UK
         string type
         jsonb payload
-        timestamp processed_at
+        timestamp received_at "insert time"
+        timestamp processed_at "NULLABLE — set only when handler finished; NULL duplicate is re-processed"
     }
 
     MediaAsset {
@@ -137,7 +144,7 @@ erDiagram
         enum type "IMAGE|VIDEO"
         enum owner_type "TOUR|DESTINATION|USER"
         uuid owner_id "polymorphic — no hard FK"
-        string role "hero|gallery|avatar"
+        enum role "MediaRole: hero|gallery|avatar"
         string format
         int width
         int height
@@ -153,6 +160,14 @@ erDiagram
 > above. Referential integrity + orphan cleanup are enforced in `MediaService`
 > inside the same transaction that mutates the owner. Photos/clips live in
 > Cloudinary; we store `public_id` and build delivery URLs at read time.
+>
+> **Column constraints (2026-06-12 hardening):** the `string`/`text` types in
+> the diagram are shorthand — in Postgres every bounded string is
+> `VARCHAR(n)` with caps mirroring the DTO validators 1:1 (e.g. `users.email`
+> 255, `full_name` 120, `phone` 20; tour titles 200; review body 2000; see
+> `schema.prisma`). `reviews.rating` additionally carries a raw-SQL
+> `CHECK (rating BETWEEN 1 AND 5)`. `bookings.refunded_by` deliberately has
+> NO FK (audit snapshot; users are never deletable via the API).
 
 ## Indexes (critical)
 
@@ -189,4 +204,17 @@ runtime `PrismaClient` reads `DATABASE_URL` (Supabase pooler, port 6543).
 > `migrate dev` refuses to run in a non-interactive shell when a change is
 > data-lossy (e.g. dropping a populated column). In that case author the
 > `migrations/<ts>_<name>/migration.sql` by hand and apply it with
-> `migrate deploy`.
+> `migrate deploy`. Recipe (Prisma 7):
+>
+> ```bash
+> pnpm --filter @tourism/api exec prisma migrate diff \
+>   --from-config-datasource --to-schema prisma/schema.prisma --script
+> # → inspect, write migrations/<ts>_<name>/migration.sql, then:
+> pnpm --filter @tourism/api exec prisma migrate deploy
+> ```
+>
+> **Inspect the generated SQL before applying** — Prisma's diff for a
+> text→enum column change emits `DROP COLUMN + ADD COLUMN` (data loss / NOT
+> NULL failure); hand-edit it to
+> `ALTER COLUMN ... TYPE "Enum" USING col::"Enum"` instead (done for
+> `media_assets.role`, 2026-06-12).

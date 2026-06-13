@@ -1,3 +1,7 @@
+<!-- markdownlint-disable MD013 -->
+<!-- MD013 (line length): tables, URLs, and command one-liners cannot wrap
+     without breaking GFM rendering or copy-paste. -->
+
 # Runbook — Database seed
 
 Populates the Supabase Postgres with a realistic catalog (4 destinations, 10 tours, 30 departures, 2 itinerary days) for local development, Postman runs, and demo screenshots.

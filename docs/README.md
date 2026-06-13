@@ -1,9 +1,15 @@
+<!-- markdownlint-disable MD013 -->
+<!-- MD013 (line length): reference tables and technical one-liners (URLs, SQL,
+     roadmap rows) cannot wrap without breaking GFM rendering. -->
+
 # tourism-be-api — docs
 
 NestJS + Prisma + Supabase + Stripe backend for the tourism booking platform.
 This folder is the single source of truth for backend documentation. Inside
-the Turborepo monorepo the backend lives at [`apps/api`](../apps/api); the
-frontends (`apps/web`, `apps/admin`) are not built yet.
+the Turborepo monorepo the backend lives at [`apps/api`](../apps/api). The
+customer frontend [`apps/web`](../apps/web) (Next.js 16) has shipped Phases
+A–C — browse, auth (email + Google OAuth + 2FA TOTP), and account profile;
+the admin frontend `apps/admin` is still an empty template.
 
 > Docs are **English-only**. The earlier bilingual `en/` + `vi/` split was
 > dropped on 2026-05-30 — one language, classified by purpose

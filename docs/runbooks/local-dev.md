@@ -1,3 +1,7 @@
+<!-- markdownlint-disable MD013 -->
+<!-- MD013 (line length): tables, URLs, and command one-liners cannot wrap
+     without breaking GFM rendering or copy-paste. -->
+
 # Runbook — Local development
 
 ## Prerequisites

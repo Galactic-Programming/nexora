@@ -1,3 +1,7 @@
+<!-- markdownlint-disable MD013 -->
+<!-- MD013 (line length): reference tables and technical one-liners (URLs, SQL,
+     roadmap rows) cannot wrap without breaking GFM rendering. -->
+
 # API Overview
 
 Base URL: `${API_PREFIX}` (default `/api/v1`). Swagger UI: `/api/docs` (dev only).
@@ -72,22 +76,25 @@ Legend: 🌍 public · 🔒 customer (any authenticated user) · 🛡 admin only
 | GET | `/destinations/:slug` | 🌍 | Single active destination by slug. 404 when missing or inactive. |
 | GET | `/admin/destinations` | 🛡 | Admin list — sees inactive drafts; honours `isActive` query param. |
 | GET | `/admin/destinations/:slug` | 🛡 | Admin detail — no `isActive` filter. |
-| POST | `/admin/destinations` | 🛡 | Create a destination. 409 `DESTINATION_SLUG_EXISTS` on duplicate. |
-| PATCH | `/admin/destinations/:slug` | 🛡 | Partial update. Renaming via `slug` works but breaks external bookmarks. |
-| DELETE | `/admin/destinations/:slug` | 🛡 | Hard delete. 409 `DESTINATION_HAS_TOURS` when referencing tours exist. |
+| POST | `/admin/destinations` | 🛡 | Create a destination. `slug` optional — any format, normalized server-side; omitted → generated from `nameEn`. 409 `DESTINATION_SLUG_EXISTS` on duplicate (post-normalization); 400 `INVALID_SLUG` when nothing usable remains. |
+| PATCH | `/admin/destinations/:slug` | 🛡 | Partial update. A `slug` in the body goes through the same normalization; renaming breaks external bookmarks. |
+| DELETE | `/admin/destinations/:slug` | 🛡 | Two-tier hard delete. 409 `DESTINATION_IS_ACTIVE` while publicly visible (deactivate first); 409 `DESTINATION_HAS_TOURS` when referencing tours exist (FK Restrict). |
 
-Slug rule: `^[a-z0-9]+(?:-[a-z0-9]+)*$` (kebab-case, 2–80 chars).
+Slug handling (since 2026-06-12): clients may send **any** format — the server
+normalizes via `slugify()` (Vietnamese diacritics stripped incl. `đ→d`,
+lowercased, kebab-cased, capped at 80 chars). The stored value always matches
+`^[a-z0-9]+(?:-[a-z0-9]+)*$`.
 
 ### Sprint B2.2 — Tours (Admin CRUD)
 
 | Method | Path | Access | Description |
 | --- | --- | --- | --- |
 | GET | `/admin/tours/:slug` | 🛡 | Detail with parent `destination` joined. 404 when slug missing. |
-| POST | `/admin/tours` | 🛡 | Create. 400 `INVALID_DESTINATION` if `destinationId` is unknown; 409 `TOUR_SLUG_EXISTS` on duplicate slug. |
-| PATCH | `/admin/tours/:slug` | 🛡 | Partial update. Sending `destinationId` re-validates the FK. |
-| DELETE | `/admin/tours/:slug` | 🛡 | Hard delete. 409 `TOUR_HAS_BOOKINGS` when bookings reference the tour. |
+| POST | `/admin/tours` | 🛡 | Create. `slug` optional — normalized server-side; omitted → generated from `titleEn` (400 `INVALID_SLUG` when unusable). 400 `INVALID_DESTINATION` if `destinationId` is unknown; 409 `TOUR_SLUG_EXISTS` on duplicate slug. |
+| PATCH | `/admin/tours/:slug` | 🛡 | Partial update. Sending `destinationId` re-validates the FK; a `slug` in the body is normalized like create. |
+| DELETE | `/admin/tours/:slug` | 🛡 | Two-tier hard delete. 409 `TOUR_IS_PUBLISHED` while published (unpublish first); 409 `TOUR_HAS_BOOKINGS` when bookings reference the tour (FK Restrict — any status). |
 
-Tour slug rule: same kebab-case as destinations but max 120 chars.
+Tour slug: same normalization as destinations, capped at 120 chars.
 
 **Media (Cloudinary):** Tours and Destinations accept an optional `media[]` on
 create/update — the **full** desired set (replace-all per owner) of
@@ -132,7 +139,7 @@ Error codes for the itinerary surface:
 | --- | --- | --- | --- |
 | GET | `/tours/:slug/departures` | 🌐 | Public list. Defaults: `from = today`, `status = OPEN`. 404 conflates missing/unpublished. |
 | GET | `/admin/tours/:slug/departures` | 🛡 | Admin list — full history including CLOSED/CANCELLED. No implicit defaults. |
-| POST | `/admin/tours/:slug/departures` | 🛡 | Create one departure. |
+| POST | `/admin/tours/:slug/departures` | 🛡 | Create one departure. Rejects past start dates (typo guard). |
 | PATCH | `/admin/tours/:slug/departures/:id` | 🛡 | Partial update. Capacity guard: `seatsTotal >= seatsBooked`. |
 | DELETE | `/admin/tours/:slug/departures/:id` | 🛡 | Hard delete. Pre-checks `seatsBooked === 0`. |
 
@@ -145,6 +152,7 @@ Error codes:
 - `TOUR_NOT_FOUND` (404) — parent slug missing OR (public) unpublished
 - `DEPARTURE_NOT_FOUND` (404) — departure id missing under the parent tour
 - `INVALID_DATE_RANGE` (400) — `endDate < startDate` (revalidated when patching only one of the two)
+- `DEPARTURE_IN_PAST` (400) — create refused because `startDate` is before today (UTC calendar compare; same-day allowed)
 - `SEATS_TOTAL_BELOW_BOOKED` (400) — update would drop capacity below seats already sold
 - `DEPARTURE_HAS_BOOKINGS` (409) — delete refused because seats are sold (or P2003 race fallback)
 
@@ -206,10 +214,14 @@ Error codes:
 - `TOUR_NOT_FOUND` (404) — slug missing or unpublished
 - `DEPARTURE_NOT_FOUND` (404) — departure missing or not under the tour
 - `DEPARTURE_NOT_OPEN` (400) — departure is CLOSED/CANCELLED
+- `DEPARTURE_DEPARTED` (400) — departure already started (UTC calendar compare; same-day still bookable)
 - `SEATS_NOT_AVAILABLE` (409) — best-effort capacity check (real reservation happens in webhook)
 - `STRIPE_SESSION_INVALID` (400) — Stripe returned a session without a redirect URL
 - `BOOKING_NOT_FOUND` (404) — also returned for non-owners (anti-enumeration)
 - `USER_NOT_SYNCED` (401) — caller hasn't run `/auth/sync` yet
+
+If the Stripe session call itself fails, the just-created PENDING booking is
+**deleted** (compensation) before the error is rethrown — no orphan rows.
 
 **Note:** Without B3.4 webhook wired up, a successful Stripe payment leaves the booking in PENDING — the FE success page will show "processing". B3.4 closes the loop.
 
@@ -221,7 +233,7 @@ Error codes:
 
 Two-layer idempotency:
 
-1. **Event-level** — every `event.id` is inserted into `payment_events` (UNIQUE). A duplicate insert returns 200 immediately without re-running side effects, so Stripe retries are safe.
+1. **Event-level** — every `event.id` is inserted into `payment_events` (UNIQUE) with `processed_at = NULL`, and `processed_at` is set only after the handler finishes. A duplicate of a **fully-processed** event returns 200 without re-running; a duplicate whose first attempt crashed mid-way (`processed_at` still NULL) is **re-processed** — so Stripe retries are safe in both directions and a payment can't be lost to a crash between insert and completion.
 2. **Booking-level** — `checkout.session.completed` handling runs inside a Prisma transaction with `SELECT seats_total, seats_booked FROM tour_departures WHERE id = $1 FOR UPDATE`. If the booking is already PAID/REFUNDED it no-ops; if seats no longer fit (race with another concurrent payment), the booking is automatically refunded and CANCELLED.
 
 Events handled:
@@ -248,20 +260,24 @@ Body:
 { "reason": "Tour cancelled due to weather" }
 ```
 
-`reason` is optional and free-form. If it matches one of Stripe's enum values (`duplicate` / `fraudulent` / `requested_by_customer`) it's forwarded; otherwise it's persisted as Stripe metadata.
+`reason` is optional and free-form. It is **persisted to
+`bookings.refund_reason`** (audit), and forwarded to Stripe only when it
+matches one of Stripe's enum values (`duplicate` / `fraudulent` /
+`requested_by_customer`). The triggering admin's `users.id` is persisted to
+`bookings.refunded_by`.
 
 Order of operations:
 
 1. Validate booking is PAID and has `stripePaymentIntentId`.
-2. Call Stripe refund FIRST (authoritative — if Stripe rejects, the DB stays PAID).
-3. In one transaction: decrement `tour_departures.seats_booked` and flip booking to REFUNDED + `cancelledAt`.
+2. Call Stripe refund FIRST (authoritative — if Stripe rejects, the DB stays PAID). **Exception:** `charge_already_refunded` (the payment was refunded out-of-band, e.g. via the Stripe Dashboard) is NOT an error — processing continues so the DB converges to REFUNDED instead of stranding the booking in PAID.
+3. In one transaction: decrement `tour_departures.seats_booked`, flip booking to REFUNDED + `cancelledAt`, persist `refund_reason` + `refunded_by`.
 4. Fire `bookingRefunded` email (defensive — failures log-and-continue).
 
 Errors:
 
 - `BOOKING_NOT_FOUND` (404)
 - `BOOKING_NOT_REFUNDABLE` (400) — not PAID, or missing payment_intent.
-- `REFUND_FAILED` (400) — Stripe rejected (e.g. dispute window closed).
+- `REFUND_FAILED` (400) — Stripe rejected (e.g. dispute window closed); `charge_already_refunded` deliberately does NOT trigger this.
 
 ### Sprint B3.6 — Transactional email (Resend)
 

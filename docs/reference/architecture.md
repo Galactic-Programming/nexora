@@ -1,3 +1,7 @@
+<!-- markdownlint-disable MD013 -->
+<!-- MD013 (line length): reference tables and technical one-liners (URLs, SQL,
+     roadmap rows) cannot wrap without breaking GFM rendering. -->
+
 # Architecture — tourism-be-api
 
 ## High-level
@@ -6,7 +10,7 @@
                       ┌────────────────┐
    FE customer ─┐     │                │
                 ├──►  │  NestJS API    │ ──► Prisma ──► Supabase Postgres
-   FE admin   ──┘     │  (Express)     │ ──► @supabase/supabase-js (Storage signed URLs)
+   FE admin   ──┘     │  (Express)     │ ──► Cloudinary (signed upload params; FE uploads direct)
                       │                │ ──► Stripe SDK
                       └────────┬───────┘ ──► Resend (email)
                                │
@@ -14,7 +18,7 @@
                     Supabase JWKS (verify JWT)
 ```
 
-- Single Turborepo monorepo: `apps/api` (this NestJS service), `apps/web` (customer FE), `apps/admin` (admin FE). The two FE apps are currently empty templates — no FE work done yet.
+- Single Turborepo monorepo: `apps/api` (this NestJS service), `apps/web` (customer FE), `apps/admin` (admin FE). `apps/web` (Next.js 16) has shipped Phases A–C — browse, full auth (email/password + Google OAuth + 2FA TOTP via supabase-js), and account profile. `apps/admin` is still an empty template.
 - Backend is a single NestJS 11 service. No microservices for the graduation scope.
 - Supabase Auth handles login on the frontend; this API verifies the JWT and mirrors users into a local `users` table.
 
@@ -101,6 +105,7 @@ Pagination: controllers return `{ items, meta }`; the interceptor moves
   - `DIRECT_URL` → **Session pooler** (port 5432, same hostname). Used by `prisma migrate` (declared in `prisma.config.ts`). Supports prepared statements + long transactions, which migrations need.
   - We do NOT use the "Direct Connection" (`db.<ref>.supabase.co:5432`) because it requires IPv6 or a paid IPv4 add-on.
 - Schema: see [`erd.md`](erd.md) and [`prisma/schema.prisma`](../../apps/api/prisma/schema.prisma).
+- **Defense-in-depth (2026-06-12):** every DTO string bound is mirrored as a DB constraint — `@db.VarChar(n)` caps match the validators 1:1, closed vocabularies are Postgres enums (`MediaRole`, `Locale`, …), and `reviews.rating` carries a raw-SQL `CHECK (rating BETWEEN 1 AND 5)`. DTOs stay the primary validator (friendly 400s); the DB is the last line against any write path that bypasses them. Delete policy is three-tier: hide (`isPublished`/`isActive` = false) → hard-delete only for hidden rows (`*_IS_PUBLISHED`/`*_IS_ACTIVE` guards) → FK `Restrict` makes referenced rows immortal. Booking/PaymentEvent/Review/User have no delete endpoints at all.
 
 ## Configuration
 
@@ -123,7 +128,12 @@ Pagination: controllers return `{ items, meta }`; the interceptor moves
 
 - Path: `POST /api/v1/payments/webhook` (Sprint B3).
 - Raw body required for signature verification — wired in `main.ts` **before** the global JSON parser via `express.raw()`.
-- Idempotency: `payment_events` table with UNIQUE `stripe_event_id`. Replays return 200 without re-processing.
+- Idempotency: `payment_events` table with UNIQUE `stripe_event_id`.
+  `processed_at` is set only AFTER the handler finishes all side effects — a
+  replay of a fully-processed event returns 200 without re-running, but a
+  replay whose first attempt crashed mid-way (`processed_at` still NULL) is
+  **re-processed** (handlers are idempotent at booking level), so a payment is
+  never silently lost to a crash between insert and completion.
 
 ## Known caveats
 

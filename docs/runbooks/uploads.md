@@ -1,3 +1,7 @@
+<!-- markdownlint-disable MD013 -->
+<!-- MD013 (line length): tables, URLs, and command one-liners cannot wrap
+     without breaking GFM rendering or copy-paste. -->
+
 # Runbook — Uploads (Cloudinary signed uploads)
 
 How the admin FE uploads photos/clips to **Cloudinary** without proxying bytes

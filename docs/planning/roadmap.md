@@ -1,3 +1,7 @@
+<!-- markdownlint-disable MD013 -->
+<!-- MD013 (line length): reference tables and technical one-liners (URLs, SQL,
+     roadmap rows) cannot wrap without breaking GFM rendering. -->
+
 # Tourism API — Roadmap & Progress Tracker
 
 Single source of truth for sprint progress. Update **every time** a sub-feature is shipped (code + tests + Postman + docs).
@@ -150,6 +154,25 @@ Customer FE is split into four sequential sub-projects, each on its own feature 
 | Admin FE | `apps/admin` | ⬜ Not started (empty template) | TBD |
 
 > Foundation (A) known follow-up (deferred to B): add a root global-not-found so arbitrary unmatched URLs render the localized `not-found.tsx` (today it renders on explicit `notFound()` calls; unmatched URLs fall through to Next's default 404).
+
+## Adjustment phase — post-Phase-C hardening (2026-06-12 → 13) ✅
+
+Three audit/hardening passes between Phase C and Phase D, driven by a full
+review of the function catalogs ([functions-customer.md](../reference/functions-customer.md),
+[functions-admin.md](../reference/functions-admin.md) — both now carry a
+per-function **Trạng thái** column).
+
+| # | Pass | Shipped |
+| --- | --- | --- |
+| 1 | Schema hardening | 28 `@db.VarChar` caps mirroring DTO bounds 1:1; `MediaRole` enum; `CHECK reviews.rating 1..5`; `REVOKE` `rls_auto_enable()` from anon/authenticated **and PUBLIC**; 🐛 booking codes were base64url (`-`/`_` broke the review regex for ~22% of bookings) → true base36 `mintBookingCode()` |
+| 2 | Customer functions (U-01→U-17) | `DEPARTURE_DEPARTED` (no booking past departures; UTC calendar compare); webhook `processed_at` idempotency (crashed events re-process on retry — payments can't be lost); orphan PENDING cleanup on Stripe session failure |
+| 3 | Admin functions (A-01→A-22) | Slug auto-normalize/generate (`slugify()`, slug optional, `INVALID_SLUG`); `DEPARTURE_IN_PAST` typo guard; **two-tier delete** (`TOUR_IS_PUBLISHED`/`DESTINATION_IS_ACTIVE` — hide before hard delete; FK Restrict = tier 3); refund converges on `charge_already_refunded` + audit columns `refund_reason`/`refunded_by` |
+
+Deferred with owners noted in the catalogs (🕒): `costPrice` profit stats
+(needs business decision), `/bookings/me` pagination (Phase D), phone
+clear-to-null parity, itinerary-vs-duration publish check, CANCELLED-departure
+refund flow, moderation audit columns, partial refunds, multi-currency
+revenue, leaked-password protection (Supabase Pro plan).
 
 ---
 
