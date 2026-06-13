@@ -117,7 +117,7 @@
     "forgotCta": "Gửi liên kết",
     "resetCta": "Cập nhật mật khẩu",
     "googleCta": "Tiếp tục với Google",
-    "googleRedirecting": "Đang chuyển hướng tới Google…",
+    "googleRedirecting": "Đang chuyển hướng tới Google…",
     "mfa": {
       "title": "Mã xác thực hai lớp",
       "help": "Nhập mã 6 số từ ứng dụng xác thực của bạn.",
@@ -213,6 +213,60 @@
       "error": "Đã xảy ra lỗi. Vui lòng thử lại.",
       "loadError": "Chúng tôi không thể tải hồ sơ của bạn.",
       "retry": "Thử lại"
+    }
+  },
+  "Booking": {
+    "form": {
+      "title": "Đặt tour này",
+      "departureLabel": "Chọn ngày khởi hành",
+      "seatsLeft": "Còn {count} chỗ",
+      "soldOut": "Hết chỗ",
+      "adults": "Người lớn",
+      "children": "Trẻ em",
+      "contactName": "Tên liên hệ",
+      "contactEmail": "Email liên hệ",
+      "contactPhone": "Số điện thoại (không bắt buộc)",
+      "specialRequests": "Yêu cầu đặc biệt (không bắt buộc)",
+      "total": "Tổng tạm tính",
+      "totalNote": "Số tiền cuối cùng do máy chủ xác nhận khi thanh toán.",
+      "submit": "Tiếp tục thanh toán",
+      "submitting": "Đang chuẩn bị thanh toán…",
+      "empty": "Tour này chưa có ngày khởi hành sắp tới.",
+      "backToTour": "Quay lại tour"
+    },
+    "errors": {
+      "departureRequired": "Hãy chọn ngày khởi hành.",
+      "adultsRange": "Người lớn phải từ 1 đến 20.",
+      "childrenRange": "Trẻ em phải từ 0 đến 20.",
+      "nameRequired": "Cần nhập tên liên hệ.",
+      "nameMax": "Tên liên hệ không vượt quá 120 ký tự.",
+      "emailInvalid": "Nhập địa chỉ email hợp lệ.",
+      "phoneLength": "Số điện thoại phải từ 6 đến 30 ký tự.",
+      "requestsMax": "Yêu cầu đặc biệt không vượt quá 1000 ký tự.",
+      "departureDeparted": "Chuyến này đã khởi hành. Hãy chọn ngày khác.",
+      "departureNotOpen": "Chuyến này đã đóng đặt chỗ. Hãy chọn ngày khác.",
+      "seatsNotAvailable": "Không đủ chỗ cho đoàn của bạn. Hãy chọn ngày khác hoặc giảm số chỗ.",
+      "notFound": "Tour hoặc chuyến đi này không còn khả dụng.",
+      "generic": "Đã xảy ra lỗi. Vui lòng thử lại."
+    },
+    "success": {
+      "processing": "Đã nhận thanh toán — đang xác nhận đặt chỗ…",
+      "paidTitle": "Đặt tour thành công!",
+      "paidBody": "Email xác nhận đang được gửi tới bạn.",
+      "code": "Mã đặt chỗ",
+      "seats": "{adults} người lớn, {children} trẻ em",
+      "total": "Tổng đã thanh toán",
+      "timeout": "Thanh toán vẫn đang được xử lý. Kiểm tra tài khoản của bạn sau ít phút.",
+      "missingCode": "Đã nhận thanh toán. Đơn của bạn sẽ sớm xuất hiện trong tài khoản.",
+      "expired": "Phiên thanh toán đã hết hạn trước khi hoàn tất. Bạn chưa bị trừ tiền.",
+      "refunded": "Đơn này đã được hoàn tiền.",
+      "backHome": "Về trang chủ"
+    },
+    "cancel": {
+      "title": "Chưa hoàn tất thanh toán",
+      "body": "Đơn của bạn chưa được thanh toán và sẽ tự hủy sau khoảng 30 phút. Bạn chưa bị trừ tiền.",
+      "code": "Mã đặt chỗ",
+      "retry": "Xem các tour"
     }
   }
 }

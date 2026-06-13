@@ -117,7 +117,7 @@
     "forgotCta": "Send reset link",
     "resetCta": "Update password",
     "googleCta": "Continue with Google",
-    "googleRedirecting": "Redirecting to Google…",
+    "googleRedirecting": "Redirecting to Google…",
     "mfa": {
       "title": "Two-factor code",
       "help": "Enter the 6-digit code from your authenticator app.",
@@ -213,6 +213,60 @@
       "error": "Something went wrong. Please try again.",
       "loadError": "We couldn't load your profile.",
       "retry": "Try again"
+    }
+  },
+  "Booking": {
+    "form": {
+      "title": "Book this tour",
+      "departureLabel": "Choose a departure",
+      "seatsLeft": "{count} seats left",
+      "soldOut": "Sold out",
+      "adults": "Adults",
+      "children": "Children",
+      "contactName": "Contact name",
+      "contactEmail": "Contact email",
+      "contactPhone": "Contact phone (optional)",
+      "specialRequests": "Special requests (optional)",
+      "total": "Estimated total",
+      "totalNote": "Final amount is confirmed by the server at checkout.",
+      "submit": "Continue to payment",
+      "submitting": "Preparing checkout…",
+      "empty": "No upcoming departures for this tour.",
+      "backToTour": "Back to tour"
+    },
+    "errors": {
+      "departureRequired": "Choose a departure.",
+      "adultsRange": "Adults must be between 1 and 20.",
+      "childrenRange": "Children must be between 0 and 20.",
+      "nameRequired": "Contact name is required.",
+      "nameMax": "Contact name must be 120 characters or fewer.",
+      "emailInvalid": "Enter a valid email address.",
+      "phoneLength": "Phone must be between 6 and 30 characters.",
+      "requestsMax": "Special requests must be 1000 characters or fewer.",
+      "departureDeparted": "This departure has already started. Pick another date.",
+      "departureNotOpen": "This departure is closed for booking. Pick another date.",
+      "seatsNotAvailable": "Not enough seats left for your group. Pick another date or reduce seats.",
+      "notFound": "This tour or departure is no longer available.",
+      "generic": "Something went wrong. Please try again."
+    },
+    "success": {
+      "processing": "Payment received — confirming your booking…",
+      "paidTitle": "Booking confirmed!",
+      "paidBody": "A confirmation email is on its way.",
+      "code": "Booking code",
+      "seats": "{adults} adult(s), {children} child(ren)",
+      "total": "Total paid",
+      "timeout": "Your payment is still being processed. Check your account in a few minutes.",
+      "missingCode": "Payment received. Your booking will appear in your account shortly.",
+      "expired": "This checkout session expired before payment completed. Nothing was charged.",
+      "refunded": "This booking has been refunded.",
+      "backHome": "Back to home"
+    },
+    "cancel": {
+      "title": "Payment not completed",
+      "body": "Your booking was not paid and will be cancelled automatically in about 30 minutes. Nothing was charged.",
+      "code": "Booking code",
+      "retry": "Browse tours"
     }
   }
 }
