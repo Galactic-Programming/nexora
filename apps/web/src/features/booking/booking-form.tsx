@@ -103,12 +103,12 @@ export function BookingForm({
 
         {/* Departure selection */}
         <Field className="gap-2">
-          <FieldLabel htmlFor="departure-group">{t("form.departureLabel")}</FieldLabel>
+          <FieldLabel id="departure-group-label">{t("form.departureLabel")}</FieldLabel>
           <Controller
             control={control}
             name="departureId"
             render={({ field }) => (
-              <div id="departure-group" role="radiogroup" className="flex flex-col gap-2">
+              <div id="departure-group" role="radiogroup" aria-labelledby="departure-group-label" className="flex flex-col gap-2">
                 {departures.map((d) => (
                   <label
                     key={d.id}
@@ -156,6 +156,7 @@ export function BookingForm({
               type="number"
               min={1}
               max={20}
+              aria-invalid={!!errors.numAdults}
               {...register("numAdults", { valueAsNumber: true })}
             />
             {errors.numAdults?.message ? (
@@ -169,6 +170,7 @@ export function BookingForm({
               type="number"
               min={0}
               max={20}
+              aria-invalid={!!errors.numChildren}
               {...register("numChildren", { valueAsNumber: true })}
             />
             {errors.numChildren?.message ? (
@@ -226,7 +228,7 @@ export function BookingForm({
 
         <Field className="gap-2">
           <FieldLabel htmlFor="specialRequests">{t("form.specialRequests")}</FieldLabel>
-          <Input id="specialRequests" {...register("specialRequests")} />
+          <Input id="specialRequests" aria-invalid={!!errors.specialRequests} {...register("specialRequests")} />
           {errors.specialRequests?.message ? (
             <FieldError>{t(errors.specialRequests.message)}</FieldError>
           ) : null}
