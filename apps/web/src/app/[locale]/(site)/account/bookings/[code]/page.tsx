@@ -82,6 +82,7 @@ export default async function BookingDetailPage({
           statusNote: t(`status.note.${booking.status.toLowerCase()}`),
           seats: t("list.seats", { adults: booking.numAdults, children: booking.numChildren }),
           viewTour: t("detail.viewTour"),
+          writeReview: t("detail.writeReview"),
           labels: {
             departure: t("detail.departure"),
             travelers: t("detail.seats"),

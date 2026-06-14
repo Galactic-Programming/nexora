@@ -297,7 +297,8 @@
       "paidAt": "Thanh toán ngày",
       "cancelledAt": "Hủy ngày",
       "viewTour": "Xem tour",
-      "notFoundTitle": "Không tìm thấy đặt chỗ"
+      "notFoundTitle": "Không tìm thấy đặt chỗ",
+      "writeReview": "Viết đánh giá"
     },
     "status": {
       "paid": "Đã thanh toán",
@@ -310,6 +311,40 @@
         "cancelled": "Đặt chỗ này đã bị hủy. Không có khoản nào bị tính phí.",
         "refunded": "Đặt chỗ này đã được hoàn tiền."
       }
+    }
+  },
+  "Review": {
+    "form": {
+      "title": "Viết đánh giá",
+      "subtitle": "Chia sẻ trải nghiệm của bạn về {tour}.",
+      "ratingLabel": "Đánh giá của bạn",
+      "titleLabel": "Tiêu đề (tùy chọn)",
+      "titlePlaceholder": "Tóm tắt chuyến đi của bạn",
+      "bodyLabel": "Nội dung đánh giá",
+      "bodyPlaceholder": "Kể cho du khách khác về trải nghiệm của bạn…",
+      "bodyHelp": "Tối thiểu 10 ký tự.",
+      "submit": "Gửi đánh giá",
+      "submitting": "Đang gửi…",
+      "back": "Quay lại đặt chỗ"
+    },
+    "errors": {
+      "ratingRequired": "Vui lòng chọn đánh giá từ 1 đến 5 sao.",
+      "bodyMin": "Đánh giá phải có ít nhất 10 ký tự.",
+      "bodyMax": "Đánh giá không được vượt quá 2000 ký tự.",
+      "titleMax": "Tiêu đề không được vượt quá 120 ký tự.",
+      "notEligible": "Chỉ các chuyến đã hoàn tất (đã thanh toán) mới được đánh giá.",
+      "alreadyReviewed": "Bạn đã đánh giá đặt chỗ này rồi.",
+      "generic": "Đã có lỗi xảy ra. Vui lòng thử lại."
+    },
+    "success": {
+      "title": "Đã gửi đánh giá!",
+      "body": "Cảm ơn bạn đã chia sẻ. Đánh giá của bạn sẽ xuất hiện trên trang tour sau khi được duyệt.",
+      "backToBooking": "Quay lại đặt chỗ"
+    },
+    "ineligible": {
+      "title": "Đặt chỗ này chưa thể đánh giá",
+      "body": "Chỉ các chuyến đã hoàn tất (đã thanh toán) mới được đánh giá.",
+      "backToBooking": "Quay lại đặt chỗ"
     }
   }
 }

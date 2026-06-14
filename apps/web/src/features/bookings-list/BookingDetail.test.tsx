@@ -48,6 +48,7 @@ const text = {
   statusNote: "This booking is confirmed.",
   seats: "2 adult(s), 1 child(ren)",
   viewTour: "View tour",
+  writeReview: "Write a review",
   labels: {
     departure: "Departure",
     travelers: "Travelers",
@@ -77,6 +78,19 @@ describe("BookingDetail", () => {
     render(<BookingDetail booking={makeBooking()} locale="en" money={money} formatDate={formatDate} text={text} />);
     expect(screen.getByText(/Back to my bookings/).closest("a")).toHaveAttribute("href", "/account/bookings");
     expect(screen.getByText("View tour").closest("a")).toHaveAttribute("href", "/tours/sa-pa-trek-2d1n");
+  });
+
+  it("shows a Write a review link for PAID bookings", () => {
+    render(<BookingDetail booking={makeBooking({ status: "PAID" })} locale="en" money={money} formatDate={formatDate} text={text} />);
+    expect(screen.getByText("Write a review").closest("a")).toHaveAttribute(
+      "href",
+      "/account/bookings/BK-5ZWGG4K0/review",
+    );
+  });
+
+  it("hides the Write a review link for non-PAID bookings", () => {
+    render(<BookingDetail booking={makeBooking({ status: "PENDING" })} locale="en" money={money} formatDate={formatDate} text={text} />);
+    expect(screen.queryByText("Write a review")).not.toBeInTheDocument();
   });
 
   it("shows paidAt and hides specialRequests when absent", () => {

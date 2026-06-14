@@ -297,7 +297,8 @@
       "paidAt": "Paid on",
       "cancelledAt": "Cancelled on",
       "viewTour": "View tour",
-      "notFoundTitle": "Booking not found"
+      "notFoundTitle": "Booking not found",
+      "writeReview": "Write a review"
     },
     "status": {
       "paid": "Paid",
@@ -310,6 +311,40 @@
         "cancelled": "This booking was cancelled. Nothing was charged.",
         "refunded": "This booking was refunded."
       }
+    }
+  },
+  "Review": {
+    "form": {
+      "title": "Write a review",
+      "subtitle": "Share your experience of {tour}.",
+      "ratingLabel": "Your rating",
+      "titleLabel": "Title (optional)",
+      "titlePlaceholder": "Sum up your trip",
+      "bodyLabel": "Your review",
+      "bodyPlaceholder": "Tell other travellers about your experience…",
+      "bodyHelp": "At least 10 characters.",
+      "submit": "Submit review",
+      "submitting": "Submitting…",
+      "back": "Back to booking"
+    },
+    "errors": {
+      "ratingRequired": "Please choose a rating from 1 to 5 stars.",
+      "bodyMin": "Your review must be at least 10 characters.",
+      "bodyMax": "Your review must be 2000 characters or fewer.",
+      "titleMax": "Title must be 120 characters or fewer.",
+      "notEligible": "Only completed (paid) trips can be reviewed.",
+      "alreadyReviewed": "You've already reviewed this booking.",
+      "generic": "Something went wrong. Please try again."
+    },
+    "success": {
+      "title": "Review submitted!",
+      "body": "Thanks for sharing. Your review will appear on the tour page once it has been approved.",
+      "backToBooking": "Back to booking"
+    },
+    "ineligible": {
+      "title": "This booking can't be reviewed yet",
+      "body": "Only completed (paid) trips can be reviewed.",
+      "backToBooking": "Back to booking"
     }
   }
 }

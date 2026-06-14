@@ -13,6 +13,8 @@ export interface BookingDetailText {
   statusNote: string;
   seats: string;
   viewTour: string;
+  /** "Write a review" CTA label — only rendered for PAID bookings. */
+  writeReview: string;
   labels: {
     departure: string;
     travelers: string;
@@ -87,12 +89,22 @@ export function BookingDetail({
 
       <DescriptionList items={items} className="border-border rounded-xl border px-4" />
 
-      <Link
-        href={`/tours/${booking.tour.slug}`}
-        className="text-primary inline-block text-sm hover:underline"
-      >
-        {text.viewTour}
-      </Link>
+      <div className="flex flex-wrap items-center gap-4">
+        {booking.status === "PAID" ? (
+          <Link
+            href={`/account/bookings/${booking.code}/review`}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-9 items-center rounded-md px-4 text-sm font-medium transition-colors"
+          >
+            {text.writeReview}
+          </Link>
+        ) : null}
+        <Link
+          href={`/tours/${booking.tour.slug}`}
+          className="text-primary inline-block text-sm hover:underline"
+        >
+          {text.viewTour}
+        </Link>
+      </div>
     </div>
   );
 }
