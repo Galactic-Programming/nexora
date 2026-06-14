@@ -133,7 +133,9 @@ Schema + service tweaks so the FE customer template can wire 1:1 to the Figma de
 
 Customer FE first, admin FE next. Both live inside this Turborepo as `apps/web` (customer) and `apps/admin` (admin); BE-first sprint discipline stays in effect (no mid-sprint schema changes — gaps go to BACKLOG).
 
-> **Status correction (2026-06-03):** an earlier standalone customer FE (separate `tourism-frontend-customer` repo, which had reached ~C1.4) was **discarded** when the project consolidated into this Turborepo. `apps/web` and `apps/admin` are both **empty templates — no FE work has been done.** The prior C0–C1.4 progress does **not** carry over and any earlier "in progress" status here was stale.
+> **Status correction (2026-06-03):** an earlier standalone customer FE (separate `tourism-frontend-customer` repo, which had reached ~C1.4) was **discarded** when the project consolidated into this Turborepo. At that point `apps/web` and `apps/admin` were both empty templates and the prior C0–C1.4 progress did **not** carry over.
+>
+> **Update (2026-06-14):** `apps/web` has since been built fresh inside the monorepo and shipped **Phases A–D** (Foundation → Browse → Auth & Account → Booking & Review) — see the rows below. `apps/admin` remains a scaffold (not started).
 
 Customer FE is split into four sequential sub-projects, each on its own feature branch: **A. Foundation → B. Browse → C. Auth & Account → D. Booking & Review**.
 
@@ -196,7 +198,7 @@ Triggered during customer FE Sprint C0 when `openapi-typescript-codegen` was wir
 
 ## Sprint B5 — Hardening + Production
 
-> ⏸ **On hold** until customer FE + admin FE both land. Deploying BE alone forces redeploys whenever the FE finds gaps; we'd rather deploy a complete system once. See [`sprints/b4.6-figma-alignment.md`](sprints/b4.6-figma-alignment.md) § "Why pause B5". (FE now lives in `apps/web` + `apps/admin` — both empty templates, not started.)
+> ⏸ **On hold** until customer FE + admin FE both land. Deploying BE alone forces redeploys whenever the FE finds gaps; we'd rather deploy a complete system once. See [`sprints/b4.6-figma-alignment.md`](sprints/b4.6-figma-alignment.md) § "Why pause B5". (`apps/web` has shipped Phases A–D; `apps/admin` is still a scaffold — B5 stays paused until admin FE lands.)
 
 | # | Sub-feature | Status | Postman | Docs |
 | --- | --- | --- | --- | --- |

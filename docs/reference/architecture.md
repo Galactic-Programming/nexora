@@ -18,7 +18,7 @@
                     Supabase JWKS (verify JWT)
 ```
 
-- Single Turborepo monorepo: `apps/api` (this NestJS service), `apps/web` (customer FE), `apps/admin` (admin FE). `apps/web` (Next.js 16) has shipped Phases A–C — browse, full auth (email/password + Google OAuth + 2FA TOTP via supabase-js), and account profile. `apps/admin` is still an empty template.
+- Single Turborepo monorepo: `apps/api` (this NestJS service), `apps/web` (customer FE), `apps/admin` (admin FE). `apps/web` (Next.js 16) has shipped Phases A–D — browse, full auth (email/password + Google OAuth + 2FA TOTP via supabase-js), account profile, and booking & review (Stripe Checkout flow, my-bookings list/detail, write-review). `apps/admin` is still a scaffold (not started).
 - Backend is a single NestJS 11 service. No microservices for the graduation scope.
 - Supabase Auth handles login on the frontend; this API verifies the JWT and mirrors users into a local `users` table.
 
@@ -45,8 +45,8 @@ src/
 │   └── interceptors/       TransformInterceptor — wraps responses in
 │                           {data, error, meta}
 └── modules/                auth, users, destinations, tours, departures,
-                            bookings, payments, reviews, wishlist, uploads,
-                            admin-stats, email, health
+                            bookings, payments, reviews, wishlist, media,
+                            uploads, admin-stats, email, health
 ```
 
 Per-module `dto/` folders hold both request DTOs (e.g. `CreateTourDto`)

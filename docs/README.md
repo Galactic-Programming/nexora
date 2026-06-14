@@ -8,8 +8,9 @@ NestJS + Prisma + Supabase + Stripe backend for the tourism booking platform.
 This folder is the single source of truth for backend documentation. Inside
 the Turborepo monorepo the backend lives at [`apps/api`](../apps/api). The
 customer frontend [`apps/web`](../apps/web) (Next.js 16) has shipped Phases
-A–C — browse, auth (email + Google OAuth + 2FA TOTP), and account profile;
-the admin frontend `apps/admin` is still an empty template.
+A–D — browse, auth (email + Google OAuth + 2FA TOTP), account profile, and
+booking & review (Stripe Checkout, my-bookings, write-review); the admin
+frontend `apps/admin` is still a scaffold (not started).
 
 > Docs are **English-only**. The earlier bilingual `en/` + `vi/` split was
 > dropped on 2026-05-30 — one language, classified by purpose

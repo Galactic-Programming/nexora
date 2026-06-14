@@ -5,8 +5,8 @@ Monorepo (Turborepo + pnpm) for the tourism booking platform.
 | App | Path | Stack | Status |
 | --- | --- | --- | --- |
 | Backend API | [`apps/api`](apps/api) | NestJS 11 · Prisma 7 · Supabase · Stripe · Resend | ✅ active |
-| Web (customer) | `apps/web` | Next.js · shadcn/ui | 🚧 not built yet |
-| Admin | `apps/admin` | Next.js · shadcn/ui | 🚧 not built yet |
+| Web (customer) | [`apps/web`](apps/web) | Next.js 16 · React 19 · @tourism/ui · next-intl · Supabase SSR | ✅ Phases A–D shipped (browse, auth, account, booking & review) |
+| Admin | `apps/admin` | Next.js 16 · @tourism/ui | 🚧 scaffold only (not started) |
 
 Full documentation lives in [`docs/`](docs/README.md) — start there after setup.
 
