@@ -2,14 +2,15 @@ import type { ReactNode } from "react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 
-type AccountSection = "profile" | "security";
+type AccountSection = "profile" | "security" | "bookings";
 
 const NAV_ITEMS: {
   section: AccountSection;
-  href: "/account" | "/account/security";
-  labelKey: "nav.profile" | "nav.security";
+  href: "/account" | "/account/security" | "/account/bookings";
+  labelKey: "nav.profile" | "nav.security" | "nav.bookings";
 }[] = [
   { section: "profile", href: "/account", labelKey: "nav.profile" },
+  { section: "bookings", href: "/account/bookings", labelKey: "nav.bookings" },
   { section: "security", href: "/account/security", labelKey: "nav.security" },
 ];
 

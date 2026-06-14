@@ -65,7 +65,7 @@ describe("getMyBookings", () => {
     h.GET.mockResolvedValue({ data: rows });
     const res = await getMyBookings("tok");
     expect(res).toHaveLength(2);
-    expect(res[0].code).toBe("BK-7K3F92AB");
+    expect(res[0]!.code).toBe("BK-7K3F92AB");
     expect(h.GET).toHaveBeenCalledWith("/api/v1/bookings/me");
     expect(h.tokens).toContain("tok");
   });
