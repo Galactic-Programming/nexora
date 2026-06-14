@@ -261,7 +261,9 @@
       "missingCode": "Đã nhận thanh toán. Đơn của bạn sẽ sớm xuất hiện trong tài khoản.",
       "expired": "Phiên thanh toán đã hết hạn trước khi hoàn tất. Bạn chưa bị trừ tiền.",
       "refunded": "Đơn này đã được hoàn tiền.",
-      "backHome": "Về trang chủ"
+      "backHome": "Về trang chủ",
+      "viewBooking": "Xem đặt chỗ",
+      "viewBookings": "Xem đặt chỗ của tôi"
     },
     "cancel": {
       "title": "Chưa hoàn tất thanh toán",

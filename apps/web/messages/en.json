@@ -261,7 +261,9 @@
       "missingCode": "Payment received. Your booking will appear in your account shortly.",
       "expired": "This checkout session expired before payment completed. Nothing was charged.",
       "refunded": "This booking has been refunded.",
-      "backHome": "Back to home"
+      "backHome": "Back to home",
+      "viewBooking": "View booking",
+      "viewBookings": "View my bookings"
     },
     "cancel": {
       "title": "Payment not completed",

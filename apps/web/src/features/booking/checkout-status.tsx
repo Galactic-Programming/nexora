@@ -101,8 +101,8 @@ export function CheckoutStatus() {
             </dd>
           </div>
         </dl>
-        <Link href="/" className="underline">
-          {t("success.backHome")}
+        <Link href={`/account/bookings/${booking.code}`} className="underline">
+          {t("success.viewBooking")}
         </Link>
       </div>
     );
@@ -122,8 +122,8 @@ export function CheckoutStatus() {
       <Alert>
         <AlertTitle>{t(messageKey)}</AlertTitle>
         <AlertDescription>
-          <Link href="/" className="underline">
-            {t("success.backHome")}
+          <Link href="/account/bookings" className="underline">
+            {t("success.viewBookings")}
           </Link>
         </AlertDescription>
       </Alert>
