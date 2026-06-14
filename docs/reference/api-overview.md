@@ -195,8 +195,8 @@ Full reference: [`docs/runbooks/seed.md`](../runbooks/seed.md).
 | Method | Path | Access | Description |
 | --- | --- | --- | --- |
 | POST | `/bookings` | 🔐 | Create PENDING booking + mint Stripe Checkout session. Returns `{ bookingId, bookingCode, checkoutUrl, status }`. |
-| GET | `/bookings/me` | 🔐 | Caller's own bookings, newest first (top 50). |
-| GET | `/bookings/:code` | 🔐 | One booking by code. Owner-or-admin only; non-owners see the same 404 as a truly-missing code. |
+| GET | `/bookings/me` | 🔐 | Caller's own bookings, newest first (top 50). Each row includes the joined `tour {slug, titleEn, titleVi}` + `departure {startDate, endDate}` (documented on `BookingDto` since D2). |
+| GET | `/bookings/:code` | 🔐 | One booking by code. Owner-or-admin only; non-owners see the same 404 as a truly-missing code. Also joins `departure.status`. |
 
 🔐 = JWT required; 401 `USER_NOT_SYNCED` if the caller hasn't run `/auth/sync` yet.
 
