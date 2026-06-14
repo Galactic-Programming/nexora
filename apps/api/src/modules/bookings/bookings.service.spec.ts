@@ -71,6 +71,8 @@ const sampleBooking: Booking = {
   specialRequests: null,
   stripeSessionId: null,
   stripePaymentIntentId: null,
+  refundReason: null,
+  refundedById: null,
   paidAt: null,
   cancelledAt: null,
   createdAt: new Date('2026-05-12T00:00:00Z'),
