@@ -111,6 +111,9 @@ Start reading at [`docs/README.md`](docs/README.md). Key refs:
 
 ## AI infra in this repo
 
+- `.claude/commands/` — project slash commands: `/gate` (quality gate),
+  `/seed` (test data), `/regen-types` (FE OpenAPI client after a BE DTO change),
+  `/new-feature <desc>` (kick off the spec→plan→execute flow).
 - `.agents/skills/` — vendored Agent Skills (Next, shadcn, Stripe, Supabase),
   symlinked into `.claude/skills`; restore with `pnpm dlx skills install`.
 - `docs/superpowers/` — committed design specs + implementation plans per feature.
