@@ -1213,6 +1213,32 @@ export interface components {
              */
             checkoutUrl: string;
         };
+        BookingTourSummaryDto: {
+            /** @example sa-pa-trek-2d1n */
+            slug: string;
+            /** @example Sapa Rice Terrace Trek (2D1N Homestay) */
+            titleEn: string;
+            /** @example Trekking ruộng bậc thang Sa Pa (2N1Đ homestay) */
+            titleVi: string;
+        };
+        BookingDepartureSummaryDto: {
+            /**
+             * Format: date
+             * @example 2026-09-12
+             */
+            startDate: string;
+            /**
+             * Format: date
+             * @example 2026-09-15
+             */
+            endDate: string;
+            /**
+             * @description Present on GET /bookings/:code; omitted on GET /bookings/me
+             * @example OPEN
+             * @enum {string}
+             */
+            status?: "OPEN" | "CLOSED" | "CANCELLED";
+        };
         BookingDto: {
             /** Format: uuid */
             id: string;
@@ -1255,6 +1281,8 @@ export interface components {
             createdAt: string;
             /** Format: date-time */
             updatedAt: string;
+            tour: components["schemas"]["BookingTourSummaryDto"];
+            departure: components["schemas"]["BookingDepartureSummaryDto"];
         };
         RefundBookingDto: {
             /**

@@ -3,6 +3,47 @@ import { ApiProperty } from '@nestjs/swagger';
 const BOOKING_STATUSES = ['PENDING', 'PAID', 'CANCELLED', 'REFUNDED'] as const;
 type BookingStatus = (typeof BOOKING_STATUSES)[number];
 
+const DEPARTURE_STATUSES = ['OPEN', 'CLOSED', 'CANCELLED'] as const;
+type DepartureStatus = (typeof DEPARTURE_STATUSES)[number];
+
+/**
+ * Tour fields joined onto a booking row. Both `GET /bookings/me` and
+ * `GET /bookings/:code` already `include` exactly these columns
+ * (`bookings.service.ts findOwnList` / `findByCodeForCaller`); this class only
+ * documents that shape for Swagger so the generated FE client is typed.
+ */
+export class BookingTourSummaryDto {
+  @ApiProperty({ example: 'sa-pa-trek-2d1n' })
+  slug!: string;
+
+  @ApiProperty({ example: 'Sapa Rice Terrace Trek (2D1N Homestay)' })
+  titleEn!: string;
+
+  @ApiProperty({ example: 'Trekking ruộng bậc thang Sa Pa (2N1Đ homestay)' })
+  titleVi!: string;
+}
+
+/**
+ * Departure fields joined onto a booking row. `status` is only selected by
+ * `findByCodeForCaller` (detail) — `findOwnList` (list) omits it — so it is
+ * documented as optional.
+ */
+export class BookingDepartureSummaryDto {
+  @ApiProperty({ format: 'date', example: '2026-09-12' })
+  startDate!: string;
+
+  @ApiProperty({ format: 'date', example: '2026-09-15' })
+  endDate!: string;
+
+  @ApiProperty({
+    required: false,
+    enum: DEPARTURE_STATUSES,
+    example: 'OPEN',
+    description: 'Present on GET /bookings/:code; omitted on GET /bookings/me',
+  })
+  status?: DepartureStatus;
+}
+
 export class BookingDto {
   @ApiProperty({ format: 'uuid' })
   id!: string;
@@ -67,6 +108,12 @@ export class BookingDto {
 
   @ApiProperty({ format: 'date-time' })
   updatedAt!: string;
+
+  @ApiProperty({ type: BookingTourSummaryDto })
+  tour!: BookingTourSummaryDto;
+
+  @ApiProperty({ type: BookingDepartureSummaryDto })
+  departure!: BookingDepartureSummaryDto;
 }
 
 /**
