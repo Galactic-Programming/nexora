@@ -280,7 +280,9 @@
       "browseTours": "Xem tour",
       "truncatedNote": "Đang hiển thị 50 đặt chỗ gần nhất của bạn.",
       "seats": "{adults} người lớn, {children} trẻ em",
-      "total": "Tổng"
+      "total": "Tổng",
+      "loadError": "Không thể tải đặt chỗ của bạn.",
+      "retry": "Thử lại"
     },
     "detail": {
       "back": "Quay lại đặt chỗ của tôi",

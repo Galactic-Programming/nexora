@@ -280,7 +280,9 @@
       "browseTours": "Browse tours",
       "truncatedNote": "Showing your 50 most recent bookings.",
       "seats": "{adults} adult(s), {children} child(ren)",
-      "total": "Total"
+      "total": "Total",
+      "loadError": "We couldn't load your bookings.",
+      "retry": "Try again"
     },
     "detail": {
       "back": "Back to my bookings",

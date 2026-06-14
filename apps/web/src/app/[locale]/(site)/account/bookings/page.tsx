@@ -4,6 +4,11 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { syncUser } from "@/features/auth/actions";
 import { getMyBookings, type Booking } from "@/lib/api/bookings";
 import { ApiError } from "@/lib/api/errors";
+import {
+  Alert,
+  AlertTitle,
+  AlertDescription,
+} from "@tourism/ui/components/custom/alert-custom";
 import { AccountShell } from "@/features/account/AccountShell";
 import { BookingsList } from "@/features/bookings-list/BookingsList";
 import { mapBookingStatus } from "@/features/bookings-list/status";
@@ -88,12 +93,19 @@ export default async function MyBookingsPage({
       </AccountShell>
     );
   } catch (error) {
+    // A load failure must NOT masquerade as "no bookings" — show a real error
+    // with a retry, mirroring the /account profile page.
     console.error("Failed to load bookings", error);
     return (
       <AccountShell active="bookings">
-        <div className="border-border rounded-xl border border-dashed p-10 text-center">
-          <p className="text-muted-foreground">{t("list.empty")}</p>
-        </div>
+        <Alert variant="destructive">
+          <AlertTitle>{t("list.loadError")}</AlertTitle>
+          <AlertDescription>
+            <Link href="/account/bookings" className="underline">
+              {t("list.retry")}
+            </Link>
+          </AlertDescription>
+        </Alert>
       </AccountShell>
     );
   }
