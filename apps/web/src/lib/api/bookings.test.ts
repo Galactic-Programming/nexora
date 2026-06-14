@@ -13,7 +13,7 @@ vi.mock("@/lib/api/client", () => ({
   },
 }));
 
-import { createBookingRequest, getBookingByCode } from "./bookings";
+import { createBookingRequest, getBookingByCode, getMyBookings } from "./bookings";
 
 beforeEach(() => {
   h.GET.mockReset();
@@ -56,5 +56,21 @@ describe("getBookingByCode", () => {
     expect(h.GET).toHaveBeenCalledWith("/api/v1/bookings/{code}", {
       params: { path: { code: "BK-7K3F92AB" } },
     });
+  });
+});
+
+describe("getMyBookings", () => {
+  it("GETs /api/v1/bookings/me and returns the list with the token", async () => {
+    const rows = [booking, { ...booking, id: "b-2", code: "BK-OTHER1" }];
+    h.GET.mockResolvedValue({ data: rows });
+    const res = await getMyBookings("tok");
+    expect(res).toHaveLength(2);
+    expect(res[0].code).toBe("BK-7K3F92AB");
+    expect(h.GET).toHaveBeenCalledWith("/api/v1/bookings/me");
+    expect(h.tokens).toContain("tok");
+  });
+  it("throws ApiError(EMPTY) when data missing", async () => {
+    h.GET.mockResolvedValue({ data: undefined });
+    await expect(getMyBookings("tok")).rejects.toMatchObject({ code: "EMPTY" });
   });
 });

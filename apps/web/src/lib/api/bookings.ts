@@ -24,3 +24,10 @@ export async function getBookingByCode(token: string, code: string): Promise<Boo
   if (!data) throw new ApiError("EMPTY", "Empty /bookings/{code} response", 200);
   return data;
 }
+
+/** Lists the caller's bookings, newest first (top 50, owner-scoped server-side). */
+export async function getMyBookings(token: string): Promise<Booking[]> {
+  const { data } = await createApiClient(token).GET("/api/v1/bookings/me");
+  if (!data) throw new ApiError("EMPTY", "Empty /bookings/me response", 200);
+  return data;
+}
