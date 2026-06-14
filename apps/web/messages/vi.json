@@ -178,7 +178,8 @@
     },
     "nav": {
       "profile": "Hồ sơ",
-      "security": "Bảo mật"
+      "security": "Bảo mật",
+      "bookings": "Đặt chỗ của tôi"
     },
     "identity": {
       "heading": "Thông tin tài khoản",
@@ -267,6 +268,44 @@
       "body": "Đơn của bạn chưa được thanh toán và sẽ tự hủy sau khoảng 30 phút. Bạn chưa bị trừ tiền.",
       "code": "Mã đặt chỗ",
       "retry": "Xem các tour"
+    }
+  },
+  "Bookings": {
+    "list": {
+      "title": "Đặt chỗ của tôi",
+      "subtitle": "Các chuyến đi và trạng thái của bạn.",
+      "empty": "Bạn chưa đặt tour nào.",
+      "browseTours": "Xem tour",
+      "truncatedNote": "Đang hiển thị 50 đặt chỗ gần nhất của bạn.",
+      "seats": "{adults} người lớn, {children} trẻ em",
+      "total": "Tổng"
+    },
+    "detail": {
+      "back": "Quay lại đặt chỗ của tôi",
+      "departure": "Ngày khởi hành",
+      "seats": "Hành khách",
+      "totalPaid": "Tổng",
+      "contact": "Liên hệ",
+      "name": "Họ tên",
+      "email": "Email",
+      "phone": "Số điện thoại",
+      "specialRequests": "Yêu cầu đặc biệt",
+      "paidAt": "Thanh toán ngày",
+      "cancelledAt": "Hủy ngày",
+      "viewTour": "Xem tour",
+      "notFoundTitle": "Không tìm thấy đặt chỗ"
+    },
+    "status": {
+      "paid": "Đã thanh toán",
+      "pending": "Chờ xử lý",
+      "cancelled": "Đã hủy",
+      "refunded": "Đã hoàn tiền",
+      "note": {
+        "paid": "Đặt chỗ này đã được xác nhận. Email xác nhận đã được gửi.",
+        "pending": "Đặt chỗ này đang chờ xác nhận thanh toán.",
+        "cancelled": "Đặt chỗ này đã bị hủy. Không có khoản nào bị tính phí.",
+        "refunded": "Đặt chỗ này đã được hoàn tiền."
+      }
     }
   }
 }

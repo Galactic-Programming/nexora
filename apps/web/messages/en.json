@@ -178,7 +178,8 @@
     },
     "nav": {
       "profile": "Profile",
-      "security": "Security"
+      "security": "Security",
+      "bookings": "My bookings"
     },
     "identity": {
       "heading": "Account details",
@@ -267,6 +268,44 @@
       "body": "Your booking was not paid and will be cancelled automatically in about 30 minutes. Nothing was charged.",
       "code": "Booking code",
       "retry": "Browse tours"
+    }
+  },
+  "Bookings": {
+    "list": {
+      "title": "My bookings",
+      "subtitle": "Your trips and their status.",
+      "empty": "You haven't booked any tours yet.",
+      "browseTours": "Browse tours",
+      "truncatedNote": "Showing your 50 most recent bookings.",
+      "seats": "{adults} adult(s), {children} child(ren)",
+      "total": "Total"
+    },
+    "detail": {
+      "back": "Back to my bookings",
+      "departure": "Departure",
+      "seats": "Travelers",
+      "totalPaid": "Total",
+      "contact": "Contact",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "specialRequests": "Special requests",
+      "paidAt": "Paid on",
+      "cancelledAt": "Cancelled on",
+      "viewTour": "View tour",
+      "notFoundTitle": "Booking not found"
+    },
+    "status": {
+      "paid": "Paid",
+      "pending": "Pending",
+      "cancelled": "Cancelled",
+      "refunded": "Refunded",
+      "note": {
+        "paid": "This booking is confirmed. A confirmation email has been sent.",
+        "pending": "This booking is awaiting payment confirmation.",
+        "cancelled": "This booking was cancelled. Nothing was charged.",
+        "refunded": "This booking was refunded."
+      }
     }
   }
 }
